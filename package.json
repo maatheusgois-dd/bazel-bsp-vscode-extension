@@ -449,6 +449,12 @@
         "description": "Refresh bazel query results"
       },
       {
+        "command": "swiftbazel.bazelQuery.clearRecents",
+        "title": "swiftbazel: Clear Recent Targets",
+        "icon": "$(clear-all)",
+        "description": "Clear recent targets list"
+      },
+      {
         "command": "swiftbazel.build.clearCache",
         "title": "swiftbazel: Clear Workspace Cache",
         "icon": "$(refresh)",
@@ -812,6 +818,11 @@
           "command": "swiftbazel.bazel.debug",
           "when": "viewItem == bazelTarget-runnable",
           "group": "inline@3"
+        },
+        {
+          "command": "swiftbazel.bazelQuery.clearRecents",
+          "when": "viewItem == bazelQueryRecents",
+          "group": "inline@1"
         }
       ]
     },

@@ -2,6 +2,20 @@ import * as vscode from "vscode";
 import type { BazelTargetCategory } from "../../../domain/entities/bazel/types.js";
 
 /**
+ * Tree item representing the Recents section
+ */
+export class BazelQueryRecentsSectionItem extends vscode.TreeItem {
+  constructor(public readonly recentCount: number) {
+    super("Recents", vscode.TreeItemCollapsibleState.Expanded);
+    
+    this.contextValue = "bazelQueryRecents";
+    this.iconPath = new vscode.ThemeIcon("history");
+    this.description = `${recentCount}`;
+    this.tooltip = "Recently selected targets";
+  }
+}
+
+/**
  * Tree item representing a folder in the bazel query tree structure
  */
 export class BazelQueryFolderItem extends vscode.TreeItem {

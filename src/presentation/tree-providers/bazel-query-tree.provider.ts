@@ -8,6 +8,7 @@ import {
   BazelQueryFolderItem,
   BazelQueryRootItem,
   BazelQueryTargetItem,
+  BazelQueryRecentsSectionItem,
 } from "./items/bazel-query-tree-item.js";
 
 /**
@@ -23,20 +24,178 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
   private loadError: string | null = null;
   private workspaceRoot: string;
   private buildManager: any;
+  
+  // Recent targets storage (last 3 selected)
+  private recentTargets: Array<{
+    name: string;
+    type: 'runnable' | 'test' | 'buildable';
+    buildLabel: string;
+    pathParts: string[];
+  }> = [];
+  private readonly MAX_RECENT_TARGETS = 3;
 
   constructor(buildManager?: any) {
     this.workspaceRoot = getWorkspacePath();
     this.buildManager = buildManager;
     
-    // Listen to selection changes to update highlighting
+    // Listen to selection changes to update highlighting and recents
     if (this.buildManager) {
       this.buildManager.on("selectedBazelTargetUpdated", () => {
+        this.updateRecentTargets();
         this._onDidChangeTreeData.fire();
       });
     }
     
-    // Load targets on initialization
+    // Load targets on initialization (will load recents after query completes)
     void this.loadTargets();
+  }
+  
+  /**
+   * Load recent targets from cache
+   * Must be called after queryResult is available to validate targets still exist
+   */
+  private loadRecentTargetsFromCache(): void {
+    commonLogger.log("loadRecentTargetsFromCache called");
+    
+    try {
+      commonLogger.log("Checking buildManager context", {
+        hasBuildManager: !!this.buildManager,
+        hasContext: !!this.buildManager?._context,
+      });
+      
+      if (!this.buildManager?._context) {
+        commonLogger.log("No context available for loading recent targets");
+        return;
+      }
+      
+      const cached = this.buildManager._context.getWorkspaceState("bazelQuery.recentTargets");
+      commonLogger.log("Retrieved cached data", {
+        hasCached: !!cached,
+        isArray: Array.isArray(cached),
+        cached: cached,
+      });
+      
+      if (!cached || !Array.isArray(cached)) {
+        commonLogger.log("No cached recent targets found or invalid format");
+        return;
+      }
+      
+      if (!this.queryResult) {
+        commonLogger.log("Query result not available yet, skipping recent targets load");
+        return;
+      }
+      
+      // Validate that cached targets still exist in the query result
+      const validRecents = [];
+      for (const recent of cached) {
+        if (!recent.buildLabel || !recent.pathParts) {
+          commonLogger.debug("Skipping invalid recent target", { recent });
+          continue;
+        }
+        
+        const targets = BazelParser.getTargetsAtPath(this.queryResult.tree, recent.pathParts);
+        if (!targets) {
+          commonLogger.debug("Target path no longer exists", { pathParts: recent.pathParts });
+          continue;
+        }
+        
+        // Check if target still exists in the appropriate category
+        const targetExists = 
+          (recent.type === 'runnable' && targets.runnable.includes(recent.name)) ||
+          (recent.type === 'test' && targets.test.includes(recent.name)) ||
+          (recent.type === 'buildable' && targets.buildable.includes(recent.name));
+        
+        if (targetExists) {
+          validRecents.push(recent);
+          commonLogger.debug("Valid recent target", { name: recent.name, type: recent.type });
+        } else {
+          commonLogger.debug("Target no longer exists in tree", { name: recent.name });
+        }
+      }
+      
+      this.recentTargets = validRecents.slice(0, this.MAX_RECENT_TARGETS);
+      commonLogger.log("✅ Loaded recent targets from cache", { 
+        cached: cached.length,
+        valid: this.recentTargets.length,
+        targets: this.recentTargets.map(t => t.name),
+      });
+    } catch (error) {
+      commonLogger.error("Failed to load recent targets from cache", { error });
+    }
+  }
+  
+  /**
+   * Save recent targets to cache
+   */
+  private saveRecentTargetsToCache(): void {
+    try {
+      if (!this.buildManager?._context) {
+        commonLogger.debug("No context available for saving recent targets");
+        return;
+      }
+      
+      this.buildManager._context.updateWorkspaceState("bazelQuery.recentTargets", this.recentTargets);
+      commonLogger.log("💾 Saved recent targets to cache", { count: this.recentTargets.length });
+    } catch (error) {
+      commonLogger.error("Failed to save recent targets to cache", { error });
+    }
+  }
+  
+  /**
+   * Update recent targets list when a target is selected
+   */
+  private updateRecentTargets(): void {
+    const selectedTarget = this.getSelectedBazelTargetData();
+    if (!selectedTarget?.buildLabel || !this.queryResult) {
+      return;
+    }
+    
+    // Parse the build label: //Apps/Consumer/ConsumerApp:Caviar
+    const match = selectedTarget.buildLabel.match(/^\/\/(.+):(.+)$/);
+    if (!match) {
+      return;
+    }
+    
+    const [, pathStr, targetName] = match;
+    const pathParts = pathStr.split('/');
+    
+    // Determine target type from the query result
+    const targets = BazelParser.getTargetsAtPath(this.queryResult.tree, pathParts);
+    if (!targets) {
+      return;
+    }
+    
+    let targetType: 'runnable' | 'test' | 'buildable' | undefined;
+    if (targets.runnable.includes(targetName)) {
+      targetType = 'runnable';
+    } else if (targets.test.includes(targetName)) {
+      targetType = 'test';
+    } else if (targets.buildable.includes(targetName)) {
+      targetType = 'buildable';
+    }
+    
+    if (!targetType) {
+      return;
+    }
+    
+    // Remove if already in list
+    this.recentTargets = this.recentTargets.filter(
+      t => t.buildLabel !== selectedTarget.buildLabel
+    );
+    
+    // Add to front
+    this.recentTargets.unshift({
+      name: targetName,
+      type: targetType,
+      buildLabel: selectedTarget.buildLabel,
+      pathParts: pathParts,
+    });
+    
+    // Keep only last 3
+    this.recentTargets = this.recentTargets.slice(0, this.MAX_RECENT_TARGETS);
+    
+    // Save to cache
+    this.saveRecentTargetsToCache();
   }
   
   /**
@@ -62,6 +221,9 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
       commonLogger.log("Loaded bazel targets", {
         statistics: this.queryResult.statistics,
       });
+      
+      // Load cached recent targets after query completes
+      this.loadRecentTargetsFromCache();
     } catch (error) {
       this.loadError = error instanceof Error ? error.message : String(error);
       commonLogger.error("Failed to load bazel targets", { error });
@@ -77,6 +239,15 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
   refresh(): void {
     this.queryResult = null;
     void this.loadTargets();
+  }
+  
+  /**
+   * Clear recent targets
+   */
+  clearRecents(): void {
+    this.recentTargets = [];
+    this.saveRecentTargetsToCache();
+    this._onDidChangeTreeData.fire();
   }
 
   /**
@@ -111,8 +282,31 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
         return [emptyItem];
       }
 
-      // Show top-level folders (Apps, Packages, etc.)
-      return this.getChildrenAtPath([]);
+      const items: vscode.TreeItem[] = [];
+      
+      // First, add Recents section if there are recent targets
+      if (this.recentTargets.length > 0) {
+        items.push(new BazelQueryRecentsSectionItem(this.recentTargets.length));
+      }
+      
+      // Then, add top-level folders (Apps, Packages, etc.)
+      const folders = this.getChildrenAtPath([]);
+      items.push(...folders);
+      
+      return items;
+    }
+    
+    // Recents section - show recent targets
+    if (element instanceof BazelQueryRecentsSectionItem) {
+      return this.recentTargets.map(recent => 
+        new BazelQueryTargetItem(
+          recent.name,
+          recent.type,
+          recent.pathParts,
+          this.workspaceRoot,
+          this
+        )
+      );
     }
 
     // Folder item - show both targets AND subfolders

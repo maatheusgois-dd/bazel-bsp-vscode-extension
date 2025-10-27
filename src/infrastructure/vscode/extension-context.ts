@@ -72,6 +72,12 @@ type WorkspaceTypes = {
   "testing.xcodeDestination": SelectedDestination;
   "testing.xcodeScheme": string;
   "bazel.selectedTarget": string;
+  "bazelQuery.recentTargets": Array<{
+    name: string;
+    type: 'runnable' | 'test' | 'buildable';
+    buildLabel: string;
+    pathParts: string[];
+  }>;
 };
 
 type WorkspaceStateKey = keyof WorkspaceTypes;

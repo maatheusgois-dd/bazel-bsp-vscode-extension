@@ -163,7 +163,6 @@ export class BazelParser {
 
     // Process each category
     const processTargets = (targetList: BazelQueryTarget[], category: keyof BazelTargetCategory) => {
-      let sampleLogged = 0;
       for (const item of targetList) {
         // Parse target: //Apps/Consumer/ConsumerApp:DoorDash
         const match = item.target.match(/^\/\/(.+):(.+)$/);
@@ -174,17 +173,6 @@ export class BazelParser {
 
         const [, path, leaf] = match;
         const pathParts = path.split('/');
-
-        // Log first 5 targets to understand structure
-        if (sampleLogged < 5) {
-          commonLogger.log(`Processing ${category} target (sample ${sampleLogged + 1})`, {
-            target: item.target,
-            path: path,
-            pathParts: pathParts,
-            leaf: leaf,
-          });
-          sampleLogged++;
-        }
 
         setNestedValue(tree, pathParts, leaf, category);
       }

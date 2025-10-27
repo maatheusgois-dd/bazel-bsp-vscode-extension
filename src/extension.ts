@@ -165,6 +165,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
     d(command("swiftbazel.build.clearSearch", async () => workspaceTreeProvider.clearSearch()));
     d(command("swiftbazel.bazelQuery.refresh", async () => bazelQueryTreeProvider.refresh()));
+    d(command("swiftbazel.bazelQuery.clearRecents", async () => bazelQueryTreeProvider.clearRecents()));
     d(
       command("swiftbazel.build.clearCache", async () => {
         await workspaceTreeProvider.clearPersistentCache();
