@@ -1,6 +1,6 @@
 import events from "node:events";
-import { exec } from "../../shared/utils/exec.js";
 import { TOOLS, type Tool } from "../../shared/constants/tools-constants.js";
+import { exec } from "../../shared/utils/exec.js";
 
 type IEventMap = {
   updated: [];
@@ -31,7 +31,7 @@ export class ToolsManager {
             ...item,
             isInstalled: true,
           };
-        } catch (error) {
+        } catch (_error) {
           return {
             ...item,
             isInstalled: false,

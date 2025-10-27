@@ -53,7 +53,7 @@ export class WorkspaceGroupTreeItem extends vscode.TreeItem {
     // Set collapsible state based on whether it's in the Recents section or is a Bazel workspace
     const isRecent = !!options.isRecent;
     const isCurrentWorkspace = options.provider.defaultWorkspacePath === options.workspacePath;
-    const isBazelWorkspace = options.workspacePath.endsWith("BUILD.bazel") || options.workspacePath.endsWith("BUILD");
+    const _isBazelWorkspace = options.workspacePath.endsWith("BUILD.bazel") || options.workspacePath.endsWith("BUILD");
 
     // Items in Recents are expandable, others are not
     const collapsibleState = isRecent ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None;

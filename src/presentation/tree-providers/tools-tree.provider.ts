@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import type { Tool } from "../../shared/constants/tools-constants.js";
 import type { ToolsManager } from "../../application/services/tools-manager.service.js";
+import type { Tool } from "../../shared/constants/tools-constants.js";
 
 type EventData = ToolTreeItem | undefined | null | undefined;
 

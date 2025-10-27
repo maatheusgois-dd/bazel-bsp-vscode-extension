@@ -1,5 +1,10 @@
 import * as vscode from "vscode";
 
+import { BuildManager } from "./application/services/build-manager.service.js";
+import { DestinationsManager } from "./application/services/destination-manager.service.js";
+import { DevicesManager } from "./application/services/device-manager.service.js";
+import { SimulatorsManager } from "./application/services/simulator-manager.service.js";
+import { ToolsManager } from "./application/services/tools-manager.service.js";
 // Application Layer
 import {
   bazelBuildCommand,
@@ -14,7 +19,10 @@ import {
   testSelectedBazelTargetCommand,
 } from "./application/use-cases/bazel/bazel-commands.use-case.js";
 import { getAppPathCommand } from "./application/use-cases/bazel/debug-commands.use-case.js";
-import { removeRecentDestinationCommand, selectDestinationForBuildCommand } from "./application/use-cases/destination/destination-commands.use-case.js";
+import {
+  removeRecentDestinationCommand,
+  selectDestinationForBuildCommand,
+} from "./application/use-cases/destination/destination-commands.use-case.js";
 import {
   openSimulatorCommand,
   removeSimulatorCacheCommand,
@@ -24,27 +32,21 @@ import {
 } from "./application/use-cases/destination/simulator-commands.use-case.js";
 import { openTerminalPanel, resetswiftbazelCache } from "./application/use-cases/system/system-commands.use-case.js";
 import { installToolCommand, openDocumentationCommand } from "./application/use-cases/tools/tools-commands.use-case.js";
-import { BuildManager } from "./application/services/build-manager.service.js";
-import { DestinationsManager } from "./application/services/destination-manager.service.js";
-import { DevicesManager } from "./application/services/device-manager.service.js";
-import { SimulatorsManager } from "./application/services/simulator-manager.service.js";
-import { ToolsManager } from "./application/services/tools-manager.service.js";
 
+import { createMcpServer } from "./infrastructure/mcp/mcp-server.js";
+import type { McpServerInstance } from "./infrastructure/mcp/types.js";
+import { registerDebugConfigurationProvider } from "./infrastructure/vscode/debug/debug-provider.js";
 // Infrastructure Layer
 import { ExtensionContext } from "./infrastructure/vscode/extension-context.js";
 import { BazelBuildTaskProvider } from "./infrastructure/vscode/task-provider.js";
-import { registerDebugConfigurationProvider } from "./infrastructure/vscode/debug/debug-provider.js";
-import { createMcpServer } from "./infrastructure/mcp/mcp-server.js";
-import type { McpServerInstance } from "./infrastructure/mcp/types.js";
 
 // Presentation Layer
 import { BazelTargetStatusBar } from "./presentation/status-bars/build-status-bar.js";
 import { DestinationStatusBar } from "./presentation/status-bars/destination-status-bar.js";
 import { ProgressStatusBar } from "./presentation/status-bars/progress-status-bar.js";
-import { WorkspaceTreeProvider } from "./presentation/tree-providers/workspace-tree.provider.js";
+import { BazelQueryTreeProvider } from "./presentation/tree-providers/bazel-query-tree.provider.js";
 import { DestinationsTreeProvider } from "./presentation/tree-providers/destination-tree.provider.js";
 import { ToolTreeProvider } from "./presentation/tree-providers/tools-tree.provider.js";
-import { BazelQueryTreeProvider } from "./presentation/tree-providers/bazel-query-tree.provider.js";
 
 // Shared Layer
 import { Logger, commonLogger } from "./shared/logger/logger.js";
@@ -91,14 +93,6 @@ export async function activate(context: vscode.ExtensionContext) {
     progressStatusBar.context = _context;
 
     // Trees 🎄
-    // const buildTreeProvider = new BuildTreeProvider({
-    //   context: _context,
-    //   buildManager: buildManager,
-    // });
-    const workspaceTreeProvider = new WorkspaceTreeProvider({
-      context: _context,
-      buildManager: buildManager,
-    });
     const toolsTreeProvider = new ToolTreeProvider({
       manager: toolsManager,
     });
@@ -129,8 +123,6 @@ export async function activate(context: vscode.ExtensionContext) {
       bazelTargetStatusBar.update();
     });
 
-    //d(tree("swiftbazel.build.view", workspaceTreeProvider));
-    d(tree("swiftbazel.view.workspaces", workspaceTreeProvider));
     d(tree("swiftbazel.view.bazelQuery", bazelQueryTreeProvider));
     d(command("swiftbazel.build.refreshView", async () => buildManager.refresh()));
     d(command("swiftbazel.build.selectBazelWorkspace", selectBazelWorkspaceCommand));
@@ -141,44 +133,20 @@ export async function activate(context: vscode.ExtensionContext) {
     d(command("swiftbazel.bazel.debug", bazelDebugCommand));
     d(
       command("swiftbazel.bazel.selectTarget", (context, targetInfo) =>
-        selectBazelTargetCommand(context, targetInfo, workspaceTreeProvider),
+        selectBazelTargetCommand(context, targetInfo, bazelQueryTreeProvider),
       ),
     );
     d(
-      command("swiftbazel.bazel.buildSelected", () => buildSelectedBazelTargetCommand(_context, workspaceTreeProvider)),
+      command("swiftbazel.bazel.buildSelected", () =>
+        buildSelectedBazelTargetCommand(_context, bazelQueryTreeProvider),
+      ),
     );
-    d(command("swiftbazel.bazel.testSelected", () => testSelectedBazelTargetCommand(_context, workspaceTreeProvider)));
-    d(command("swiftbazel.bazel.runSelected", () => runSelectedBazelTargetCommand(_context, workspaceTreeProvider)));
+    d(command("swiftbazel.bazel.testSelected", () => testSelectedBazelTargetCommand(_context, bazelQueryTreeProvider)));
+    d(command("swiftbazel.bazel.runSelected", () => runSelectedBazelTargetCommand(_context, bazelQueryTreeProvider)));
 
-    // Workspace tree commands
-    d(
-      command("swiftbazel.build.search", async () => {
-        const searchTerm = await vscode.window.showInputBox({
-          prompt: "Search builds and schemes",
-          placeHolder: "Enter search term...",
-          value: workspaceTreeProvider.getSearchTerm(),
-        });
-        if (searchTerm !== undefined) {
-          workspaceTreeProvider.setSearchTerm(searchTerm);
-        }
-      }),
-    );
-    d(command("swiftbazel.build.clearSearch", async () => workspaceTreeProvider.clearSearch()));
+    // Bazel query tree commands
     d(command("swiftbazel.bazelQuery.refresh", async () => bazelQueryTreeProvider.refresh()));
     d(command("swiftbazel.bazelQuery.clearRecents", async () => bazelQueryTreeProvider.clearRecents()));
-    d(
-      command("swiftbazel.build.clearCache", async () => {
-        await workspaceTreeProvider.clearPersistentCache();
-        const { cacheManager } = await import("./shared/utils/cache-manager.js");
-        await cacheManager.clearCache();
-        await workspaceTreeProvider.loadWorkspacesStreamingly();
-        const stats = cacheManager.getCacheStats();
-        vscode.window.showInformationMessage(
-          `✅ All workspace caches cleared and reloaded!\n📊 Cache was storing ${stats.bazelWorkspaceCount} Bazel workspaces.`,
-        );
-      }),
-    );
-    d(command("swiftbazel.build.selectXcodeWorkspace", (context, item) => selectBazelWorkspaceCommand(context, item)));
 
     // Debugging
     d(registerDebugConfigurationProvider(_context));
@@ -237,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
           if (mcpInstance?.server) {
             try {
               mcpInstance.server.close();
-            } catch (e) {
+            } catch (_e) {
               /* log error */
             }
           }

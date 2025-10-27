@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
-import { runTask } from "../../../shared/utils/tasks.js";
 import type { ToolTreeItem } from "../../../presentation/tree-providers/tools-tree.provider.js";
+import { runTask } from "../../../shared/utils/tasks.js";
 import { askTool } from "../../../shared/utils/tools-utils.js";
 
 /**
@@ -35,7 +35,7 @@ export async function installToolCommand(context: ExtensionContext, item?: ToolT
 /**
  * Command to open documentation in the browser from the tool tree view in the sidebar
  */
-export async function openDocumentationCommand(context: ExtensionContext, item?: ToolTreeItem) {
+export async function openDocumentationCommand(_context: ExtensionContext, item?: ToolTreeItem) {
   const tool = item?.tool ?? (await askTool({ title: "Select tool to open documentation" }));
   await vscode.env.openExternal(vscode.Uri.parse(tool.documentation));
 }

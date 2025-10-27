@@ -1,23 +1,20 @@
 import path from "node:path";
 import * as vscode from "vscode";
-import type { BazelTreeItem, WorkspaceGroupTreeItem, WorkspaceTreeProvider } from "../../../presentation/tree-providers/workspace-tree.provider.js";
+import type { BazelTreeItem } from "../../../presentation/tree-providers/tree.provider.js";
 
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
-import { getWorkspaceConfig } from "../../../shared/utils/config.js";
-import { ExtensionError } from "../../../shared/errors/errors.js";
-import { exec } from "../../../shared/utils/exec.js";
 import { commonLogger } from "../../../shared/logger/logger.js";
+import { getWorkspaceConfig } from "../../../shared/utils/config.js";
+import { exec } from "../../../shared/utils/exec.js";
 import { Timer } from "../../../shared/utils/timer.js";
 
-import { type Command, type TaskTerminal, runTask } from "../../../shared/utils/tasks.js";
 import { DEFAULT_BUILD_PROBLEM_MATCHERS } from "../../../shared/constants/build-constants.js";
 import {
   askDestinationToRunOn,
   detectBazelWorkspacesPaths,
-  getWorkspacePath,
-  parseBazelBuildFile,
   selectBazelWorkspace,
 } from "../../../shared/utils/bazel-utils.js";
+import { type TaskTerminal, runTask } from "../../../shared/utils/tasks.js";
 
 function writeTimingResults(terminal: TaskTerminal, timer: Timer, toolType: "bazel", operation: string) {
   const elapsedSeconds = (timer.elapsed / 1000).toFixed(2);
@@ -26,6 +23,7 @@ function writeTimingResults(terminal: TaskTerminal, timer: Timer, toolType: "baz
 
 /**
  * Reconstruct a BazelTreeItem from cached serialized data
+ * For query-based targets, we already have all the data in selectedTargetData
  */
 async function reconstructBazelItemFromCache(context: ExtensionContext): Promise<BazelTreeItem | undefined> {
   const selectedTargetData = context.buildManager.getSelectedBazelTargetData();
@@ -33,35 +31,25 @@ async function reconstructBazelItemFromCache(context: ExtensionContext): Promise
     return undefined;
   }
 
-  try {
-    // Parse the BUILD file to get the full package and target data
-    const bazelPackage = await parseBazelBuildFile(selectedTargetData.workspacePath);
-    if (!bazelPackage) {
-      return undefined;
-    }
+  // Reconstruct from cached data without parsing BUILD files
+  const bazelItem: BazelTreeItem = {
+    target: {
+      name: selectedTargetData.targetName,
+      type: selectedTargetData.targetType,
+      buildLabel: selectedTargetData.buildLabel,
+      testLabel: selectedTargetData.testLabel,
+      deps: [],
+    },
+    package: {
+      name: selectedTargetData.packageName,
+      path: selectedTargetData.packagePath,
+      targets: [],
+    },
+    workspacePath: selectedTargetData.workspacePath,
+    provider: null as any, // Not needed for commands
+  } as BazelTreeItem;
 
-    // Find the target in the package
-    const target = bazelPackage.targets.find((t) => t.buildLabel === selectedTargetData.buildLabel);
-    if (!target) {
-      return undefined;
-    }
-
-    // Reconstruct the BazelTreeItem (minimal version for commands)
-    const bazelItem: BazelTreeItem = {
-      target,
-      package: bazelPackage,
-      workspacePath: selectedTargetData.workspacePath,
-      provider: null as any, // Not needed for commands
-    } as BazelTreeItem;
-
-    // Update the in-memory cache in BuildManager
-    context.buildManager.setSelectedBazelTarget(bazelItem);
-
-    return bazelItem;
-  } catch (error) {
-    commonLogger.error("Failed to reconstruct Bazel item from cache", { error, selectedTargetData });
-    return undefined;
-  }
+  return bazelItem;
 }
 
 /**
@@ -260,75 +248,24 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
  */
 export async function selectBazelTargetCommand(
   context: ExtensionContext,
-  targetInfo: { buildLabel: string; workspacePath: string } | BazelTreeItem,
-  workspaceTreeProvider: any,
+  targetInfo: { target: any; package: any; workspacePath: string } | BazelTreeItem,
+  _treeProvider: any,
 ): Promise<void> {
   if (!targetInfo) {
     vscode.window.showErrorMessage("No Bazel target provided");
     return;
   }
 
-  // Get the workspace tree provider
-  if (!workspaceTreeProvider) {
-    vscode.window.showErrorMessage("Workspace tree provider not available");
-    return;
-  }
+  // Both old and new format have target and package properties
+  const bazelItem = targetInfo as BazelTreeItem;
 
-  // Handle both old format (BazelTreeItem) and new format (target info)
-  let bazelItem: any; // Mock BazelTreeItem
-
-  if ("target" in targetInfo) {
-    // Old format - direct BazelTreeItem
-    bazelItem = targetInfo as BazelTreeItem;
-  } else {
-    // New format - parse BUILD.bazel file to get target data
-    const { buildLabel, workspacePath } = targetInfo;
-    let actualWorkspacePath = workspacePath;
-
-    if (!actualWorkspacePath) {
-      // Try to find the workspace path from currentBazelTargets cache
-      for (const [cachedBuildLabel, cachedTarget] of workspaceTreeProvider.currentBazelTargets) {
-        if (cachedBuildLabel === buildLabel) {
-          actualWorkspacePath = (cachedTarget as any).package.path;
-          break;
-        }
-      }
-
-      if (!actualWorkspacePath) {
-        vscode.window.showErrorMessage("Could not determine workspace path for Bazel target");
-        return;
-      }
-    }
-
-    // Parse the BUILD.bazel file to get full target data
-    const bazelPackage = await workspaceTreeProvider.getCachedBazelPackage(actualWorkspacePath);
-    if (!bazelPackage) {
-      vscode.window.showErrorMessage("Failed to parse Bazel BUILD file");
-      return;
-    }
-
-    const target = bazelPackage.targets.find((t: any) => t.buildLabel === buildLabel);
-    if (!target) {
-      vscode.window.showErrorMessage(`Target ${buildLabel} not found in BUILD file`);
-      return;
-    }
-
-    bazelItem = {
-      target: target,
-      package: bazelPackage,
-    };
-  }
-
-  // Validate the final bazelItem
+  // Validate the bazelItem
   if (!bazelItem || !bazelItem.target || !bazelItem.target.name || !bazelItem.package) {
     vscode.window.showErrorMessage("Invalid Bazel target data");
     return;
   }
 
   context.buildManager.setSelectedBazelTarget(bazelItem);
-
-  // Update the tree view to show selection
-  workspaceTreeProvider.setSelectedBazelTarget(bazelItem);
 
   vscode.window.showInformationMessage(`✅ Selected Bazel target: ${bazelItem.target.name} (${bazelItem.target.type})`);
 }
@@ -338,7 +275,7 @@ export async function selectBazelTargetCommand(
  */
 export async function buildSelectedBazelTargetCommand(
   context: ExtensionContext,
-  workspaceTreeProvider?: any,
+  _workspaceTreeProvider?: any,
 ): Promise<void> {
   const bazelItem = context.buildManager.getSelectedBazelTarget();
   if (!bazelItem) {
@@ -355,7 +292,7 @@ export async function buildSelectedBazelTargetCommand(
  */
 export async function testSelectedBazelTargetCommand(
   context: ExtensionContext,
-  workspaceTreeProvider?: any,
+  _workspaceTreeProvider?: any,
 ): Promise<void> {
   const bazelItem = context.buildManager.getSelectedBazelTarget();
   if (!bazelItem) {
@@ -374,13 +311,16 @@ export async function testSelectedBazelTargetCommand(
 
 /**
  * Select Bazel project and save it to the workspace state
+ * @deprecated Legacy function for old workspace tree
  */
-export async function selectBazelWorkspaceCommand(context: ExtensionContext, item?: WorkspaceGroupTreeItem) {
+export async function selectBazelWorkspaceCommand(context: ExtensionContext, item?: any) {
   context.updateProgressStatus("Searching for workspace");
 
   if (item) {
     // Set loading state on this specific item only
-    item.setLoading(true);
+    if (item.setLoading) {
+      item.setLoading(true);
+    }
 
     try {
       context.buildManager.setCurrentWorkspacePath(item.workspacePath);
@@ -389,7 +329,9 @@ export async function selectBazelWorkspaceCommand(context: ExtensionContext, ite
       commonLogger.error("Failed to select workspace", { error });
       vscode.window.showErrorMessage(`Failed to select workspace: ${error}`);
     } finally {
-      item.setLoading(false);
+      if (item.setLoading) {
+        item.setLoading(false);
+      }
     }
     return;
   }
@@ -430,7 +372,7 @@ export async function diagnoseBuildSetupCommand(context: ExtensionContext): Prom
         });
         _write("✅ Bazel is installed:\n");
         _writeQuote(result);
-      } catch (error) {
+      } catch (_error) {
         _write("❌ Bazel is not installed or not in PATH\n");
       }
 
@@ -457,7 +399,7 @@ export async function diagnoseBuildSetupCommand(context: ExtensionContext): Prom
  */
 export async function runSelectedBazelTargetCommand(
   context: ExtensionContext,
-  workspaceTreeProvider?: any,
+  _workspaceTreeProvider?: any,
 ): Promise<void> {
   const bazelItem = context.buildManager.getSelectedBazelTarget();
   if (!bazelItem) {

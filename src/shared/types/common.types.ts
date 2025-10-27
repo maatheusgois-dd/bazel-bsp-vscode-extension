@@ -11,6 +11,6 @@ export function assertUnreachable(value: NeverStringLiteral): never {
 }
 
 // Like assertUnreachable, but does not throw an error
-export function checkUnreachable(value: NeverStringLiteral): void {
+export function checkUnreachable(_value: NeverStringLiteral): void {
   // do nothing
 }

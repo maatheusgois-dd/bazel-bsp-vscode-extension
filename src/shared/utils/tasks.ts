@@ -3,12 +3,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { quote } from "shell-quote";
 import * as vscode from "vscode";
-import { getWorkspacePath } from "./bazel-utils.js";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
-import { getWorkspaceConfig } from "./config.js";
 import { TaskError } from "../errors/errors.js";
-import { prepareEnvVars } from "./helpers.js";
 import { commonLogger } from "../logger/logger.js";
+import { getWorkspacePath } from "./bazel-utils.js";
+import { getWorkspaceConfig } from "./config.js";
+import { prepareEnvVars } from "./helpers.js";
 
 type TaskExecutor = "v1" | "v2";
 
@@ -285,7 +285,7 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
           resolve();
         }
       });
-      this.process.on("error", (error) => {
+      this.process.on("error", (_error) => {
         if (hasOutput) {
           this.writeLine();
         }
@@ -296,7 +296,7 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
     });
   }
 
-  open(initialDimensions: vscode.TerminalDimensions | undefined): void {
+  open(_initialDimensions: vscode.TerminalDimensions | undefined): void {
     void this.start();
   }
 
@@ -385,7 +385,7 @@ export class TaskTerminalV1 implements TaskTerminal {
     },
   ) {}
 
-  write(data: string, options?: TerminalWriteOptions): void {
+  write(data: string, _options?: TerminalWriteOptions): void {
     this.execute({
       command: "echo",
       args: [data],

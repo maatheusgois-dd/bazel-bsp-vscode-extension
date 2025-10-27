@@ -1,7 +1,7 @@
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
+import { commonLogger } from "../../shared/logger/logger.js";
 import { exec } from "../../shared/utils/exec.js";
 import { readJsonFile, tempFilePath } from "../../shared/utils/files.js";
-import { commonLogger } from "../../shared/logger/logger.js";
 
 type DeviceCtlListCommandOutput = {
   result: {

@@ -1,7 +1,4 @@
 import events from "node:events";
-import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
-import { checkUnreachable } from "../../shared/types/common.types.js";
-import { listDevices } from "../../infrastructure/apple-platforms/devicectl.adapter.js";
 import {
   type DeviceDestination,
   iOSDeviceDestination,
@@ -9,6 +6,9 @@ import {
   visionOSDeviceDestination,
   watchOSDeviceDestination,
 } from "../../domain/entities/destination/device-types.js";
+import { listDevices } from "../../infrastructure/apple-platforms/devicectl.adapter.js";
+import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
+import { checkUnreachable } from "../../shared/types/common.types.js";
 
 type DeviceManagerEventTypes = {
   updated: [];

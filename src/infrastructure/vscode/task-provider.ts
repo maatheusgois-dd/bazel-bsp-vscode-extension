@@ -71,13 +71,13 @@ export class BazelBuildTaskProvider implements vscode.TaskProvider {
     this.dispatcher = new ActionDispatcher(context);
   }
 
-  async provideTasks(token: vscode.CancellationToken): Promise<vscode.Task[]> {
+  async provideTasks(_token: vscode.CancellationToken): Promise<vscode.Task[]> {
     // Return empty array - users should use command palette commands instead
     // This prevents old tasks.json configurations from breaking
     return [];
   }
 
-  async resolveTask(task: vscode.Task, token: vscode.CancellationToken): Promise<vscode.Task | undefined> {
+  async resolveTask(task: vscode.Task, _token: vscode.CancellationToken): Promise<vscode.Task | undefined> {
     const definition = task.definition as TaskDefinition;
 
     // Return the same task with custom execution that shows deprecation message

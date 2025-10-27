@@ -1,7 +1,7 @@
 import events from "node:events";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
+import type { BazelTreeItem } from "../../presentation/tree-providers/tree.provider.js";
 import { commonLogger } from "../../shared/logger/logger.js";
-import type { BazelTreeItem } from "../../presentation/tree-providers/workspace-tree.provider.js";
 
 type IEventMap = {
   updated: [];
@@ -24,10 +24,6 @@ type IEventKey = keyof IEventMap;
 export class BuildManager {
   private emitter = new events.EventEmitter<IEventMap>();
   public _context: ExtensionContext | undefined = undefined;
-
-  constructor() {
-    // No initialization needed for Bazel-only mode
-  }
 
   on<K extends IEventKey>(event: K, listener: (...args: IEventMap[K]) => void): void {
     this.emitter.on(event, listener as any);

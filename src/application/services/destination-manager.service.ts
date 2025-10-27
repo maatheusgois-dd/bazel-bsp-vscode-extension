@@ -1,14 +1,10 @@
 import events from "node:events";
-import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
-import { checkUnreachable } from "../../shared/types/common.types.js";
-import type { DevicesManager } from "./device-manager.service.js";
 import type {
   iOSDeviceDestination,
   tvOSDeviceDestination,
   visionOSDeviceDestination,
   watchOSDeviceDestination,
 } from "../../domain/entities/destination/device-types.js";
-import type { SimulatorsManager } from "./simulator-manager.service.js";
 import type {
   SimulatorDestination,
   iOSSimulatorDestination,
@@ -16,7 +12,6 @@ import type {
   visionOSSimulatorDestination,
   watchOSSimulatorDestination,
 } from "../../domain/entities/destination/simulator-types.js";
-import { DESTINATION_TYPE_PRIORITY, SIMULATOR_TYPE_PRIORITY, SUPPORTED_DESTINATION_PLATFORMS } from "../../shared/constants/destination-constants.js";
 import {
   ALL_DESTINATION_TYPES,
   type Destination,
@@ -24,7 +19,16 @@ import {
   type SelectedDestination,
   macOSDestination,
 } from "../../domain/entities/destination/types.js";
+import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
+import {
+  DESTINATION_TYPE_PRIORITY,
+  SIMULATOR_TYPE_PRIORITY,
+  SUPPORTED_DESTINATION_PLATFORMS,
+} from "../../shared/constants/destination-constants.js";
+import { checkUnreachable } from "../../shared/types/common.types.js";
 import { getMacOSArchitecture } from "../../shared/utils/destination-utils.js";
+import type { DevicesManager } from "./device-manager.service.js";
+import type { SimulatorsManager } from "./simulator-manager.service.js";
 
 type IEventMap = {
   simulatorsUpdated: [];

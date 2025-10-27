@@ -1,10 +1,10 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { askSimulator, prepareStoragePath } from "../../../shared/utils/bazel-utils.js";
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
-import { runTask } from "../../../shared/utils/tasks.js";
 import type { iOSSimulatorDestinationTreeItem } from "../../../presentation/tree-providers/destination-tree.provider";
+import { askSimulator, prepareStoragePath } from "../../../shared/utils/bazel-utils.js";
+import { runTask } from "../../../shared/utils/tasks.js";
 
 /**
  * Command to start simulator from the simulator tree view in the sidebar
@@ -175,7 +175,7 @@ export async function takeSimulatorScreenshotCommand(
 
         // Read the screenshot file as base64
         const imageBuffer = await fs.readFile(screenshotPath);
-        const base64Image = imageBuffer.toString("base64");
+        const _base64Image = imageBuffer.toString("base64");
 
         terminal.write(`Screenshot saved successfully (${stats.size} bytes)\n`);
 
@@ -199,7 +199,7 @@ export async function takeSimulatorScreenshotCommand(
     // Clean up file if it exists
     try {
       await fs.unlink(screenshotPath);
-    } catch (cleanupError) {
+    } catch (_cleanupError) {
       // Ignore cleanup errors
     }
   }

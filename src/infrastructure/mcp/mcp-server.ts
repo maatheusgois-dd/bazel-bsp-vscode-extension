@@ -10,7 +10,11 @@ import { type ZodRawShape, z } from "zod";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
 import { commonLogger } from "../../shared/logger/logger.js";
 // executeCommand import removed - now using individual command tools
-import { type TakeScreenshotArgs, takeScreenshotImplementation, takeScreenshotSchema } from "../../shared/utils/screenshot-tool.js";
+import {
+  type TakeScreenshotArgs,
+  takeScreenshotImplementation,
+  takeScreenshotSchema,
+} from "../../shared/utils/screenshot-tool.js";
 import { setupMetrics } from "./metrics";
 import type { McpServerInstance, McpServerOptions, McpToolDefinition } from "./types.js";
 
@@ -27,7 +31,10 @@ const createCommandTool = (
 ) => {
   const schema = z.object({}).describe(`${description}`);
 
-  const implementation = async (args: any, frameworkExtra: RequestHandlerExtra<any, any>): Promise<CallToolResult> => {
+  const implementation = async (
+    _args: any,
+    _frameworkExtra: RequestHandlerExtra<any, any>,
+  ): Promise<CallToolResult> => {
     const timeoutSeconds = 600;
 
     let eventListener: vscode.Disposable | undefined;
@@ -325,7 +332,7 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
     "take_simulator_screenshot",
     "Takes a screenshot of running iOS simulator and returns as image context.",
     takeScreenshotSchema.shape,
-    async (args: TakeScreenshotArgs, frameworkExtra: RequestHandlerExtra<any, any>): Promise<CallToolResult> => {
+    async (args: TakeScreenshotArgs, _frameworkExtra: RequestHandlerExtra<any, any>): Promise<CallToolResult> => {
       return takeScreenshotImplementation(args, { extensionContext: extensionContext });
     },
   );

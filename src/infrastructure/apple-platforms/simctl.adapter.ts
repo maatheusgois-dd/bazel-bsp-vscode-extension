@@ -38,7 +38,7 @@ export async function getSimulators(): Promise<SimulatorsOutput> {
     }
 
     return parsed;
-  } catch (error) {
+  } catch (_error) {
     // If JSON parsing fails, try text format
     return await getSimulatorsFromTextFormat();
   }

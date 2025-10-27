@@ -6,11 +6,11 @@
  */
 
 import * as path from "node:path";
-import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
-import { exec } from "../../../shared/utils/exec.js";
-import { commonLogger } from "../../../shared/logger/logger.js";
 import type { DeviceDestination } from "../../../domain/entities/destination/device-types.js";
 import type { SimulatorDestination } from "../../../domain/entities/destination/simulator-types.js";
+import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
+import { commonLogger } from "../../../shared/logger/logger.js";
+import { exec } from "../../../shared/utils/exec.js";
 import { getSimulatorByUdid } from "../../../shared/utils/simulator-utils.js";
 
 export interface BazelLaunchOptions {
@@ -90,7 +90,7 @@ export async function launchBazelAppOnSimulator(
       command: "xcrun",
       args: ["simctl", "terminate", simulator.udid, bundleId],
     });
-  } catch (error) {
+  } catch (_error) {
     // App might not be running, ignore error
   }
 
@@ -139,7 +139,7 @@ export async function launchBazelAppOnSimulator(
  * Launch a Bazel-built iOS app on a physical device
  */
 export async function launchBazelAppOnDevice(
-  context: ExtensionContext,
+  _context: ExtensionContext,
   options: BazelLaunchOptions & { destination: DeviceDestination },
 ): Promise<BazelLaunchResult> {
   const { appPath, bundleId, destination, waitForDebugger, env = {}, args = [] } = options;
@@ -192,7 +192,7 @@ export async function launchBazelAppOnDevice(
       const jsonOutput = JSON.parse(jsonMatch[0]);
       pid = jsonOutput.result?.process?.processIdentifier;
     }
-  } catch (error) {
+  } catch (_error) {
     // Fallback: try to parse PID from plain output
     const pidMatch = output.match(/processIdentifier[:\s]+(\d+)/);
     if (pidMatch) {
@@ -258,7 +258,7 @@ export async function getBundleIdentifier(appPath: string): Promise<string> {
       command: "test",
       args: ["-d", appPath],
     });
-  } catch (error) {
+  } catch (_error) {
     throw new Error(`App bundle does not exist: ${appPath}`);
   }
 
@@ -268,7 +268,7 @@ export async function getBundleIdentifier(appPath: string): Promise<string> {
       command: "test",
       args: ["-f", plistPath],
     });
-  } catch (error) {
+  } catch (_error) {
     // List contents of app bundle for debugging
     try {
       const contents = await exec({
@@ -367,7 +367,7 @@ export async function startDebugServer(options: {
       args: ["-p", pid.toString()],
     });
     commonLogger.log("Target process is running", { pid });
-  } catch (error) {
+  } catch (_error) {
     throw new Error(`Target process ${pid} is not running. App may have crashed or exited.`);
   }
 

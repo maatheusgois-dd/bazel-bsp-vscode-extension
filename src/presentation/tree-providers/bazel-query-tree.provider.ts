@@ -1,14 +1,13 @@
 import * as vscode from "vscode";
-import type { BazelQueryResult, BazelTreeNode, BazelTargetCategory } from "../../domain/entities/bazel/types.js";
+import type { BazelQueryResult } from "../../domain/entities/bazel/types.js";
 import { BazelParser } from "../../infrastructure/bazel/bazel-parser.js";
 import { commonLogger } from "../../shared/logger/logger.js";
 import { getWorkspacePath } from "../../shared/utils/bazel-utils.js";
 import {
   BazelQueryCategoryItem, // Keep for backward compatibility
   BazelQueryFolderItem,
-  BazelQueryRootItem,
-  BazelQueryTargetItem,
   BazelQueryRecentsSectionItem,
+  BazelQueryTargetItem,
 } from "./items/bazel-query-tree-item.js";
 
 /**
@@ -16,7 +15,7 @@ import {
  * Supports lazy loading at the last folder level before targets
  */
 export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
-  private _onDidChangeTreeData = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
+  private _onDidChangeTreeData = new vscode.EventEmitter<vscode.TreeItem | undefined | null | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
   private queryResult: BazelQueryResult | null = null;
@@ -24,11 +23,11 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
   private loadError: string | null = null;
   private workspaceRoot: string;
   private buildManager: any;
-  
+
   // Recent targets storage (last 3 selected)
   private recentTargets: Array<{
     name: string;
-    type: 'runnable' | 'test' | 'buildable';
+    type: "runnable" | "test" | "buildable";
     buildLabel: string;
     pathParts: string[];
   }> = [];
@@ -37,54 +36,54 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
   constructor(buildManager?: any) {
     this.workspaceRoot = getWorkspacePath();
     this.buildManager = buildManager;
-    
+
     // Listen to selection changes to update highlighting and recents
     if (this.buildManager) {
       this.buildManager.on("selectedBazelTargetUpdated", () => {
         this.updateRecentTargets();
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
       });
     }
-    
+
     // Load targets on initialization (will load recents after query completes)
     void this.loadTargets();
   }
-  
+
   /**
    * Load recent targets from cache
    * Must be called after queryResult is available to validate targets still exist
    */
   private loadRecentTargetsFromCache(): void {
     commonLogger.log("loadRecentTargetsFromCache called");
-    
+
     try {
       commonLogger.log("Checking buildManager context", {
         hasBuildManager: !!this.buildManager,
         hasContext: !!this.buildManager?._context,
       });
-      
+
       if (!this.buildManager?._context) {
         commonLogger.log("No context available for loading recent targets");
         return;
       }
-      
+
       const cached = this.buildManager._context.getWorkspaceState("bazelQuery.recentTargets");
       commonLogger.log("Retrieved cached data", {
         hasCached: !!cached,
         isArray: Array.isArray(cached),
         cached: cached,
       });
-      
+
       if (!cached || !Array.isArray(cached)) {
         commonLogger.log("No cached recent targets found or invalid format");
         return;
       }
-      
+
       if (!this.queryResult) {
         commonLogger.log("Query result not available yet, skipping recent targets load");
         return;
       }
-      
+
       // Validate that cached targets still exist in the query result
       const validRecents = [];
       for (const recent of cached) {
@@ -92,19 +91,19 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
           commonLogger.debug("Skipping invalid recent target", { recent });
           continue;
         }
-        
+
         const targets = BazelParser.getTargetsAtPath(this.queryResult.tree, recent.pathParts);
         if (!targets) {
           commonLogger.debug("Target path no longer exists", { pathParts: recent.pathParts });
           continue;
         }
-        
+
         // Check if target still exists in the appropriate category
-        const targetExists = 
-          (recent.type === 'runnable' && targets.runnable.includes(recent.name)) ||
-          (recent.type === 'test' && targets.test.includes(recent.name)) ||
-          (recent.type === 'buildable' && targets.buildable.includes(recent.name));
-        
+        const targetExists =
+          (recent.type === "runnable" && targets.runnable.includes(recent.name)) ||
+          (recent.type === "test" && targets.test.includes(recent.name)) ||
+          (recent.type === "buildable" && targets.buildable.includes(recent.name));
+
         if (targetExists) {
           validRecents.push(recent);
           commonLogger.debug("Valid recent target", { name: recent.name, type: recent.type });
@@ -112,18 +111,18 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
           commonLogger.debug("Target no longer exists in tree", { name: recent.name });
         }
       }
-      
+
       this.recentTargets = validRecents.slice(0, this.MAX_RECENT_TARGETS);
-      commonLogger.log("✅ Loaded recent targets from cache", { 
+      commonLogger.log("✅ Loaded recent targets from cache", {
         cached: cached.length,
         valid: this.recentTargets.length,
-        targets: this.recentTargets.map(t => t.name),
+        targets: this.recentTargets.map((t) => t.name),
       });
     } catch (error) {
       commonLogger.error("Failed to load recent targets from cache", { error });
     }
   }
-  
+
   /**
    * Save recent targets to cache
    */
@@ -133,14 +132,14 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
         commonLogger.debug("No context available for saving recent targets");
         return;
       }
-      
+
       this.buildManager._context.updateWorkspaceState("bazelQuery.recentTargets", this.recentTargets);
       commonLogger.log("💾 Saved recent targets to cache", { count: this.recentTargets.length });
     } catch (error) {
       commonLogger.error("Failed to save recent targets to cache", { error });
     }
   }
-  
+
   /**
    * Update recent targets list when a target is selected
    */
@@ -149,40 +148,38 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
     if (!selectedTarget?.buildLabel || !this.queryResult) {
       return;
     }
-    
+
     // Parse the build label: //Apps/Consumer/ConsumerApp:Caviar
     const match = selectedTarget.buildLabel.match(/^\/\/(.+):(.+)$/);
     if (!match) {
       return;
     }
-    
+
     const [, pathStr, targetName] = match;
-    const pathParts = pathStr.split('/');
-    
+    const pathParts = pathStr.split("/");
+
     // Determine target type from the query result
     const targets = BazelParser.getTargetsAtPath(this.queryResult.tree, pathParts);
     if (!targets) {
       return;
     }
-    
-    let targetType: 'runnable' | 'test' | 'buildable' | undefined;
+
+    let targetType: "runnable" | "test" | "buildable" | undefined;
     if (targets.runnable.includes(targetName)) {
-      targetType = 'runnable';
+      targetType = "runnable";
     } else if (targets.test.includes(targetName)) {
-      targetType = 'test';
+      targetType = "test";
     } else if (targets.buildable.includes(targetName)) {
-      targetType = 'buildable';
+      targetType = "buildable";
     }
-    
+
     if (!targetType) {
       return;
     }
-    
+
     // Remove if already in list
-    this.recentTargets = this.recentTargets.filter(
-      t => t.buildLabel !== selectedTarget.buildLabel
-    );
-    
+    this.recentTargets = this.recentTargets.filter((t) => t.buildLabel !== selectedTarget.buildLabel);
+
     // Add to front
     this.recentTargets.unshift({
       name: targetName,
@@ -190,14 +187,14 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
       buildLabel: selectedTarget.buildLabel,
       pathParts: pathParts,
     });
-    
+
     // Keep only last 3
     this.recentTargets = this.recentTargets.slice(0, this.MAX_RECENT_TARGETS);
-    
+
     // Save to cache
     this.saveRecentTargetsToCache();
   }
-  
+
   /**
    * Get selected target data (for highlighting)
    */
@@ -213,7 +210,7 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
 
     this.isLoading = true;
     this.loadError = null;
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
 
     try {
       const cwd = getWorkspacePath();
@@ -221,7 +218,7 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
       commonLogger.log("Loaded bazel targets", {
         statistics: this.queryResult.statistics,
       });
-      
+
       // Load cached recent targets after query completes
       this.loadRecentTargetsFromCache();
     } catch (error) {
@@ -229,7 +226,7 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
       commonLogger.error("Failed to load bazel targets", { error });
     } finally {
       this.isLoading = false;
-      this._onDidChangeTreeData.fire();
+      this._onDidChangeTreeData.fire(undefined);
     }
   }
 
@@ -240,14 +237,14 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
     this.queryResult = null;
     void this.loadTargets();
   }
-  
+
   /**
    * Clear recent targets
    */
   clearRecents(): void {
     this.recentTargets = [];
     this.saveRecentTargetsToCache();
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
 
   /**
@@ -263,10 +260,7 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
       }
 
       if (this.loadError) {
-        const errorItem = new vscode.TreeItem(
-          `Error: ${this.loadError}`,
-          vscode.TreeItemCollapsibleState.None
-        );
+        const errorItem = new vscode.TreeItem(`Error: ${this.loadError}`, vscode.TreeItemCollapsibleState.None);
         errorItem.iconPath = new vscode.ThemeIcon("error");
         errorItem.contextValue = "bazelQueryError";
         errorItem.command = {
@@ -283,53 +277,48 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
       }
 
       const items: vscode.TreeItem[] = [];
-      
+
       // First, add Recents section if there are recent targets
       if (this.recentTargets.length > 0) {
         items.push(new BazelQueryRecentsSectionItem(this.recentTargets.length));
       }
-      
+
       // Then, add top-level folders (Apps, Packages, etc.)
       const folders = this.getChildrenAtPath([]);
       items.push(...folders);
-      
+
       return items;
     }
-    
+
     // Recents section - show recent targets
     if (element instanceof BazelQueryRecentsSectionItem) {
-      return this.recentTargets.map(recent => 
-        new BazelQueryTargetItem(
-          recent.name,
-          recent.type,
-          recent.pathParts,
-          this.workspaceRoot,
-          this
-        )
+      return this.recentTargets.map(
+        (recent) => new BazelQueryTargetItem(recent.name, recent.type, recent.pathParts, this.workspaceRoot, this),
       );
     }
 
     // Folder item - show both targets AND subfolders
     if (element instanceof BazelQueryFolderItem) {
       const items: vscode.TreeItem[] = [];
-      
+
       // First, if this folder has direct targets, add them at the top
       if (element.hasTargets) {
         const targetItems = this.loadTargetsForFolder(element.pathParts);
         items.push(...targetItems);
       }
-      
+
       // Then, add child folders after targets
       const childFolders = this.getChildrenAtPath(element.pathParts);
       items.push(...childFolders);
-      
+
       return items;
     }
 
     // Category item - show targets (deprecated, keeping for backward compatibility)
     if (element instanceof BazelQueryCategoryItem) {
       return element.targets.map(
-        (targetName) => new BazelQueryTargetItem(targetName, element.category, element.pathParts, this.workspaceRoot, this)
+        (targetName) =>
+          new BazelQueryTargetItem(targetName, element.category, element.pathParts, this.workspaceRoot, this),
       );
     }
 
@@ -343,11 +332,11 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
     if (!this.queryResult) return [];
 
     const children = BazelParser.getChildrenAtPath(this.queryResult.tree, pathParts);
-    
+
     return children.map((childName) => {
       const childPath = [...pathParts, childName];
-      const hasTargets = BazelParser.hasTargetsAtPath(this.queryResult!.tree, childPath);
-      
+      const hasTargets = this.queryResult ? BazelParser.hasTargetsAtPath(this.queryResult.tree, childPath) : false;
+
       return new BazelQueryFolderItem(childName, childPath, hasTargets);
     });
   }
@@ -400,4 +389,3 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
     return this.queryResult;
   }
 }
-

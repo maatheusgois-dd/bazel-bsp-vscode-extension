@@ -1,6 +1,6 @@
-import { selectDestinationForBuild } from "../../../shared/utils/bazel-utils.js";
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
 import type { DestinationTreeItem } from "../../../presentation/tree-providers/destination-tree.provider.js";
+import { selectDestinationForBuild } from "../../../shared/utils/bazel-utils.js";
 
 export async function selectDestinationForBuildCommand(context: ExtensionContext, item?: DestinationTreeItem) {
   if (item) {

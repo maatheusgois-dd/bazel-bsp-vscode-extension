@@ -1,6 +1,10 @@
+import type {
+  SimulatorDestination,
+  SimulatorOS,
+  SimulatorType,
+} from "../../domain/entities/destination/simulator-types.js";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
 import { ExtensionError } from "../errors/errors.js";
-import type { SimulatorDestination, SimulatorOS, SimulatorType } from "../../domain/entities/destination/simulator-types.js";
 
 export async function getSimulatorByUdid(
   context: ExtensionContext,

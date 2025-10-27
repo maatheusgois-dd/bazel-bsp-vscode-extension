@@ -283,11 +283,6 @@
           "visibility": "visible"
         },
         {
-          "id": "swiftbazel.view.workspaces",
-          "name": "BUILDS (Legacy)",
-          "visibility": "collapsed"
-        },
-        {
           "id": "swiftbazel.destinations.view",
           "name": "DESTINATIONS",
           "visibility": "collapsed"
@@ -300,11 +295,6 @@
       ]
     },
     "viewsWelcome": [
-      {
-        "view": "swiftbazel.view.workspaces",
-        "contents": "No Bazel projects found in the current project.\n[Learn More](command:swiftbazel.tools.documentation)",
-        "when": "swiftbazel.workspaces.noWorkspaces"
-      },
       {
         "view": "swiftbazel.build.view",
         "contents": "No Bazel targets found. Select the Bazel project to use swiftbazel.\n[Select Project](command:swiftbazel.build.selectBazelWorkspace)\nAlso you can run diagnose to try to detect the root of the problem\n[Run diagnose](command:swiftbazel.build.diagnoseSetup)",
@@ -455,25 +445,9 @@
         "description": "Clear recent targets list"
       },
       {
-        "command": "swiftbazel.build.clearCache",
-        "title": "swiftbazel: Clear Workspace Cache",
-        "icon": "$(refresh)",
-        "description": "Clear persistent workspace cache and reload"
-      },
-      {
         "command": "swiftbazel.build.refreshView",
         "title": "swiftbazel: Refresh view",
         "icon": "$(swiftbazel-refresh)"
-      },
-      {
-        "command": "swiftbazel.build.search",
-        "title": "Search Builds",
-        "icon": "$(search)"
-      },
-      {
-        "command": "swiftbazel.build.clearSearch",
-        "title": "Clear Search (Active)",
-        "icon": "$(search-stop)"
       },
       {
         "command": "swiftbazel.simulators.refresh",
@@ -596,21 +570,6 @@
           "command": "swiftbazel.tools.refresh",
           "when": "view == swiftbazel.tools.view",
           "group": "navigation"
-        },
-        {
-          "command": "swiftbazel.build.search",
-          "when": "view == swiftbazel.view.workspaces && !swiftbazel.builds.searchActive",
-          "group": "navigation@1"
-        },
-        {
-          "command": "swiftbazel.build.clearSearch",
-          "when": "view == swiftbazel.view.workspaces && swiftbazel.builds.searchActive",
-          "group": "navigation@1"
-        },
-        {
-          "command": "swiftbazel.build.clearCache",
-          "when": "view == swiftbazel.view.workspaces",
-          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -673,16 +632,6 @@
           "command": "swiftbazel.tools.install",
           "when": "view == swiftbazel.tools.view && viewItem == notInstalled",
           "group": "inline@2"
-        },
-        {
-          "command": "swiftbazel.build.selectXcodeWorkspace",
-          "when": "view == swiftbazel.view.workspaces && viewItem == workspace-group",
-          "group": "inline@1"
-        },
-        {
-          "command": "swiftbazel.build.clearSearch",
-          "when": "view == swiftbazel.view.workspaces && viewItem == search-status",
-          "group": "inline@1"
         },
         {
           "command": "swiftbazel.build.launch",

@@ -1,7 +1,4 @@
 import events from "node:events";
-import { type SimulatorOutput, getSimulators } from "../../infrastructure/apple-platforms/simctl.adapter.js";
-import { commonLogger } from "../../shared/logger/logger.js";
-import { assertUnreachable } from "../../shared/types/common.types.js";
 import {
   type SimulatorDestination,
   iOSSimulatorDestination,
@@ -9,6 +6,9 @@ import {
   visionOSSimulatorDestination,
   watchOSSimulatorDestination,
 } from "../../domain/entities/destination/simulator-types.js";
+import { type SimulatorOutput, getSimulators } from "../../infrastructure/apple-platforms/simctl.adapter.js";
+import { commonLogger } from "../../shared/logger/logger.js";
+import { assertUnreachable } from "../../shared/types/common.types.js";
 import { parseDeviceTypeIdentifier, parseSimulatorRuntime } from "../../shared/utils/simulator-utils.js";
 
 type IEventMap = {

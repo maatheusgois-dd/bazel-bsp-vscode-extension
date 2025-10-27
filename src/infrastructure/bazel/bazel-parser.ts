@@ -1,17 +1,20 @@
-import type { BazelQueryTarget, BazelQueryResult, BazelTargetCategory, BazelTreeNode } from "../../domain/entities/bazel/types.js";
-import { exec } from "../../shared/utils/exec.js";
+import type {
+  BazelQueryResult,
+  BazelQueryTarget,
+  BazelTargetCategory,
+  BazelTreeNode,
+} from "../../domain/entities/bazel/types.js";
 import { commonLogger } from "../../shared/logger/logger.js";
+import { exec } from "../../shared/utils/exec.js";
 
 /**
  * Bazel Target Parser
- * 
+ *
  * Uses `bazel query` to identify:
  * - Runnable targets (applications, extensions, app clips)
  * - Test targets (unit tests, swift tests)
  * - Buildable targets (libraries)
  */
-
-type TargetType = 'runnable' | 'test' | 'buildable';
 
 interface TargetTypeConfig {
   readonly RUNNABLE: readonly string[];
@@ -21,27 +24,21 @@ interface TargetTypeConfig {
 }
 
 const TARGET_TYPES: TargetTypeConfig = {
-  RUNNABLE: [
-    'ios_application',
-    'ios_extension',
-    'ios_app_clip',
-    'macos_application',
-    'xcodeproj_runner',
-  ] as const,
+  RUNNABLE: ["ios_application", "ios_extension", "ios_app_clip", "macos_application", "xcodeproj_runner"] as const,
   TEST: [
-    'ios_unit_test',
-    'swift_test',
+    "ios_unit_test",
+    "swift_test",
     // Note: '_ios_internal_unit_test_bundle' excluded as it's a duplicate of ios_unit_test
   ] as const,
   BUILDABLE: [
-    'swift_library',
-    'objc_library',
-    'swift_library_group',
+    "swift_library",
+    "objc_library",
+    "swift_library_group",
     // Note: 'ios_framework' excluded - they're build products of swift_library
   ] as const,
   IGNORE: [
-    '_ios_internal_unit_test_bundle',  // Internal implementation detail, duplicate of ios_unit_test
-    'ios_framework',  // Build products of swift_library, causes duplicates
+    "_ios_internal_unit_test_bundle", // Internal implementation detail, duplicate of ios_unit_test
+    "ios_framework", // Build products of swift_library, causes duplicates
   ] as const,
 } as const;
 
@@ -50,16 +47,19 @@ export class BazelParser {
    * Run bazel query and parse all targets
    */
   static async queryAllTargets(cwd?: string): Promise<BazelQueryResult> {
-    commonLogger.log('Running bazel query //... to discover targets');
+    commonLogger.log("Running bazel query //... to discover targets");
 
     try {
       const output = await exec({
-        command: 'bazel',
-        args: ['query', '//...', '--output=label_kind'],
+        command: "bazel",
+        args: ["query", "//...", "--output=label_kind"],
         cwd,
       });
 
-      const lines = output.trim().split('\n').filter(line => line.trim());
+      const lines = output
+        .trim()
+        .split("\n")
+        .filter((line) => line.trim());
       commonLogger.log(`Parsed ${lines.length} targets from bazel query`);
 
       const targets = BazelParser.parseTargets(lines);
@@ -76,7 +76,7 @@ export class BazelParser {
         tree,
       };
     } catch (error) {
-      commonLogger.error('Error running bazel query', { error });
+      commonLogger.error("Error running bazel query", { error });
       throw new Error(`Failed to run bazel query: ${error}`);
     }
   }
@@ -110,7 +110,7 @@ export class BazelParser {
       }
 
       // Skip xcodeproj targets (project generation, not actual apps)
-      if (targetName.includes('xcodeproj')) {
+      if (targetName.includes("xcodeproj")) {
         continue;
       }
 
@@ -139,7 +139,12 @@ export class BazelParser {
     const tree: BazelTreeNode = {};
 
     // Helper function to set value in nested object
-    const setNestedValue = (obj: BazelTreeNode, pathParts: string[], leaf: string, category: keyof BazelTargetCategory) => {
+    const setNestedValue = (
+      obj: BazelTreeNode,
+      pathParts: string[],
+      leaf: string,
+      category: keyof BazelTargetCategory,
+    ) => {
       let current: any = obj;
 
       // Navigate/create the path
@@ -172,15 +177,15 @@ export class BazelParser {
         }
 
         const [, path, leaf] = match;
-        const pathParts = path.split('/');
+        const pathParts = path.split("/");
 
         setNestedValue(tree, pathParts, leaf, category);
       }
     };
 
-    processTargets(targets.runnable, 'runnable');
-    processTargets(targets.test, 'test');
-    processTargets(targets.buildable, 'buildable');
+    processTargets(targets.runnable, "runnable");
+    processTargets(targets.test, "test");
+    processTargets(targets.buildable, "buildable");
 
     commonLogger.log("Built tree structure", {
       sampleKeys: Object.keys(tree).slice(0, 10),
@@ -235,12 +240,10 @@ export class BazelParser {
     }
 
     // Return all keys that aren't target category keys
-    const keys = Object.keys(current).filter(
-      key => key !== 'runnable' && key !== 'test' && key !== 'buildable'
-    );
+    const keys = Object.keys(current).filter((key) => key !== "runnable" && key !== "test" && key !== "buildable");
 
     commonLogger.log("Got children at path", {
-      path: pathParts.join('/'),
+      path: pathParts.join("/"),
       children: keys,
       hasTargets: BazelParser.hasTargetsAtPath(tree, pathParts),
     });

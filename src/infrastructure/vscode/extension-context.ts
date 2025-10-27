@@ -5,9 +5,9 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import type { BuildManager } from "../../application/services/build-manager.service";
 import type { DestinationsManager } from "../../application/services/destination-manager.service";
+import type { ToolsManager } from "../../application/services/tools-manager.service";
 import type { DestinationType, SelectedDestination } from "../../domain/entities/destination/types.js";
 import type { ProgressStatusBar } from "../../presentation/status-bars/progress-status-bar";
-import type { ToolsManager } from "../../application/services/tools-manager.service";
 import { type ErrorMessageAction, ExtensionError, TaskError } from "../../shared/errors/errors.js";
 import { commonLogger } from "../../shared/logger/logger.js";
 import { QuickPickCancelledError } from "../../shared/utils/quick-pick.js";
@@ -74,7 +74,7 @@ type WorkspaceTypes = {
   "bazel.selectedTarget": string;
   "bazelQuery.recentTargets": Array<{
     name: string;
-    type: 'runnable' | 'test' | 'buildable';
+    type: "runnable" | "test" | "buildable";
     buildLabel: string;
     pathParts: string[];
   }>;

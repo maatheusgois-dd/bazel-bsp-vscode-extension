@@ -2,10 +2,10 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { prepareStoragePath } from "../utils/bazel-utils.js";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
-import { exec } from "../utils/exec.js";
 import { commonLogger } from "../logger/logger.js";
+import { prepareStoragePath } from "../utils/bazel-utils.js";
+import { exec } from "../utils/exec.js";
 
 export type ScreenshotToolExtra = {
   extensionContext: ExtensionContext;

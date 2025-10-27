@@ -1,6 +1,6 @@
 import os from "node:os";
-import type { DestinationPlatform } from "../constants/destination-constants.js";
 import type { Destination } from "../../domain/entities/destination/types.js";
+import type { DestinationPlatform } from "../constants/destination-constants.js";
 
 export function getMacOSArchitecture(): "arm64" | "x86_64" | null {
   const architecture = os.arch();

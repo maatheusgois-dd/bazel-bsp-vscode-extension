@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { assertUnreachable, checkUnreachable } from "../../shared/types/common.types.js";
+import type { DestinationsManager } from "../../application/services/destination-manager.service.js";
 import type {
   iOSDeviceDestination,
   tvOSDeviceDestination,
@@ -12,8 +12,13 @@ import type {
   visionOSSimulatorDestination,
   watchOSSimulatorDestination,
 } from "../../domain/entities/destination/simulator-types.js";
-import type { DestinationsManager } from "../../application/services/destination-manager.service.js";
-import type { Destination, DestinationType, SelectedDestination, macOSDestination } from "../../domain/entities/destination/types.js";
+import type {
+  Destination,
+  DestinationType,
+  SelectedDestination,
+  macOSDestination,
+} from "../../domain/entities/destination/types.js";
+import { assertUnreachable, checkUnreachable } from "../../shared/types/common.types.js";
 
 function addSelectedMarks(options: {
   description: string;

@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { promises as fs, type Dirent, type Stats, constants as fsConstants } from "node:fs";
 import * as path from "node:path";
-import { getWorkspacePath, prepareStoragePath } from "../utils/bazel-utils.js";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
+import { getWorkspacePath, prepareStoragePath } from "../utils/bazel-utils.js";
 
 /**
  * Find files or directories in a given directory
@@ -29,7 +29,7 @@ export async function findFiles(options: {
     }
 
     return matchedFiles;
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -98,7 +98,7 @@ export async function findFilesRecursive(options: {
     }
 
     return matchedFiles;
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }

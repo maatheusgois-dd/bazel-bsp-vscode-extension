@@ -20,16 +20,16 @@ const ATTACH_CONFIG: vscode.DebugConfiguration = {
 
 class InitialDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
   async provideDebugConfigurations(
-    folder: vscode.WorkspaceFolder | undefined,
-    token?: vscode.CancellationToken | undefined,
+    _folder: vscode.WorkspaceFolder | undefined,
+    _token?: vscode.CancellationToken | undefined,
   ): Promise<vscode.DebugConfiguration[]> {
     return [ATTACH_CONFIG];
   }
 
   async resolveDebugConfiguration(
-    folder: vscode.WorkspaceFolder | undefined,
+    _folder: vscode.WorkspaceFolder | undefined,
     config: vscode.DebugConfiguration,
-    token?: vscode.CancellationToken | undefined,
+    _token?: vscode.CancellationToken | undefined,
   ): Promise<vscode.DebugConfiguration | undefined> {
     if (Object.keys(config).length === 0) {
       return ATTACH_CONFIG;
@@ -45,16 +45,16 @@ class DynamicDebugConfigurationProvider implements vscode.DebugConfigurationProv
   }
 
   async provideDebugConfigurations(
-    folder: vscode.WorkspaceFolder | undefined,
-    token?: vscode.CancellationToken | undefined,
+    _folder: vscode.WorkspaceFolder | undefined,
+    _token?: vscode.CancellationToken | undefined,
   ): Promise<vscode.DebugConfiguration[]> {
     return [ATTACH_CONFIG];
   }
 
   async resolveDebugConfiguration(
-    folder: vscode.WorkspaceFolder | undefined,
+    _folder: vscode.WorkspaceFolder | undefined,
     config: vscode.DebugConfiguration,
-    token?: vscode.CancellationToken | undefined,
+    _token?: vscode.CancellationToken | undefined,
   ): Promise<vscode.DebugConfiguration | undefined> {
     if (Object.keys(config).length === 0) {
       return ATTACH_CONFIG;
@@ -255,9 +255,9 @@ class DynamicDebugConfigurationProvider implements vscode.DebugConfigurationProv
    * runs before "preLaunchTask" so it's not suitable for our use case without some hacks.
    */
   async resolveDebugConfigurationWithSubstitutedVariables(
-    folder: vscode.WorkspaceFolder | undefined,
+    _folder: vscode.WorkspaceFolder | undefined,
     config: vscode.DebugConfiguration,
-    token?: vscode.CancellationToken | undefined,
+    _token?: vscode.CancellationToken | undefined,
   ): Promise<vscode.DebugConfiguration> {
     const launchContext = this.context.getWorkspaceState("build.lastLaunchedApp");
     if (!launchContext) {

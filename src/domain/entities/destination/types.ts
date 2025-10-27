@@ -1,3 +1,4 @@
+import type { DestinationPlatform } from "../../../shared/constants/destination-constants.js";
 import type {
   iOSDeviceDestination,
   tvOSDeviceDestination,
@@ -10,7 +11,6 @@ import type {
   visionOSSimulatorDestination,
   watchOSSimulatorDestination,
 } from "./simulator-types.js";
-import type { DestinationPlatform } from "../../../shared/constants/destination-constants.js";
 
 // Sometimes it can be called as "platform" or "DestinationPlatform"
 export type DestinationType =

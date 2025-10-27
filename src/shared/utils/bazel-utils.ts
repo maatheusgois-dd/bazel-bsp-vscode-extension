@@ -2,16 +2,15 @@ import path from "node:path";
 import * as vscode from "vscode";
 import { type QuickPickItem, showQuickPick } from "../utils/quick-pick.js";
 
-import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
-import { getWorkspaceConfig } from "../utils/config.js";
-import { ExtensionError } from "../errors/errors.js";
-import { createDirectory, findFilesRecursive, isFileExists, removeDirectory } from "../utils/files.js";
-import { commonLogger } from "../logger/logger.js";
-import { cacheManager } from "../utils/cache-manager.js";
-import type { DestinationPlatform } from "../constants/destination-constants";
-import type { Destination } from "../../domain/entities/destination/types.js";
-import { splitSupportedDestinatinos } from "../utils/destination-utils.js";
 import type { SimulatorDestination } from "../../domain/entities/destination/simulator-types.js";
+import type { Destination } from "../../domain/entities/destination/types.js";
+import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
+import type { DestinationPlatform } from "../constants/destination-constants";
+import { ExtensionError } from "../errors/errors.js";
+import { commonLogger } from "../logger/logger.js";
+import { getWorkspaceConfig } from "../utils/config.js";
+import { splitSupportedDestinatinos } from "../utils/destination-utils.js";
+import { createDirectory, findFilesRecursive, removeDirectory } from "../utils/files.js";
 
 export type SelectedDestination = {
   type: "simulator" | "device";
@@ -173,8 +172,8 @@ export async function getDestinationById(
  */
 /** @deprecated Bazel uses targets, not schemes */
 export async function askSchemeForBuild(
-  context: ExtensionContext,
-  options: {
+  _context: ExtensionContext,
+  _options: {
     title?: string;
     xcworkspace: string;
     ignoreCache?: boolean;
@@ -338,7 +337,7 @@ export async function selectBazelWorkspace(options: { autoselect: boolean }): Pr
   // One file, use it and save it to the cache
   if (paths.length === 1 && options.autoselect) {
     const path = paths[0];
-    commonLogger.log(`Bazel project was detected`, {
+    commonLogger.log("Bazel project was detected", {
       workspace: workspacePath,
       path: path,
     });
@@ -401,7 +400,7 @@ export function findBazelWorkspaceRoot(startPath: string): string {
         if (fs.existsSync(workspaceFilePath)) {
           return currentPath;
         }
-      } catch (error) {
+      } catch (_error) {
         // Ignore permission errors and continue
       }
     }
@@ -414,8 +413,7 @@ export function findBazelWorkspaceRoot(startPath: string): string {
   return path.dirname(startPath);
 }
 
-// Import new comprehensive Bazel parser
-import { BazelBuildFileParser, type BazelTarget as NewBazelTarget } from "../../infrastructure/bazel/bazel-build-file-parser.js";
+// Legacy Bazel BUILD file parsing removed - use bazel query instead
 
 // Legacy compatibility types - keeping for backwards compatibility
 export interface BazelTarget {
@@ -424,6 +422,8 @@ export interface BazelTarget {
   buildLabel: string;
   testLabel?: string;
   deps: string[];
+  path?: string;
+  resources?: string[];
 }
 
 export interface BazelPackage {
@@ -436,154 +436,19 @@ export interface BazelPackage {
  * Parse a BUILD.bazel file using the new comprehensive Bazel parser
  * (Maintains backwards compatibility with legacy interface)
  */
-export async function parseBazelBuildFile(buildFilePath: string): Promise<BazelPackage | null> {
-  // Validate input
-  if (!buildFilePath || typeof buildFilePath !== "string" || buildFilePath.length === 0) {
-    return null;
-  }
-
-  // Check for suspicious path patterns
-  if (buildFilePath.startsWith("@") || buildFilePath.includes("undefined") || buildFilePath.includes("null")) {
-    return null;
-  }
-
-  try {
-    const fs = await import("node:fs/promises");
-
-    // Check if file exists first
-    try {
-      await fs.access(buildFilePath);
-    } catch (accessError) {
-      return null;
-    }
-
-    const content = await fs.readFile(buildFilePath, "utf-8");
-
-    // Use the legacy BUILD file parser
-    const parseResult = BazelBuildFileParser.parse(content, buildFilePath);
-
-    // Convert to legacy format for backwards compatibility
-    const packagePath = path.dirname(buildFilePath);
-    const packageName = path.basename(packagePath);
-
-    // Combine both regular targets and test targets into legacy format
-    const allNewTargets = [...parseResult.targets, ...parseResult.targetsTest];
-
-    // Convert new format to legacy format
-    const legacyTargets: BazelTarget[] = allNewTargets.map((newTarget: NewBazelTarget) => ({
-      name: newTarget.name,
-      type: newTarget.type,
-      buildLabel: newTarget.buildLabel,
-      testLabel: newTarget.testLabel,
-      deps: newTarget.deps,
-    }));
-
-    return {
-      name: packageName,
-      path: packagePath,
-      targets: legacyTargets,
-    };
-  } catch (error) {
-    commonLogger.warn("Failed to parse BUILD.bazel file", {
-      buildFilePath,
-      error,
-    });
-    return null;
-  }
+export async function parseBazelBuildFile(_buildFilePath: string): Promise<BazelPackage | null> {
+  // Deprecated: BUILD file parsing removed, use BazelParser.queryAllTargets() instead
+  return null;
 }
 
 /**
  * Get all Bazel packages and their targets from the workspace
- * Now uses the new comprehensive parser with super cache integration
+ * @deprecated Use BazelParser.queryAllTargets() instead for query-based approach
  */
 export async function getBazelPackages(
-  targetWorkspace?: string,
-  options?: { refresh?: boolean },
+  _targetWorkspace?: string,
+  _options?: { refresh?: boolean },
 ): Promise<BazelPackage[]> {
-  // Use provided workspace or fall back to current workspace
-  const workspace = targetWorkspace || getWorkspacePath();
-
-  // Check super cache first (unless refresh is forced)
-  if (!options?.refresh) {
-    const cachedPackages = cacheManager.getBazelPackages(workspace);
-    if (cachedPackages.length > 0) {
-      console.log(`📦 Using cached Bazel packages for ${workspace}: ${cachedPackages.length} packages`);
-
-      // Convert BazelPackageInfo to BazelPackage for backwards compatibility
-      const legacyPackages: BazelPackage[] = cachedPackages.map((pkg) => ({
-        name: pkg.name,
-        path: pkg.path,
-        targets: [...pkg.parseResult.targets, ...pkg.parseResult.targetsTest].map((target) => ({
-          name: target.name,
-          type: target.type,
-          buildLabel: target.buildLabel,
-          testLabel: target.testLabel,
-          deps: target.deps,
-        })),
-      }));
-
-      return legacyPackages;
-    }
-  }
-
-  // Not cached or refresh forced - scan and parse
-  console.log(`🔍 Scanning Bazel BUILD files in ${workspace}...`);
-
-  // Find all BUILD.bazel files
-  const buildFiles = await findFilesRecursive({
-    directory: workspace,
-    depth: 10, // Allow deeper search for Bazel projects
-    maxResults: 100, // Prevent performance issues
-    matcher: (file) => {
-      return file.name === "BUILD.bazel" || file.name === "BUILD";
-    },
-  });
-
-  console.log(`  - Found ${buildFiles.length} BUILD files (parsing with new comprehensive parser)`);
-
-  const packages: BazelPackage[] = [];
-  const bazelPackageInfos: any[] = []; // Using any to match BazelPackageInfo from super-cache
-
-  for (const buildFile of buildFiles) {
-    try {
-      const content = await (await import("node:fs/promises")).readFile(buildFile, "utf-8");
-      const packagePath = path.dirname(buildFile);
-
-      // Parse using legacy BUILD file parser
-      const parseResult = BazelBuildFileParser.parse(content, buildFile);
-
-      // Create BazelPackageInfo for super cache
-      const bazelPackageInfo = {
-        name: path.basename(packagePath),
-        path: packagePath,
-        parseResult,
-      };
-      bazelPackageInfos.push(bazelPackageInfo);
-
-      // Create legacy BazelPackage for backwards compatibility
-      const allTargets = [...parseResult.targets, ...parseResult.targetsTest];
-      const legacyTargets: BazelTarget[] = allTargets.map((target) => ({
-        name: target.name,
-        type: target.type,
-        buildLabel: target.buildLabel,
-        testLabel: target.testLabel,
-        deps: target.deps,
-      }));
-
-      packages.push({
-        name: path.basename(packagePath),
-        path: packagePath,
-        targets: legacyTargets,
-      });
-    } catch (error) {
-      console.error(`Failed to parse BUILD file ${buildFile}:`, error);
-    }
-  }
-
-  // Cache all packages in super cache
-  if (bazelPackageInfos.length > 0) {
-    await cacheManager.cacheBazelWorkspacePackages(workspace, bazelPackageInfos);
-  }
-
-  return packages;
+  // Deprecated: BUILD file parsing removed, use BazelParser.queryAllTargets() instead
+  return [];
 }

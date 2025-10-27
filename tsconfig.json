@@ -9,7 +9,9 @@
     "sourceMap": true,
     "rootDir": "src",
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "exclude": ["node_modules"],
   "include": ["src/**/*"]

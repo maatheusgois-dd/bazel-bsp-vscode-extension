@@ -1,4 +1,9 @@
-import type { BazelPackageInfo, BazelScheme, BazelTarget, BazelXcodeConfiguration } from "../../domain/entities/bazel/types.js";
+import type {
+  BazelPackageInfo,
+  BazelScheme,
+  BazelTarget,
+  BazelXcodeConfiguration,
+} from "../../domain/entities/bazel/types.js";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
 import { commonLogger } from "../logger/logger.js";
 

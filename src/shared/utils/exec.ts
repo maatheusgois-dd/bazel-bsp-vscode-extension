@@ -1,7 +1,7 @@
-import { getWorkspacePath } from "./bazel-utils.js";
 import { ExecBaseError, ExecError } from "../errors/errors.js";
-import { prepareEnvVars } from "./helpers.js";
 import { commonLogger } from "../logger/logger.js";
+import { getWorkspacePath } from "./bazel-utils.js";
+import { prepareEnvVars } from "./helpers.js";
 
 import { execa } from "execa";
 

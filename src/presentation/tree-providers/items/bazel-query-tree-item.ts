@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import type { BazelTargetCategory } from "../../../domain/entities/bazel/types.js";
 
 /**
  * Tree item representing the Recents section
@@ -7,7 +6,7 @@ import type { BazelTargetCategory } from "../../../domain/entities/bazel/types.j
 export class BazelQueryRecentsSectionItem extends vscode.TreeItem {
   constructor(public readonly recentCount: number) {
     super("Recents", vscode.TreeItemCollapsibleState.Expanded);
-    
+
     this.contextValue = "bazelQueryRecents";
     this.iconPath = new vscode.ThemeIcon("history");
     this.description = `${recentCount}`;
@@ -20,24 +19,22 @@ export class BazelQueryRecentsSectionItem extends vscode.TreeItem {
  */
 export class BazelQueryFolderItem extends vscode.TreeItem {
   public readonly pathParts: string[];
-  
+
   constructor(
     label: string,
     pathParts: string[],
-    public readonly hasTargets: boolean
+    public readonly hasTargets: boolean,
   ) {
     // If this folder has targets, make it collapsible (lazy loading)
     // Otherwise, make it expandable to show subfolders
-    const state = hasTargets 
-      ? vscode.TreeItemCollapsibleState.Collapsed 
-      : vscode.TreeItemCollapsibleState.Expanded;
-    
+    const state = hasTargets ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.Expanded;
+
     super(label, state);
-    
+
     this.pathParts = pathParts;
     this.contextValue = hasTargets ? "bazelQueryFolder-withTargets" : "bazelQueryFolder";
     this.iconPath = new vscode.ThemeIcon("folder");
-    this.tooltip = `/${pathParts.join('/')}`;
+    this.tooltip = `/${pathParts.join("/")}`;
   }
 }
 
@@ -47,92 +44,92 @@ export class BazelQueryFolderItem extends vscode.TreeItem {
  */
 export class BazelQueryTargetItem extends vscode.TreeItem {
   public readonly targetName: string;
-  public readonly targetType: 'runnable' | 'test' | 'buildable';
+  public readonly targetType: "runnable" | "test" | "buildable";
   public readonly fullPath: string;
-  
+
   // Make it compatible with BazelTreeItem for commands
   public readonly target: {
     name: string;
-    type: 'library' | 'test' | 'binary';
+    type: "library" | "test" | "binary";
     buildLabel: string;
     testLabel?: string;
     deps: string[];
   };
-  
+
   // Package info for commands
   public readonly package: {
     name: string;
     path: string;
     targets: any[];
   };
-  
+
   // Workspace path for commands
   public readonly workspacePath: string;
-  
+
   // Provider for selection state
   public provider?: { getSelectedBazelTargetData(): any };
-  
+
   constructor(
     targetName: string,
-    targetType: 'runnable' | 'test' | 'buildable',
+    targetType: "runnable" | "test" | "buildable",
     pathParts: string[],
     workspaceRoot: string,
-    provider?: { getSelectedBazelTargetData(): any }
+    provider?: { getSelectedBazelTargetData(): any },
   ) {
     super(targetName, vscode.TreeItemCollapsibleState.None);
-    
+
     this.targetName = targetName;
     this.targetType = targetType;
-    this.fullPath = `//${pathParts.join('/')}:${targetName}`;
+    this.fullPath = `//${pathParts.join("/")}:${targetName}`;
     this.provider = provider;
-    
+
     // Convert targetType to legacy type
-    const legacyType = targetType === 'runnable' ? 'binary' : targetType === 'test' ? 'test' : 'library';
-    
+    const legacyType = targetType === "runnable" ? "binary" : targetType === "test" ? "test" : "library";
+
     // Create target structure compatible with commands
     this.target = {
       name: targetName,
       type: legacyType,
       buildLabel: this.fullPath,
-      testLabel: targetType === 'test' ? this.fullPath : undefined,
+      testLabel: targetType === "test" ? this.fullPath : undefined,
       deps: [],
     };
-    
+
     // Create package structure - use the workspace root + path parts for the actual filesystem path
-    const relativePath = pathParts.join('/');
+    const relativePath = pathParts.join("/");
     const absolutePath = `${workspaceRoot}/${relativePath}`;
     this.package = {
-      name: pathParts[pathParts.length - 1] || 'root',
+      name: pathParts[pathParts.length - 1] || "root",
       path: absolutePath,
       targets: [],
     };
-    
+
     // Workspace path is the full BUILD file path
     this.workspacePath = `${absolutePath}/BUILD.bazel`;
 
     // Check if this target is currently selected
     const selectedTargetData = this.provider?.getSelectedBazelTargetData();
     const isSelected = selectedTargetData?.buildLabel === this.target.buildLabel;
-    
+
     // Use different color for selected vs unselected targets
-    const iconColor = isSelected 
+    const iconColor = isSelected
       ? new vscode.ThemeColor("swiftbazel.simulator.booted")
       : new vscode.ThemeColor("swiftbazel.scheme");
-    
+
     // Set icon based on target type
-    if (targetType === 'runnable') {
+    if (targetType === "runnable") {
       this.iconPath = new vscode.ThemeIcon("play", iconColor);
       this.contextValue = "bazelTarget-runnable";
-    } else if (targetType === 'test') {
+    } else if (targetType === "test") {
       this.iconPath = new vscode.ThemeIcon("beaker", iconColor);
       this.contextValue = "bazelTarget-test";
     } else {
       this.iconPath = new vscode.ThemeIcon("package", iconColor);
       this.contextValue = "bazelTarget-buildable";
     }
-    
+
     this.tooltip = `${this.fullPath}\nType: ${targetType}`;
-    
+
     // Set command to select the target when clicked
     // Pass serializable data including target and package info
     this.command = {
@@ -153,23 +150,15 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
  * Tree item representing a category section (Runnable, Tests, Buildable)
  */
 export class BazelQueryCategoryItem extends vscode.TreeItem {
-  public readonly category: 'runnable' | 'test' | 'buildable';
+  public readonly category: "runnable" | "test" | "buildable";
   public readonly targets: string[];
   public readonly pathParts: string[];
-  
-  constructor(
-    category: 'runnable' | 'test' | 'buildable',
-    targets: string[],
-    pathParts: string[]
-  ) {
-    const label = category === 'runnable' 
-      ? '▶️ Runnable' 
-      : category === 'test' 
-        ? '🧪 Tests' 
-        : '🔨 Buildable';
-    
+
+  constructor(category: "runnable" | "test" | "buildable", targets: string[], pathParts: string[]) {
+    const label = category === "runnable" ? "▶️ Runnable" : category === "test" ? "🧪 Tests" : "🔨 Buildable";
+
     super(label, vscode.TreeItemCollapsibleState.Expanded);
-    
+
     this.category = category;
     this.targets = targets;
     this.pathParts = pathParts;
@@ -188,10 +177,10 @@ export class BazelQueryRootItem extends vscode.TreeItem {
       test: number;
       buildable: number;
       total: number;
-    }
+    },
   ) {
     super("Bazel Targets", vscode.TreeItemCollapsibleState.Expanded);
-    
+
     this.contextValue = "bazelQueryRoot";
     this.iconPath = new vscode.ThemeIcon("symbol-namespace");
     this.description = `${statistics.total} targets`;
@@ -199,8 +188,7 @@ export class BazelQueryRootItem extends vscode.TreeItem {
       `Total: ${statistics.total}`,
       `Runnable: ${statistics.runnable}`,
       `Tests: ${statistics.test}`,
-      `Buildable: ${statistics.buildable}`
-    ].join('\n');
+      `Buildable: ${statistics.buildable}`,
+    ].join("\n");
   }
 }
-
