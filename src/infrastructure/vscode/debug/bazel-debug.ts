@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 import type { DeviceDestination } from "../../../domain/entities/destination/device-types.js";
 import type { SimulatorDestination } from "../../../domain/entities/destination/simulator-types.js";
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
-import type { BazelTreeItem } from "../../../presentation/tree-providers/tree.provider.js";
+import type { BazelTreeItem } from "../../../presentation/tree-providers/export.provider.js";
 import { commonLogger } from "../../../shared/logger/logger.js";
 import { exec } from "../../../shared/utils/exec.js";
 import type { TaskTerminal } from "../../../shared/utils/tasks.js";

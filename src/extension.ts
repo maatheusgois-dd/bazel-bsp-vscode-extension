@@ -44,7 +44,7 @@ import { BazelBuildTaskProvider } from "./infrastructure/vscode/task-provider.js
 import { BazelTargetStatusBar } from "./presentation/status-bars/build-status-bar.js";
 import { DestinationStatusBar } from "./presentation/status-bars/destination-status-bar.js";
 import { ProgressStatusBar } from "./presentation/status-bars/progress-status-bar.js";
-import { BazelQueryTreeProvider } from "./presentation/tree-providers/bazel-query-tree.provider.js";
+import { BazelTreeProvider } from "./presentation/tree-providers/bazel-tree.provider.js";
 import { DestinationsTreeProvider } from "./presentation/tree-providers/destination-tree.provider.js";
 import { ToolTreeProvider } from "./presentation/tree-providers/tools-tree.provider.js";
 
@@ -99,7 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const destinationsTreeProvider = new DestinationsTreeProvider({
       manager: destinationsManager,
     });
-    const bazelQueryTreeProvider = new BazelQueryTreeProvider(buildManager);
+    const bazelQueryTreeProvider = new BazelTreeProvider(buildManager);
 
     // Shortcut to push disposable to context.subscriptions
     const d = _context.disposable.bind(_context);

@@ -1,6 +1,6 @@
 import path from "node:path";
 import * as vscode from "vscode";
-import type { BazelTreeItem } from "../../../presentation/tree-providers/tree.provider.js";
+import type { BazelTreeItem } from "../../../presentation/tree-providers/export.provider.js";
 
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
 import { commonLogger } from "../../../shared/logger/logger.js";

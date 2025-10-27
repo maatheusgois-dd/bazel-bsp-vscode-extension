@@ -1,6 +1,6 @@
 import events from "node:events";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
-import type { BazelTreeItem } from "../../presentation/tree-providers/tree.provider.js";
+import type { BazelTreeItem } from "../../presentation/tree-providers/export.provider.js";
 import { commonLogger } from "../../shared/logger/logger.js";
 
 type IEventMap = {

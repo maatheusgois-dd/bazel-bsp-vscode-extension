@@ -14,7 +14,7 @@ import {
  * Tree provider for bazel query-based target discovery
  * Supports lazy loading at the last folder level before targets
  */
-export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+export class BazelTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<vscode.TreeItem | undefined | null | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
