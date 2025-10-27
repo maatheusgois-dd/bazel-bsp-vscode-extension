@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+
+// Application Layer
 import {
   bazelBuildCommand,
   bazelDebugCommand,
@@ -10,35 +12,41 @@ import {
   selectBazelTargetCommand,
   selectBazelWorkspaceCommand,
   testSelectedBazelTargetCommand,
-} from "./build/commands.js";
-import { BuildManager } from "./build/manager.js";
-import { BazelBuildTaskProvider } from "./build/provider.js";
-import { BazelTargetStatusBar } from "./build/status-bar.js";
-import { WorkspaceTreeProvider } from "./build/tree.js";
-import { ExtensionContext } from "./common/commands.js";
-import { Logger, commonLogger } from "./common/logger.js";
-import { getAppPathCommand } from "./build/debug/commands.js";
-import { registerDebugConfigurationProvider } from "./build/debug/provider.js";
-import { removeRecentDestinationCommand, selectDestinationForBuildCommand } from "./destination/commands.js";
-import { DestinationsManager } from "./destination/manager.js";
-import { DestinationStatusBar } from "./destination/status-bar.js";
-import { DestinationsTreeProvider } from "./destination/tree.js";
-import { DevicesManager } from "./destination/devices/manager.js";
-import { createMcpServer } from "./mcp/mcp_server";
-import type { McpServerInstance } from "./mcp/types";
+} from "./application/use-cases/bazel/bazel-commands.use-case.js";
+import { getAppPathCommand } from "./application/use-cases/bazel/debug-commands.use-case.js";
+import { removeRecentDestinationCommand, selectDestinationForBuildCommand } from "./application/use-cases/destination/destination-commands.use-case.js";
 import {
   openSimulatorCommand,
   removeSimulatorCacheCommand,
   startSimulatorCommand,
   stopSimulatorCommand,
   takeSimulatorScreenshotCommand,
-} from "./simulators/commands.js";
-import { SimulatorsManager } from "./simulators/manager.js";
-import { openTerminalPanel, resetswiftbazelCache } from "./system/commands.js";
-import { ProgressStatusBar } from "./system/status-bar.js";
-import { installToolCommand, openDocumentationCommand } from "./tools/commands.js";
-import { ToolsManager } from "./tools/manager.js";
-import { ToolTreeProvider } from "./tools/tree.js";
+} from "./application/use-cases/destination/simulator-commands.use-case.js";
+import { openTerminalPanel, resetswiftbazelCache } from "./application/use-cases/system/system-commands.use-case.js";
+import { installToolCommand, openDocumentationCommand } from "./application/use-cases/tools/tools-commands.use-case.js";
+import { BuildManager } from "./application/services/build-manager.service.js";
+import { DestinationsManager } from "./application/services/destination-manager.service.js";
+import { DevicesManager } from "./application/services/device-manager.service.js";
+import { SimulatorsManager } from "./application/services/simulator-manager.service.js";
+import { ToolsManager } from "./application/services/tools-manager.service.js";
+
+// Infrastructure Layer
+import { ExtensionContext } from "./infrastructure/vscode/extension-context.js";
+import { BazelBuildTaskProvider } from "./infrastructure/vscode/task-provider.js";
+import { registerDebugConfigurationProvider } from "./infrastructure/vscode/debug/debug-provider.js";
+import { createMcpServer } from "./infrastructure/mcp/mcp-server.js";
+import type { McpServerInstance } from "./infrastructure/mcp/types.js";
+
+// Presentation Layer
+import { BazelTargetStatusBar } from "./presentation/status-bars/build-status-bar.js";
+import { DestinationStatusBar } from "./presentation/status-bars/destination-status-bar.js";
+import { ProgressStatusBar } from "./presentation/status-bars/progress-status-bar.js";
+import { WorkspaceTreeProvider } from "./presentation/tree-providers/workspace-tree.provider.js";
+import { DestinationsTreeProvider } from "./presentation/tree-providers/destination-tree.provider.js";
+import { ToolTreeProvider } from "./presentation/tree-providers/tools-tree.provider.js";
+
+// Shared Layer
+import { Logger, commonLogger } from "./shared/logger/logger.js";
 
 // Keep track of the server instance
 let mcpInstance: McpServerInstance | null = null;
@@ -156,7 +164,7 @@ export async function activate(context: vscode.ExtensionContext) {
     d(
       command("swiftbazel.build.clearCache", async () => {
         await workspaceTreeProvider.clearPersistentCache();
-        const { cacheManager } = await import("./common/cache-manager.js");
+        const { cacheManager } = await import("./shared/utils/cache-manager.js");
         await cacheManager.clearCache();
         await workspaceTreeProvider.loadWorkspacesStreamingly();
         const stats = cacheManager.getCacheStats();
