@@ -51,8 +51,8 @@ export class RecentTargetsManager {
       
       // Validate that cached targets still exist in the query result
       const validRecents: RecentTarget[] = [];
-      for (const recent of cached) {
-        if (!recent.buildLabel || !recent.pathParts) {
+      for (const recent of (cached as RecentTarget[])) {
+        if (!recent.buildLabel || !recent.pathParts || !recent.name || !recent.type) {
           commonLogger.debug("Skipping invalid recent target", { recent });
           continue;
         }
@@ -70,8 +70,13 @@ export class RecentTargetsManager {
           (recent.type === 'buildable' && targets.buildable.includes(recent.name));
         
         if (targetExists) {
-          validRecents.push(recent);
-          commonLogger.debug("Valid recent target", { name: recent.name, type: recent.type });
+          validRecents.push({
+            name: recent.name,
+            type: recent.type,
+            buildLabel: recent.buildLabel,
+            pathParts: recent.pathParts,
+          });
+          commonLogger.debug("Valid recent target", { name: recent.name, targetType: recent.type });
         } else {
           commonLogger.debug("Target no longer exists in tree", { name: recent.name });
         }
