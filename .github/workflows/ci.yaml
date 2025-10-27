@@ -155,7 +155,7 @@ jobs:
           cp package.json "$VSIX_DIR/extension/"
           cp README.md "$VSIX_DIR/extension/"
           cp LICENSE.md "$VSIX_DIR/extension/"
-          cp CHANGELOG.md "$VSIX_DIR/extension/"
+          [ -f CHANGELOG.md ] && cp CHANGELOG.md "$VSIX_DIR/extension/" || echo "No CHANGELOG.md found, skipping"
           cp -r images "$VSIX_DIR/extension/"
           
           # Create [Content_Types].xml
