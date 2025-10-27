@@ -105,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const destinationsTreeProvider = new DestinationsTreeProvider({
       manager: destinationsManager,
     });
-    const bazelQueryTreeProvider = new BazelQueryTreeProvider();
+    const bazelQueryTreeProvider = new BazelQueryTreeProvider(buildManager);
 
     // Shortcut to push disposable to context.subscriptions
     const d = _context.disposable.bind(_context);

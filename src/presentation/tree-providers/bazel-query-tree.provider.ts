@@ -22,11 +22,28 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
   private isLoading = false;
   private loadError: string | null = null;
   private workspaceRoot: string;
+  private buildManager: any;
 
-  constructor() {
+  constructor(buildManager?: any) {
     this.workspaceRoot = getWorkspacePath();
+    this.buildManager = buildManager;
+    
+    // Listen to selection changes to update highlighting
+    if (this.buildManager) {
+      this.buildManager.on("selectedBazelTargetUpdated", () => {
+        this._onDidChangeTreeData.fire();
+      });
+    }
+    
     // Load targets on initialization
     void this.loadTargets();
+  }
+  
+  /**
+   * Get selected target data (for highlighting)
+   */
+  getSelectedBazelTargetData(): any {
+    return this.buildManager?.getSelectedBazelTargetData();
   }
 
   /**
@@ -118,7 +135,7 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
     // Category item - show targets (deprecated, keeping for backward compatibility)
     if (element instanceof BazelQueryCategoryItem) {
       return element.targets.map(
-        (targetName) => new BazelQueryTargetItem(targetName, element.category, element.pathParts, this.workspaceRoot)
+        (targetName) => new BazelQueryTargetItem(targetName, element.category, element.pathParts, this.workspaceRoot, this)
       );
     }
 
@@ -159,16 +176,17 @@ export class BazelQueryTreeProvider implements vscode.TreeDataProvider<vscode.Tr
 
     // Add all targets directly (no category grouping)
     // Order: runnable, test, buildable
+    // Pass this provider for selection state checking
     for (const targetName of targets.runnable) {
-      items.push(new BazelQueryTargetItem(targetName, "runnable", pathParts, this.workspaceRoot));
+      items.push(new BazelQueryTargetItem(targetName, "runnable", pathParts, this.workspaceRoot, this));
     }
 
     for (const targetName of targets.test) {
-      items.push(new BazelQueryTargetItem(targetName, "test", pathParts, this.workspaceRoot));
+      items.push(new BazelQueryTargetItem(targetName, "test", pathParts, this.workspaceRoot, this));
     }
 
     for (const targetName of targets.buildable) {
-      items.push(new BazelQueryTargetItem(targetName, "buildable", pathParts, this.workspaceRoot));
+      items.push(new BazelQueryTargetItem(targetName, "buildable", pathParts, this.workspaceRoot, this));
     }
 
     return items;

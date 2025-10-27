@@ -807,6 +807,11 @@
           "command": "swiftbazel.bazel.run",
           "when": "viewItem == bazelTarget-runnable",
           "group": "inline@2"
+        },
+        {
+          "command": "swiftbazel.bazel.debug",
+          "when": "viewItem == bazelTarget-runnable",
+          "group": "inline@3"
         }
       ]
     },

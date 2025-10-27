@@ -55,17 +55,22 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
   // Workspace path for commands
   public readonly workspacePath: string;
   
+  // Provider for selection state
+  public provider?: { getSelectedBazelTargetData(): any };
+  
   constructor(
     targetName: string,
     targetType: 'runnable' | 'test' | 'buildable',
     pathParts: string[],
-    workspaceRoot: string
+    workspaceRoot: string,
+    provider?: { getSelectedBazelTargetData(): any }
   ) {
     super(targetName, vscode.TreeItemCollapsibleState.None);
     
     this.targetName = targetName;
     this.targetType = targetType;
     this.fullPath = `//${pathParts.join('/')}:${targetName}`;
+    this.provider = provider;
     
     // Convert targetType to legacy type
     const legacyType = targetType === 'runnable' ? 'binary' : targetType === 'test' ? 'test' : 'library';
@@ -90,23 +95,43 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
     
     // Workspace path is the full BUILD file path
     this.workspacePath = `${absolutePath}/BUILD.bazel`;
+
+    // Check if this target is currently selected
+    const selectedTargetData = this.provider?.getSelectedBazelTargetData();
+    const isSelected = selectedTargetData?.buildLabel === this.target.buildLabel;
+    
+    // Use different color for selected vs unselected targets
+    const iconColor = isSelected 
+      ? new vscode.ThemeColor("swiftbazel.simulator.booted")
+      : new vscode.ThemeColor("swiftbazel.scheme");
     
     // Set icon based on target type
     if (targetType === 'runnable') {
-      this.iconPath = new vscode.ThemeIcon("play", new vscode.ThemeColor("terminal.ansiGreen"));
+      this.iconPath = new vscode.ThemeIcon("play", iconColor);
       this.contextValue = "bazelTarget-runnable";
-      this.description = "▶️";
     } else if (targetType === 'test') {
-      this.iconPath = new vscode.ThemeIcon("beaker", new vscode.ThemeColor("terminal.ansiBlue"));
+      this.iconPath = new vscode.ThemeIcon("beaker", iconColor);
       this.contextValue = "bazelTarget-test";
-      this.description = "🧪";
     } else {
-      this.iconPath = new vscode.ThemeIcon("package", new vscode.ThemeColor("terminal.ansiYellow"));
+      this.iconPath = new vscode.ThemeIcon("package", iconColor);
       this.contextValue = "bazelTarget-buildable";
-      this.description = "📦";
     }
     
     this.tooltip = `${this.fullPath}\nType: ${targetType}`;
+    
+    // Set command to select the target when clicked
+    // Pass serializable data including target and package info
+    this.command = {
+      command: "swiftbazel.bazel.selectTarget",
+      title: "Select Bazel Target",
+      arguments: [
+        {
+          target: this.target,
+          package: this.package,
+          workspacePath: this.workspacePath,
+        },
+      ],
+    };
   }
 }
 
