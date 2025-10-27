@@ -24,7 +24,7 @@ interface TargetTypeConfig {
 }
 
 const TARGET_TYPES: TargetTypeConfig = {
-  RUNNABLE: ["ios_application", "ios_extension", "ios_app_clip", "macos_application", "xcodeproj_runner"] as const,
+  RUNNABLE: ["ios_application", "ios_extension", "ios_app_clip", "macos_application"] as const,
   TEST: [
     "ios_unit_test",
     "swift_test",
@@ -39,6 +39,8 @@ const TARGET_TYPES: TargetTypeConfig = {
   IGNORE: [
     "_ios_internal_unit_test_bundle", // Internal implementation detail, duplicate of ios_unit_test
     "ios_framework", // Build products of swift_library, causes duplicates
+    "xcodeproj", // Xcode project generation, not actual runnable targets
+    "xcodeproj_runner", // Xcode project runner helper
   ] as const,
 } as const;
 
@@ -106,11 +108,6 @@ export class BazelParser {
 
       // Skip ignored target types
       if (TARGET_TYPES.IGNORE.includes(ruleType)) {
-        continue;
-      }
-
-      // Skip xcodeproj targets (project generation, not actual apps)
-      if (targetName.includes("xcodeproj")) {
         continue;
       }
 
