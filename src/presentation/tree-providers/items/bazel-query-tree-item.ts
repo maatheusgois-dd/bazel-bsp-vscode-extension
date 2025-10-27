@@ -116,6 +116,10 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
       ? new vscode.ThemeColor("swiftbazel.simulator.booted")
       : new vscode.ThemeColor("swiftbazel.scheme");
 
+    if (isSelected) {
+      this.description = "✓"
+    }
+
     // Set icon based on target type
     if (targetType === "runnable") {
       this.iconPath = new vscode.ThemeIcon("play", iconColor);
