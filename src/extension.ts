@@ -44,6 +44,7 @@ import { ProgressStatusBar } from "./presentation/status-bars/progress-status-ba
 import { WorkspaceTreeProvider } from "./presentation/tree-providers/workspace-tree.provider.js";
 import { DestinationsTreeProvider } from "./presentation/tree-providers/destination-tree.provider.js";
 import { ToolTreeProvider } from "./presentation/tree-providers/tools-tree.provider.js";
+import { BazelQueryTreeProvider } from "./presentation/tree-providers/bazel-query-tree.provider.js";
 
 // Shared Layer
 import { Logger, commonLogger } from "./shared/logger/logger.js";
@@ -104,6 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const destinationsTreeProvider = new DestinationsTreeProvider({
       manager: destinationsManager,
     });
+    const bazelQueryTreeProvider = new BazelQueryTreeProvider();
 
     // Shortcut to push disposable to context.subscriptions
     const d = _context.disposable.bind(_context);
@@ -129,6 +131,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     //d(tree("swiftbazel.build.view", workspaceTreeProvider));
     d(tree("swiftbazel.view.workspaces", workspaceTreeProvider));
+    d(tree("swiftbazel.view.bazelQuery", bazelQueryTreeProvider));
     d(command("swiftbazel.build.refreshView", async () => buildManager.refresh()));
     d(command("swiftbazel.build.selectBazelWorkspace", selectBazelWorkspaceCommand));
     d(command("swiftbazel.build.diagnoseSetup", diagnoseBuildSetupCommand));
@@ -161,6 +164,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }),
     );
     d(command("swiftbazel.build.clearSearch", async () => workspaceTreeProvider.clearSearch()));
+    d(command("swiftbazel.bazelQuery.refresh", async () => bazelQueryTreeProvider.refresh()));
     d(
       command("swiftbazel.build.clearCache", async () => {
         await workspaceTreeProvider.clearPersistentCache();

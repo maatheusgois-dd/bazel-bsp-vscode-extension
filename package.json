@@ -278,9 +278,14 @@
     "views": {
       "swiftbazel-view": [
         {
-          "id": "swiftbazel.view.workspaces",
-          "name": "BUILDS",
+          "id": "swiftbazel.view.bazelQuery",
+          "name": "BAZEL TARGETS",
           "visibility": "visible"
+        },
+        {
+          "id": "swiftbazel.view.workspaces",
+          "name": "BUILDS (Legacy)",
+          "visibility": "collapsed"
         },
         {
           "id": "swiftbazel.destinations.view",
@@ -438,6 +443,12 @@
         "description": "Run currently selected Bazel target on iOS simulator"
       },
       {
+        "command": "swiftbazel.bazelQuery.refresh",
+        "title": "swiftbazel: Refresh Bazel Targets",
+        "icon": "$(refresh)",
+        "description": "Refresh bazel query results"
+      },
+      {
         "command": "swiftbazel.build.clearCache",
         "title": "swiftbazel: Clear Workspace Cache",
         "icon": "$(refresh)",
@@ -565,6 +576,11 @@
     "menus": {
       "commandPalette": [],
       "view/title": [
+        {
+          "command": "swiftbazel.bazelQuery.refresh",
+          "when": "view == swiftbazel.view.bazelQuery",
+          "group": "navigation@1"
+        },
         {
           "command": "swiftbazel.build.removeBundleDir",
           "when": "view == swiftbazel.build.view",
@@ -776,6 +792,21 @@
           "command": "swiftbazel.bazel.debug",
           "when": "viewItem == swiftbazel.bazel.target.binary",
           "group": "context@5"
+        },
+        {
+          "command": "swiftbazel.bazel.build",
+          "when": "viewItem == bazelTarget-buildable || viewItem == bazelTarget-runnable",
+          "group": "inline@1"
+        },
+        {
+          "command": "swiftbazel.bazel.test",
+          "when": "viewItem == bazelTarget-test",
+          "group": "inline@1"
+        },
+        {
+          "command": "swiftbazel.bazel.run",
+          "when": "viewItem == bazelTarget-runnable",
+          "group": "inline@2"
         }
       ]
     },

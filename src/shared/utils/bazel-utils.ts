@@ -415,7 +415,7 @@ export function findBazelWorkspaceRoot(startPath: string): string {
 }
 
 // Import new comprehensive Bazel parser
-import { BazelParser, type BazelTarget as NewBazelTarget } from "../../infrastructure/bazel/bazel-cli.adapter.js";
+import { BazelBuildFileParser, type BazelTarget as NewBazelTarget } from "../../infrastructure/bazel/bazel-build-file-parser.js";
 
 // Legacy compatibility types - keeping for backwards compatibility
 export interface BazelTarget {
@@ -459,8 +459,8 @@ export async function parseBazelBuildFile(buildFilePath: string): Promise<BazelP
 
     const content = await fs.readFile(buildFilePath, "utf-8");
 
-    // Use the new comprehensive parser
-    const parseResult = BazelParser.parse(content, buildFilePath);
+    // Use the legacy BUILD file parser
+    const parseResult = BazelBuildFileParser.parse(content, buildFilePath);
 
     // Convert to legacy format for backwards compatibility
     const packagePath = path.dirname(buildFilePath);
@@ -549,8 +549,8 @@ export async function getBazelPackages(
       const content = await (await import("node:fs/promises")).readFile(buildFile, "utf-8");
       const packagePath = path.dirname(buildFile);
 
-      // Parse using new comprehensive parser
-      const parseResult = BazelParser.parse(content, buildFile);
+      // Parse using legacy BUILD file parser
+      const parseResult = BazelBuildFileParser.parse(content, buildFile);
 
       // Create BazelPackageInfo for super cache
       const bazelPackageInfo = {
