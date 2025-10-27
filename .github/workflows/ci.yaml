@@ -17,6 +17,10 @@ on:
           - major
 
 name: Build and Release Extension
+
+permissions:
+  contents: write
+
 jobs:
   version-bump:
     name: Bump Version and Create Tag
