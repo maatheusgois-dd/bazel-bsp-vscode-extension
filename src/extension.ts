@@ -189,7 +189,7 @@ export async function activate(context: vscode.ExtensionContext) {
         {
           name: "swiftbazelCommandRunner",
           version: context.extension.packageJSON.version,
-          port: 61337,
+          port: 61333,
         },
         _context,
       );

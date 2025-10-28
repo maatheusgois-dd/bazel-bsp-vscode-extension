@@ -82,21 +82,36 @@ const createCommandTool = (
       const logContent = fs.readFileSync(logPath, "utf-8").trim();
 
       if (logContent.length > 0) {
+        // Check the final status - look for success markers
+        const hasSuccess = logContent.includes('✅') || 
+                          logContent.toLowerCase().includes('completed successfully') ||
+                          logContent.toLowerCase().includes('launched successfully') ||
+                          logContent.includes('🎉');
+        
+        // Only flag as error if no success markers found AND has error indicators
+        const hasError = !hasSuccess && (
+          logContent.toLowerCase().includes('error:') || 
+          logContent.includes('❌') ||
+          logContent.toLowerCase().includes('failed')
+        );
+        
         return {
           content: [
             {
               type: "text",
-              text: `Command ${commandId} completed successfully.\n\nOutput:\n${logContent}`,
+              text: hasError 
+                ? `Command ${commandId} encountered an error:\n\n${logContent}`
+                : `Command ${commandId} completed successfully.\n\nOutput:\n${logContent}`,
             },
           ],
-          isError: false,
+          isError: hasError,
         };
       }
       return {
         content: [
           {
             type: "text",
-            text: `Command ${commandId} completed successfully with no output.`,
+            text: `Command ${commandId} completed with no output.`,
           },
         ],
         isError: false,
@@ -107,7 +122,7 @@ const createCommandTool = (
         content: [
           {
             type: "text",
-            text: `Command ${commandId} completed successfully but could not read output log.`,
+            text: `Command ${commandId} completed but could not read output log.`,
           },
         ],
         isError: false,
@@ -187,145 +202,46 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
     }
   });
 
-  // === BUILD COMMANDS ===
-  const buildLaunch = createCommandTool(
-    "swiftbazel.build.launch",
-    "launch_ios_app",
-    "Build and launch the iOS app",
-    extensionContext,
-  );
-  server.tool(buildLaunch.toolName, "Build and launch the iOS app", buildLaunch.schema, buildLaunch.implementation);
-
-  const buildBuild = createCommandTool(
-    "swiftbazel.build.build",
-    "build_ios_project",
-    "Build the iOS project without running",
-    extensionContext,
-  );
-  server.tool(
-    buildBuild.toolName,
-    "Build the iOS project without running",
-    buildBuild.schema,
-    buildBuild.implementation,
-  );
-
-  const buildClean = createCommandTool(
-    "swiftbazel.build.clean",
-    "clean_build_artifacts",
-    "Clean iOS build artifacts",
-    extensionContext,
-  );
-  server.tool(buildClean.toolName, "Clean iOS build artifacts", buildClean.schema, buildClean.implementation);
-
-  const buildTest = createCommandTool("swiftbazel.build.test", "run_unit_tests", "Run unit tests", extensionContext);
-  server.tool(buildTest.toolName, "Run unit tests", buildTest.schema, buildTest.implementation);
-
-  const buildSelectBazelWorkspace = createCommandTool(
-    "swiftbazel.build.selectBazelWorkspace",
-    "select_bazel_workspace",
-    "Select Bazel project file",
-    extensionContext,
-  );
-  server.tool(
-    buildSelectBazelWorkspace.toolName,
-    "Select Bazel project file",
-    buildSelectBazelWorkspace.schema,
-    buildSelectBazelWorkspace.implementation,
-  );
-
-  const buildSetDefaultScheme = createCommandTool(
-    "swiftbazel.build.setDefaultScheme",
-    "set_build_scheme",
-    "Set default build scheme",
-    extensionContext,
-  );
-  server.tool(
-    buildSetDefaultScheme.toolName,
-    "Set default build scheme",
-    buildSetDefaultScheme.schema,
-    buildSetDefaultScheme.implementation,
-  );
-
-  const buildSelectConfiguration = createCommandTool(
-    "swiftbazel.build.selectConfiguration",
-    "select_build_configuration",
-    "Select build configuration (Debug/Release)",
-    extensionContext,
-  );
-  server.tool(
-    buildSelectConfiguration.toolName,
-    "Select build configuration (Debug/Release)",
-    buildSelectConfiguration.schema,
-    buildSelectConfiguration.implementation,
-  );
-
-  const buildDiagnoseSetup = createCommandTool(
-    "swiftbazel.build.diagnoseSetup",
-    "diagnose_build_issues",
-    "Diagnose iOS build setup issues",
-    extensionContext,
-  );
-  server.tool(
-    buildDiagnoseSetup.toolName,
-    "Diagnose iOS build setup issues",
-    buildDiagnoseSetup.schema,
-    buildDiagnoseSetup.implementation,
-  );
-
-  const buildPeripheryScan = createCommandTool(
-    "swiftbazel.build.peripheryScan",
-    "scan_unused_code",
-    "Run Periphery scan to find unused Swift code",
-    extensionContext,
-  );
-  server.tool(
-    buildPeripheryScan.toolName,
-    "Run Periphery scan to find unused Swift code",
-    buildPeripheryScan.schema,
-    buildPeripheryScan.implementation,
-  );
-
-  const buildBuildAndPeripheryScan = createCommandTool(
-    "swiftbazel.build.buildAndPeripheryScan",
-    "build_and_scan_unused_code",
-    "Build project and run Periphery scan",
-    extensionContext,
-  );
-  server.tool(
-    buildBuildAndPeripheryScan.toolName,
-    "Build project and run Periphery scan",
-    buildBuildAndPeripheryScan.schema,
-    buildBuildAndPeripheryScan.implementation,
-  );
-
-  // === DESTINATION COMMANDS ===
-  const destinationsSelect = createCommandTool(
-    "swiftbazel.destinations.select",
-    "select_build_destination",
-    "Select build destination (device or simulator)",
-    extensionContext,
-  );
-  server.tool(
-    destinationsSelect.toolName,
-    "Select build destination (device or simulator)",
-    destinationsSelect.schema,
-    destinationsSelect.implementation,
-  );
-
   // === BAZEL COMMANDS ===
-  const bazelBuild = createCommandTool("swiftbazel.bazel.build", "bazel_build", "Build Bazel target", extensionContext);
-  server.tool(bazelBuild.toolName, "Build Bazel target", bazelBuild.schema, bazelBuild.implementation);
 
-  const bazelTest = createCommandTool("swiftbazel.bazel.test", "bazel_test", "Test Bazel target", extensionContext);
-  server.tool(bazelTest.toolName, "Test Bazel target", bazelTest.schema, bazelTest.implementation);
-
-  const bazelRun = createCommandTool(
-    "swiftbazel.bazel.run",
-    "bazel_run",
-    "Run Bazel target on iOS simulator",
+  const bazelTest = createCommandTool(
+    "swiftbazel.bazel.testSelected",
+    "bazel_test",
+    "Run tests for the currently selected Bazel target",
     extensionContext,
   );
-  server.tool(bazelRun.toolName, "Run Bazel target on iOS simulator", bazelRun.schema, bazelRun.implementation);
+  server.tool(
+    bazelTest.toolName, 
+    "Runs unit tests for the currently selected Bazel test target. Target must be a test type (ios_unit_test or swift_test).",
+    bazelTest.schema, 
+    bazelTest.implementation
+  );
+  
+  const bazelRun = createCommandTool(
+    "swiftbazel.bazel.debug",
+    "bazel_run",
+    "Build, launch, and attach debugger to the selected Bazel app target",
+    extensionContext,
+  );
+  server.tool(
+    bazelRun.toolName, 
+    "Builds, launches, and attaches LLDB debugger to the currently selected Bazel target on iOS simulator or device. Allows setting breakpoints and inspecting app state. This is the primary run command.",
+    bazelRun.schema, 
+    bazelRun.implementation
+  );
+  
+  const bazelBuild = createCommandTool(
+    "swiftbazel.bazel.buildSelected",
+    "bazel_build",
+    "Build the currently selected Bazel target without running",
+    extensionContext,
+  );
+  server.tool(
+    bazelBuild.toolName, 
+    "Builds the currently selected Bazel target. Compiles code without running the app.",
+    bazelBuild.schema, 
+    bazelBuild.implementation
+  );
 
   // === SCREENSHOT COMMANDS ===
   server.tool(

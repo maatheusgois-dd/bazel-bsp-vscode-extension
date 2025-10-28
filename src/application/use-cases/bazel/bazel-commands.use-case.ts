@@ -7,6 +7,7 @@ import { commonLogger } from "../../../shared/logger/logger.js";
 import { getWorkspaceConfig } from "../../../shared/utils/config.js";
 import { exec } from "../../../shared/utils/exec.js";
 import { Timer } from "../../../shared/utils/timer.js";
+import { ErrorManager } from "../../../shared/utils/error-manager.js";
 
 import { DEFAULT_BUILD_PROBLEM_MATCHERS } from "../../../shared/constants/build-constants.js";
 import {
@@ -56,6 +57,8 @@ async function reconstructBazelItemFromCache(context: ExtensionContext): Promise
  * Build a Bazel target
  */
 export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
+  const errorManager = new ErrorManager(context);
+  
   // If no bazelItem provided, try to get from saved target
   if (!bazelItem) {
     const selectedTarget = context.buildManager.getSelectedBazelTarget();
@@ -65,10 +68,7 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
       // Try to reconstruct from cached data
       bazelItem = await reconstructBazelItemFromCache(context);
       if (!bazelItem) {
-        vscode.window.showErrorMessage(
-          "No Bazel target selected. Please select a target from the BUILDS tree view first.",
-        );
-        return;
+        errorManager.handleNoTargetSelected();
       }
     }
   }
@@ -101,6 +101,8 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
  * Test a Bazel target
  */
 export async function bazelTestCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
+  const errorManager = new ErrorManager(context);
+  
   // If no bazelItem provided, try to get from saved target
   if (!bazelItem) {
     const selectedTarget = context.buildManager.getSelectedBazelTarget();
@@ -110,17 +112,13 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
       // Try to reconstruct from cached data
       bazelItem = await reconstructBazelItemFromCache(context);
       if (!bazelItem) {
-        vscode.window.showErrorMessage(
-          "No Bazel target selected. Please select a target from the BUILDS tree view first.",
-        );
-        return;
+        errorManager.handleNoTargetSelected();
       }
     }
   }
 
   if (!bazelItem?.target.testLabel) {
-    vscode.window.showErrorMessage(`Target ${bazelItem?.target.name} is not a test target`);
-    return;
+    errorManager.handleNotTestTarget(bazelItem?.target.name || "unknown");
   }
 
   const timer = new Timer();
@@ -148,6 +146,8 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
  * Run a Bazel target (launch app on iOS simulator)
  */
 export async function bazelRunCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
+  const errorManager = new ErrorManager(context);
+  
   // If no bazelItem provided, try to get from saved target
   if (!bazelItem) {
     const selectedTarget = context.buildManager.getSelectedBazelTarget();
@@ -157,17 +157,13 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
       // Try to reconstruct from cached data
       bazelItem = await reconstructBazelItemFromCache(context);
       if (!bazelItem) {
-        vscode.window.showErrorMessage(
-          "No Bazel target selected. Please select a target from the BUILDS tree view first.",
-        );
-        return;
+        errorManager.handleNoTargetSelected();
       }
     }
   }
 
   if (bazelItem?.target.type !== "binary") {
-    vscode.window.showErrorMessage(`Target ${bazelItem?.target.name} is not a runnable target (must be a binary/app)`);
-    return;
+    errorManager.handleNotRunnableTarget(bazelItem?.target.name || "unknown");
   }
 
   const timer = new Timer();
@@ -200,17 +196,17 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
  * Debug a Bazel target (launch app with debug support)
  */
 export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
-  const selectedBazelItem = bazelItem || context.buildManager.getSelectedBazelTarget();
+  const errorManager = new ErrorManager(context);
+  let selectedBazelItem = bazelItem || context.buildManager.getSelectedBazelTarget();
+  
   if (!selectedBazelItem) {
-    vscode.window.showErrorMessage("No Bazel target selected. Please select a target first.");
-    return;
+    errorManager.handleNoTargetSelected();
+    return; // TypeScript doesn't know handleNoTargetSelected never returns
   }
 
   if (selectedBazelItem.target.type !== "binary") {
-    vscode.window.showErrorMessage(
-      `Target ${selectedBazelItem.target.name} is not a runnable target (must be a binary/app)`,
-    );
-    return;
+    errorManager.handleNotRunnableTarget(selectedBazelItem.target.name);
+    return; // TypeScript doesn't know handleNotRunnableTarget never returns
   }
 
   // Use the same destination selection pattern as launchCommand

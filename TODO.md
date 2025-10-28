@@ -9,8 +9,7 @@
 - [ ] Add the clean option
 - [ ] Improving Debugging 
 - [ ] Improve progress
-- [ ] Create a Image Manager
-- [ ] 
+- [ ] MCP for any instancy
 - [ ] 
 - [ ] 
 
