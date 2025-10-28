@@ -3,13 +3,14 @@ import type { BazelQueryResult } from "../../domain/entities/bazel/types.js";
 import { BazelParser } from "../../infrastructure/bazel/bazel-parser.js";
 import { commonLogger } from "../../shared/logger/logger.js";
 import { getWorkspacePath } from "../../shared/utils/bazel-utils.js";
+import { ImageManager } from "../../shared/utils/image-manager.js";
+import { RecentTargetsManager } from "./helpers/recent-targets-manager.js";
 import {
   BazelQueryCategoryItem, // Keep for backward compatibility
   BazelQueryFolderItem,
   BazelQueryRecentsSectionItem,
   BazelQueryTargetItem,
 } from "./items/bazel-query-tree-item.js";
-import { RecentTargetsManager } from "./helpers/recent-targets-manager.js";
 
 /**
  * Tree provider for bazel query-based target discovery
@@ -25,11 +26,13 @@ export class BazelTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   private workspaceRoot: string;
   private buildManager: any;
   private recentsManager: RecentTargetsManager;
+  private imageManager: ImageManager;
 
   constructor(buildManager?: any) {
     this.workspaceRoot = getWorkspacePath();
     this.buildManager = buildManager;
     this.recentsManager = new RecentTargetsManager(buildManager?._context);
+    this.imageManager = new ImageManager(buildManager?._context?.extensionPath || "");
 
     // Listen to selection changes to update highlighting and recents
     if (this.buildManager) {
@@ -152,9 +155,11 @@ export class BazelTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
 
     // Recents section - show recent targets
     if (element instanceof BazelQueryRecentsSectionItem) {
-      return this.recentsManager.getAll().map(
-        (recent) => new BazelQueryTargetItem(recent.name, recent.type, recent.pathParts, this.workspaceRoot, this),
-      );
+      return this.recentsManager
+        .getAll()
+        .map(
+          (recent) => new BazelQueryTargetItem(recent.name, recent.type, recent.pathParts, this.workspaceRoot, this),
+        );
     }
 
     // Folder item - show both targets AND subfolders
@@ -197,7 +202,7 @@ export class BazelTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
       const childPath = [...pathParts, childName];
       const hasTargets = this.queryResult ? BazelParser.hasTargetsAtPath(this.queryResult.tree, childPath) : false;
 
-      return new BazelQueryFolderItem(childName, childPath, hasTargets);
+      return new BazelQueryFolderItem(childName, childPath, hasTargets, this.imageManager.getBazelIcon());
     });
   }
 

@@ -24,6 +24,7 @@ export class BazelQueryFolderItem extends vscode.TreeItem {
     label: string,
     pathParts: string[],
     public readonly hasTargets: boolean,
+    bazelIcon?: vscode.Uri,
   ) {
     // If this folder has targets, make it collapsible (lazy loading)
     // Otherwise, make it expandable to show subfolders
@@ -33,7 +34,10 @@ export class BazelQueryFolderItem extends vscode.TreeItem {
 
     this.pathParts = pathParts;
     this.contextValue = hasTargets ? "bazelQueryFolder-withTargets" : "bazelQueryFolder";
-    this.iconPath = new vscode.ThemeIcon("folder");
+
+    // Use Bazel icon if provided, otherwise use default folder icon
+    this.iconPath = bazelIcon || new vscode.ThemeIcon("folder");
+
     this.tooltip = `/${pathParts.join("/")}`;
   }
 }
@@ -117,7 +121,7 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
       : new vscode.ThemeColor("swiftbazel.scheme");
 
     if (isSelected) {
-      this.description = "✓"
+      this.description = "✓";
     }
 
     // Set icon based on target type
