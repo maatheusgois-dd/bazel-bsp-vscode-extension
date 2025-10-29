@@ -124,3 +124,72 @@ export async function pairDevice(options: {
     args: ["devicectl", "manage", "pair", "--device", options.deviceId],
   });
 }
+
+/**
+ * Check if a device is locked
+ */
+export async function isDeviceLocked(context: ExtensionContext, deviceId: string): Promise<boolean> {
+  try {
+    await using tmpPath = await tempFilePath(context, {
+      prefix: "device-info",
+    });
+
+    // Try to get device info - this will fail or show locked state if device is locked
+    await exec({
+      command: "xcrun",
+      args: ["devicectl", "device", "info", "lockState", "--device", deviceId, "--json-output", tmpPath.path],
+    });
+
+    const result = await readJsonFile<{ result?: { lockState?: string } }>(tmpPath.path);
+    
+    commonLogger.debug("Device lock state", { 
+      deviceId, 
+      lockState: result.result?.lockState,
+      fullResult: result 
+    });
+    
+    // lockState can be: "unlocked", "locked", "passcode-locked"
+    // If lockState is missing or undefined, assume unlocked
+    if (!result.result?.lockState) {
+      return false;
+    }
+    
+    return result.result.lockState !== "unlocked";
+  } catch (error) {
+    // If we can't determine lock state, assume unlocked to not block operation
+    commonLogger.debug("Could not determine device lock state, assuming unlocked", { error, deviceId });
+    return false;
+  }
+}
+
+/**
+ * Wait for device to be unlocked
+ */
+export async function waitForDeviceUnlock(
+  context: ExtensionContext,
+  deviceId: string,
+  onWaiting?: (elapsed: number) => void,
+  timeoutMs: number = 60000, // 1 minute default
+): Promise<boolean> {
+  const startTime = Date.now();
+  const checkInterval = 1000; // Check every second
+
+  while (Date.now() - startTime < timeoutMs) {
+    const locked = await isDeviceLocked(context, deviceId);
+    
+    if (!locked) {
+      return true; // Device is unlocked
+    }
+
+    // Notify caller of waiting time
+    if (onWaiting) {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      onWaiting(elapsed);
+    }
+
+    // Wait before checking again
+    await new Promise(resolve => setTimeout(resolve, checkInterval));
+  }
+
+  return false; // Timeout - device still locked
+}

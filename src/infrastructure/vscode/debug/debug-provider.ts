@@ -351,21 +351,49 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     }
 
     if (launchContext.type === "bazel-device") {
-      const debugPort = config.debugPort || 6667;
+      const deviceUDID = launchContext.destinationId;
+      const appPath = launchContext.appPath;
+      const pid = launchContext.pid;
+      
+      commonLogger.log("Resolving Bazel device debug configuration", {
+        launchContext,
+        deviceUDID,
+        appPath,
+        pid,
+      });
 
+      if (!pid) {
+        throw new Error("No PID found in launch context. Please run the app again.");
+      }
+
+      // For device debugging with devicectl's --start-stopped:
+      // 1. App is already running but paused on device
+      // 2. We select the device by UDID
+      // 3. Attach to the process by PID with --continue flag
+      // 4. No platform connect needed - device commands work directly via USB
+      
       const resolvedConfig = {
         type: "lldb-dap",
         request: "attach",
         name: config.name || "swiftbazel: Bazel Debug (Device)",
         debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
-        attachCommands: [`process connect connect://localhost:${debugPort}`],
+        program: appPath,
+        preRunCommands: [
+          `platform select remote-ios`,
+        ],
+        attachCommands: [
+          `script lldb.debugger.HandleCommand("device select ${deviceUDID}")`,
+          `script lldb.debugger.HandleCommand("device process attach --continue --pid ${pid}")`,
+        ],
+        postRunCommands: [
+          `script print("swiftbazel: Debugger attached to device process ${pid}")`,
+        ],
         internalConsoleOptions: "openOnSessionStart",
-        timeout: 10000, // Increased to 10 seconds
+        timeout: 100000,
       };
 
       commonLogger.log("Resolved Bazel device debug config", {
         resolvedConfig,
-        debugPort,
       });
 
       return resolvedConfig;

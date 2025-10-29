@@ -181,6 +181,11 @@ export async function activate(context: vscode.ExtensionContext) {
     // System
     d(command("swiftbazel.system.resetswiftbazelCache", resetswiftbazelCache));
     d(command("swiftbazel.system.openTerminalPanel", openTerminalPanel));
+    d(
+      command("swiftbazel.system.cancelCurrentOperation", async (_context) => {
+        progressStatusBar.cancelCurrentOperation();
+      }),
+    );
 
     // --- MCP Server Setup ---
     commonLogger.log("Starting MCP Server setup...");

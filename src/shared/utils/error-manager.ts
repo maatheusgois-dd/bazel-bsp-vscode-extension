@@ -1,4 +1,3 @@
-import * as vscode from "vscode";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
 import { commonLogger } from "../logger/logger.js";
 
@@ -21,7 +20,10 @@ export class ErrorManager {
 
     // Fire completion event for MCP (so it doesn't hang)
     if (this.context) {
+      commonLogger.log("🔥 ErrorManager firing simpleTaskCompletionEmitter");
       this.context.simpleTaskCompletionEmitter.fire();
+    } else {
+      commonLogger.warn("⚠️ ErrorManager: No context available to fire completion event");
     }
 
     // Throw error for proper error propagation

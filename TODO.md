@@ -10,7 +10,7 @@
 - [ ] Improving Debugging 
 - [ ] Improve progress
 - [ ] MCP for any instancy
-- [ ] 
+- [ ] Unify debuging and build compiler
 - [ ] 
 
 ## Medium

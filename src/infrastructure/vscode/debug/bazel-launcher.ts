@@ -56,10 +56,13 @@ export async function launchBazelAppOnSimulator(
     waitForDebugger,
   });
 
+  context.updateProgressStatus("Preparing simulator");
+
   // 1. Get simulator with fresh state
   const simulator = await getSimulatorByUdid(context, { udid: simulatorId });
 
   // 2. Open Simulator.app if not already open
+  context.updateProgressStatus("Opening Simulator");
   await exec({
     command: "open",
     args: ["-g", "-a", "Simulator"],
@@ -67,6 +70,7 @@ export async function launchBazelAppOnSimulator(
 
   // 3. Boot simulator if needed
   if (!simulator.isBooted) {
+    context.updateProgressStatus("Booting simulator");
     commonLogger.log(`Booting simulator: ${simulator.name}`);
     await exec({
       command: "xcrun",
@@ -78,6 +82,7 @@ export async function launchBazelAppOnSimulator(
   }
 
   // 4. Install app on simulator
+  context.updateProgressStatus("Installing app on simulator");
   commonLogger.log(`Installing app on simulator: ${simulator.name}`);
   await exec({
     command: "xcrun",
@@ -85,6 +90,7 @@ export async function launchBazelAppOnSimulator(
   });
 
   // 5. Terminate existing instances
+  context.updateProgressStatus("Preparing to launch");
   try {
     await exec({
       command: "xcrun",
@@ -95,6 +101,7 @@ export async function launchBazelAppOnSimulator(
   }
 
   // 6. Launch app with or without debugger flag
+  context.updateProgressStatus("Launching app on simulator");
   const launchArgs = [
     "simctl",
     "launch",
@@ -139,7 +146,7 @@ export async function launchBazelAppOnSimulator(
  * Launch a Bazel-built iOS app on a physical device
  */
 export async function launchBazelAppOnDevice(
-  _context: ExtensionContext,
+  context: ExtensionContext,
   options: BazelLaunchOptions & { destination: DeviceDestination },
 ): Promise<BazelLaunchResult> {
   const { appPath, bundleId, destination, waitForDebugger, env = {}, args = [] } = options;
@@ -152,14 +159,52 @@ export async function launchBazelAppOnDevice(
     waitForDebugger,
   });
 
+  // Check if device is locked and wait for unlock
+  try {
+    const { isDeviceLocked, waitForDeviceUnlock } = await import("../../../infrastructure/apple-platforms/devicectl.adapter.js");
+    
+    const locked = await isDeviceLocked(context, deviceId);
+    if (locked) {
+      commonLogger.log("Device is locked, waiting for unlock", { deviceId });
+      context.updateProgressStatus("⏸️  Awaiting device unlock");
+      
+      const unlocked = await waitForDeviceUnlock(
+        context,
+        deviceId,
+        (elapsed) => {
+          context.updateProgressStatus(`⏸️  Awaiting device unlock (${elapsed}s)`);
+        },
+        120000, // 2 minutes timeout
+      );
+
+      if (!unlocked) {
+        throw new Error(`Device "${destination.name}" is locked. Please unlock your device and try again.`);
+      }
+
+      commonLogger.log("Device unlocked, continuing with installation");
+    }
+  } catch (lockCheckError) {
+    // If lock check fails, log but continue - don't block installation
+    commonLogger.warn("Lock check failed, continuing with installation", { lockCheckError });
+  }
+
   // 1. Install app on device
+  context.updateProgressStatus("Installing app on device");
   commonLogger.log(`Installing app on device: ${destination.name}`);
   await exec({
     command: "xcrun",
     args: ["devicectl", "device", "install", "app", "--device", deviceId, appPath],
   });
 
-  // 2. Launch app with devicectl
+  // 2. Launch app with devicectl using JSON output
+  context.updateProgressStatus("Launching app on device");
+  
+  // Use a temp file for JSON output
+  const { tempFilePath, readJsonFile } = await import("../../../shared/utils/files.js");
+  await using tmpPath = await tempFilePath(context, {
+    prefix: "device-launch",
+  });
+
   const launchArgs = [
     "devicectl",
     "device",
@@ -169,6 +214,8 @@ export async function launchBazelAppOnDevice(
     deviceId,
     ...(waitForDebugger ? ["--start-stopped"] : []),
     "--terminate-existing",
+    "--json-output",
+    tmpPath.path,
     bundleId,
     ...args,
   ];
@@ -178,30 +225,27 @@ export async function launchBazelAppOnDevice(
 
   commonLogger.log("Launching app on device", { launchArgs, launchEnv });
 
-  const output = await exec({
+  await exec({
     command: "xcrun",
     args: launchArgs,
     env: launchEnv,
   });
 
   // Parse JSON output to get PID
-  let pid: number;
-  try {
-    const jsonMatch = output.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const jsonOutput = JSON.parse(jsonMatch[0]);
-      pid = jsonOutput.result?.process?.processIdentifier;
-    }
-  } catch (_error) {
-    // Fallback: try to parse PID from plain output
-    const pidMatch = output.match(/processIdentifier[:\s]+(\d+)/);
-    if (pidMatch) {
-      pid = Number.parseInt(pidMatch[1], 10);
-    }
-  }
+  type DeviceLaunchResult = {
+    result?: {
+      process?: {
+        processIdentifier?: number;
+      };
+    };
+  };
 
-  if (!pid!) {
-    throw new Error(`Failed to extract PID from launch output: ${output}`);
+  const result = await readJsonFile<DeviceLaunchResult>(tmpPath.path);
+  const pid = result.result?.process?.processIdentifier;
+
+  if (!pid) {
+    commonLogger.error("Failed to extract PID from devicectl output", { result });
+    throw new Error(`Failed to extract PID from launch output. Check logs for details.`);
   }
 
   commonLogger.log("App launched successfully on device", { pid, bundleId });
@@ -342,6 +386,22 @@ export async function startDebugServer(options: {
     commonLogger.debug("Error during cleanup (expected if no existing debugserver)", { error });
   }
 
+  // For physical devices, use remote debugging via LLDB
+  if (deviceId) {
+    commonLogger.log("Device debugging: setting up remote connection", { deviceId, pid, port });
+    
+    // For device debugging, LLDB connects directly to the device process
+    // The app was launched with --start-stopped and is waiting for debugger
+    // No local debugserver needed - LLDB will attach remotely
+    
+    // Wait a moment to ensure the process is ready on device
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+    commonLogger.log("Device ready for remote debugging", { port, pid });
+    return;
+  }
+
+  // Simulator debugging: start local debugserver
   const xcodeDevPath = await exec({
     command: "xcode-select",
     args: ["-p"],
@@ -360,7 +420,7 @@ export async function startDebugServer(options: {
 
   const debugserverArgs = [`localhost:${port}`, "--attach", pid.toString()];
 
-  // Verify the target process is still running before attaching
+  // Verify the target process is still running before attaching (simulator only)
   try {
     await exec({
       command: "ps",

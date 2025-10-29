@@ -40,9 +40,12 @@ const createCommandTool = (
     let eventListener: vscode.Disposable | undefined;
     const waitForCompletionPromise = new Promise<"completed">((resolve) => {
       eventListener = extensionContext.simpleTaskCompletionEmitter.event(() => {
+        commonLogger.log("🎯 MCP: Received completion event");
         resolve("completed");
       });
     });
+    
+    commonLogger.log(`🚀 MCP: Starting command ${commandId}, waiting for completion...`);
 
     const timeoutPromise = new Promise<"timeout">((resolve) => {
       setTimeout(() => resolve("timeout"), timeoutSeconds * 1000);
@@ -107,6 +110,8 @@ const createCommandTool = (
           isError: hasError,
         };
       }
+      
+      // No log content - command completed with no output
       return {
         content: [
           {
@@ -125,7 +130,7 @@ const createCommandTool = (
             text: `Command ${commandId} completed but could not read output log.`,
           },
         ],
-        isError: false,
+        isError: true,
       };
     }
   };

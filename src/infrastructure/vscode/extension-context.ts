@@ -46,6 +46,7 @@ export type LastLaunchedAppBazelDeviceContext = {
   buildLabel: string;
   destinationId: string;
   destinationType: DestinationType;
+  pid?: number;
 };
 
 export type LastLaunchedAppContext =
@@ -199,6 +200,8 @@ export class ExtensionContext {
           // In this case, we just stop the execution of the command and throw a QuickPickCancelledError.
           // Since it is more user action, then an error, we skip the error reporting.
           if (error instanceof QuickPickCancelledError) {
+            // Fire completion event for MCP
+            this.simpleTaskCompletionEmitter.fire();
             return;
           }
 
@@ -210,12 +213,17 @@ export class ExtensionContext {
               error: error,
             });
             if (error instanceof TaskError) {
+              // Fire completion event for MCP
+              this.simpleTaskCompletionEmitter.fire();
               return; // do nothing
             }
 
             await this.showCommandErrorMessage(`swiftbazel: ${error.message}`, {
               actions: error.options?.actions,
             });
+            
+            // Fire completion event for MCP
+            this.simpleTaskCompletionEmitter.fire();
             return;
           }
 
@@ -227,6 +235,9 @@ export class ExtensionContext {
             error: error,
           });
           await this.showCommandErrorMessage(`swiftbazel: ${errorMessage}`);
+          
+          // Fire completion event for MCP (in case ErrorManager already fired it, this is idempotent)
+          this.simpleTaskCompletionEmitter.fire();
         }
       });
     });
@@ -305,8 +316,8 @@ export class ExtensionContext {
     void this.destinationsManager.refresh();
   }
 
-  updateProgressStatus(message: string) {
-    this.progressStatusBar.updateText(message);
+  updateProgressStatus(message: string, cancellable: boolean = false) {
+    this.progressStatusBar.updateText(message, cancellable);
   }
 }
 

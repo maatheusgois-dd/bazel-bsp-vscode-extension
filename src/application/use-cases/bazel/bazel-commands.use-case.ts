@@ -8,6 +8,7 @@ import { getWorkspaceConfig } from "../../../shared/utils/config.js";
 import { exec } from "../../../shared/utils/exec.js";
 import { Timer } from "../../../shared/utils/timer.js";
 import { ErrorManager } from "../../../shared/utils/error-manager.js";
+import { ProgressManager, ProgressSteps } from "../../../shared/utils/progress-manager.js";
 
 import { DEFAULT_BUILD_PROBLEM_MATCHERS } from "../../../shared/constants/build-constants.js";
 import {
@@ -73,7 +74,16 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
     }
   }
 
+  // Get destination to determine build platform
+  context.updateProgressStatus("Searching for destination");
+  const destination = await askDestinationToRunOn(context);
+
   const timer = new Timer();
+  const progress = new ProgressManager({
+    steps: ProgressSteps.BUILD,
+    context,
+    taskName: `Build: ${bazelItem?.target.name}`,
+  });
 
   await runTask(context, {
     name: `Bazel Build: ${bazelItem?.target.name}`,
@@ -83,15 +93,39 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
     callback: async (terminal) => {
       terminal.write(`Building Bazel target: ${bazelItem?.target.buildLabel}\n\n`);
 
+      progress.nextStep("Resolving dependencies");
+      terminal.write("📦 Resolving dependencies...\n");
+
+      progress.nextStep("Compiling sources");
+      terminal.write("🔨 Compiling sources...\n");
+
+      // Build flags based on destination type
+      let platformFlag: string;
+      if (destination.type === "iOSSimulator") {
+        platformFlag = "--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64";
+        terminal.write(`   Building for iOS Simulator...\n`);
+      } else if (destination.type === "iOSDevice") {
+        platformFlag = "--ios_multi_cpus=arm64";
+        terminal.write(`   Building for iOS Device (${destination.name})...\n`);
+      } else {
+        platformFlag = "--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64";
+        terminal.write(`   Building for ${destination.type}...\n`);
+      }
+
       await terminal.execute({
         command: "sh",
         args: [
           "-c",
-          `cd "${bazelItem?.package.path}" && bazel build ${bazelItem?.target.buildLabel} --platforms=@build_bazel_apple_support//platforms:ios_sim_arm64`,
+          `cd "${bazelItem?.package.path}" && bazel build ${bazelItem?.target.buildLabel} ${platformFlag}`,
         ],
       });
 
+      progress.nextStep("Linking binaries");
+      progress.nextStep("Code signing");
+      progress.nextStep("Finalizing build");
       terminal.write(`\n✅ Build completed for ${bazelItem?.target.name}\n`);
+      
+      progress.complete();
       writeTimingResults(terminal, timer, "bazel", "build");
     },
   });
@@ -122,6 +156,11 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
   }
 
   const timer = new Timer();
+  const progress = new ProgressManager({
+    steps: ProgressSteps.TEST,
+    context,
+    taskName: `Test: ${bazelItem?.target.name}`,
+  });
 
   await runTask(context, {
     name: `Bazel Test: ${bazelItem?.target.name}`,
@@ -131,12 +170,24 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
     callback: async (terminal) => {
       terminal.write(`Running Bazel tests: ${bazelItem?.target.testLabel}\n\n`);
 
+      progress.nextStep("Building test target");
+      terminal.write("🔨 Building test target...\n");
+
+      progress.nextStep("Preparing test environment");
+      terminal.write("🧪 Preparing test environment...\n");
+
+      progress.nextStep("Running tests");
+      terminal.write("▶️  Running tests...\n");
+
       await terminal.execute({
         command: "sh",
         args: ["-c", `cd "${bazelItem?.package.path}" && bazel test ${bazelItem?.target.testLabel!} --test_output=all`],
       });
 
+      progress.nextStep("Collecting results");
       terminal.write(`\n✅ Tests completed for ${bazelItem?.target.name}\n`);
+      
+      progress.complete();
       writeTimingResults(terminal, timer, "bazel", "test");
     },
   });
@@ -166,50 +217,7 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
     errorManager.handleNotRunnableTarget(bazelItem?.target.name || "unknown");
   }
 
-  const timer = new Timer();
-
-  await runTask(context, {
-    name: `Bazel Run: ${bazelItem?.target.name}`,
-    lock: "swiftbazel.bazel.run",
-    terminateLocked: true,
-    problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
-    callback: async (terminal) => {
-      terminal.write(`Running Bazel target: ${bazelItem?.target.buildLabel}\n\n`);
-
-      const runArgs = ["run", bazelItem?.target.buildLabel];
-
-      // For simulators: use bazel run directly
-      runArgs.push("--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64");
-
-      await terminal.execute({
-        command: "sh",
-        args: ["-c", `cd "${bazelItem?.package.path}" && bazel ${runArgs.join(" ")}`],
-      });
-
-      terminal.write(`\n✅ Launch completed for ${bazelItem?.target.name}\n`);
-      writeTimingResults(terminal, timer, "bazel", "run");
-    },
-  });
-}
-
-/**
- * Debug a Bazel target (launch app with debug support)
- */
-export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
-  const errorManager = new ErrorManager(context);
-  let selectedBazelItem = bazelItem || context.buildManager.getSelectedBazelTarget();
-  
-  if (!selectedBazelItem) {
-    errorManager.handleNoTargetSelected();
-    return; // TypeScript doesn't know handleNoTargetSelected never returns
-  }
-
-  if (selectedBazelItem.target.type !== "binary") {
-    errorManager.handleNotRunnableTarget(selectedBazelItem.target.name);
-    return; // TypeScript doesn't know handleNotRunnableTarget never returns
-  }
-
-  // Use the same destination selection pattern as launchCommand
+  // Get destination
   context.updateProgressStatus("Searching for destination");
   const destination = await askDestinationToRunOn(context);
 
@@ -220,16 +228,74 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
   const timer = new Timer();
 
   await runTask(context, {
-    name: `Bazel Debug: ${selectedBazelItem.target.name}`,
+    name: `Bazel Run: ${bazelItem?.target.name}`,
+    lock: "swiftbazel.bazel.run",
+    terminateLocked: true,
+    problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
+    callback: async (terminal) => {
+      const { buildAndLaunchBazelApp } = await import("../../../infrastructure/vscode/debug/build-and-launch.js");
+
+      // Use unified build and launch workflow without debugger
+      await buildAndLaunchBazelApp(context, terminal, {
+        bazelItem: bazelItem!,
+        destination: destination as any,
+        attachDebugger: false,
+        launchArgs,
+        launchEnv,
+      });
+
+      writeTimingResults(terminal, timer, "bazel", "run");
+    },
+  });
+}
+
+/**
+ * Debug a Bazel target (launch app with debug support)
+ */
+export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
+  const errorManager = new ErrorManager(context);
+  
+  // If no bazelItem provided, try to get from saved target
+  if (!bazelItem) {
+    const selectedTarget = context.buildManager.getSelectedBazelTarget();
+    if (selectedTarget) {
+      bazelItem = selectedTarget;
+    } else {
+      // Try to reconstruct from cached data
+      bazelItem = await reconstructBazelItemFromCache(context);
+      if (!bazelItem) {
+        errorManager.handleNoTargetSelected();
+      }
+    }
+  }
+
+  if (bazelItem?.target.type !== "binary") {
+    errorManager.handleNotRunnableTarget(bazelItem?.target.name || "unknown");
+  }
+
+  // Get destination
+  context.updateProgressStatus("Searching for destination");
+  const destination = await askDestinationToRunOn(context);
+
+  // Get launch configuration
+  const launchArgs = getWorkspaceConfig("build.launchArgs") ?? [];
+  const launchEnv = getWorkspaceConfig("build.launchEnv") ?? {};
+
+  const timer = new Timer();
+
+  await runTask(context, {
+    name: `Bazel Debug: ${bazelItem?.target.name}`,
     lock: "swiftbazel.bazel.debug",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
-      const { enhancedBazelDebugCommand } = await import("../../../infrastructure/vscode/debug/bazel-debug.js");
+      const { buildAndLaunchBazelApp } = await import("../../../infrastructure/vscode/debug/build-and-launch.js");
 
-      await enhancedBazelDebugCommand(context, terminal, {
-        bazelItem: selectedBazelItem,
+      // Use unified build and launch workflow with debugger attached
+      await buildAndLaunchBazelApp(context, terminal, {
+        bazelItem: bazelItem!,
         destination: destination as any,
+        attachDebugger: true,
         launchArgs,
         launchEnv,
       });
