@@ -2,84 +2,51 @@ import type { ExtensionContext } from "../../infrastructure/vscode/extension-con
 import { commonLogger } from "../logger/logger.js";
 
 /**
- * Centralized error manager for handling errors consistently
+ * Centralized error manager for handling common error patterns
+ * Errors are logged and thrown to be caught by extension-context wrapper
+ * which shows dialog with "Open in console" action
  */
 export class ErrorManager {
   constructor(private context?: ExtensionContext) {}
 
   /**
-   * Handle an error by:
-   * 1. Logging the error
-   * 2. Firing completion event (for MCP)
-   * 3. Throwing the error for proper propagation
-   * Note: Error will be shown to user by the command wrapper in extension-context.ts
+   * Log and throw error
    */
-  handleError(message: string, context?: { command?: string; details?: any }): never {
-    // Log error
-    commonLogger.error(message, context);
+  throw(message: string, errorContext?: { command?: string; details?: any }): never {
+    commonLogger.error(message, errorContext);
 
-    // Fire completion event for MCP (so it doesn't hang)
+    // Fire completion event for MCP
     if (this.context) {
-      commonLogger.log("🔥 ErrorManager firing simpleTaskCompletionEmitter");
       this.context.simpleTaskCompletionEmitter.fire();
-    } else {
-      commonLogger.warn("⚠️ ErrorManager: No context available to fire completion event");
     }
 
-    // Throw error for proper error propagation
-    // The error will be caught and shown by the command wrapper
     throw new Error(message);
   }
 
-  /**
-   * Handle missing target error
-   */
+  // Convenience methods for common error patterns
+  
   handleNoTargetSelected(): never {
-    return this.handleError(
-      "No Bazel target selected. Please select a target from the BAZEL TARGETS tree view first.",
-      { command: "bazel" },
-    );
-  }
-
-  /**
-   * Handle invalid target type error
-   */
-  handleInvalidTargetType(targetName: string, expectedType: string, actualType: string): never {
-    return this.handleError(`Target "${targetName}" is not a ${expectedType} target (type: ${actualType})`, {
+    return this.throw("No Bazel target selected. Please select a target from the BAZEL TARGETS tree view first.", {
       command: "bazel",
-      details: { targetName, expectedType, actualType },
     });
   }
 
-  /**
-   * Handle test target validation error
-   */
   handleNotTestTarget(targetName: string): never {
-    return this.handleError(`Target "${targetName}" is not a test target`, {
+    return this.throw(`Target "${targetName}" is not a test target`, {
       command: "bazel.test",
       details: { targetName },
     });
   }
 
-  /**
-   * Handle runnable target validation error
-   */
   handleNotRunnableTarget(targetName: string): never {
-    return this.handleError(`Target "${targetName}" is not a runnable target (must be a binary/app)`, {
+    return this.throw(`Target "${targetName}" is not a runnable target (must be a binary/app)`, {
       command: "bazel.run",
       details: { targetName },
     });
   }
 
-  /**
-   * Handle generic command error
-   */
-  handleCommandError(commandName: string, error: unknown): never {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return this.handleError(`Error executing ${commandName}: ${errorMessage}`, {
-      command: commandName,
-      details: error,
-    });
+  handleValidationError(message: string, details?: any): never {
+    return this.throw(`Validation error: ${message}`, { details });
   }
 }
 

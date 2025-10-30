@@ -159,7 +159,7 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
 
   const testLabel = targetItem?.target.testLabel;
   if (!testLabel) {
-    throw new Error("Test label is required for test targets");
+    errorManager.handleValidationError("Test label is required for test targets");
   }
 
   const timer = new Timer();
@@ -225,10 +225,6 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
     errorManager.handleNotRunnableTarget(targetItem?.target.name || "unknown");
   }
 
-  if (!targetItem) {
-    throw new Error("No target item available for run command");
-  }
-
   // Get destination
   context.updateProgressStatus("Searching for destination");
   const destination = await askDestinationToRunOn(context);
@@ -240,11 +236,16 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
   const timer = new Timer();
 
   await runTask(context, {
-    name: `Bazel Run: ${targetItem.target.name}`,
+    name: `Bazel Run: ${targetItem?.target.name}`,
     lock: "swiftbazel.bazel.run",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
+      if (!targetItem) {
+        errorManager.handleNoTargetSelected();
+        return; // TypeScript needs this
+      }
+
       const { buildAndLaunchBazelApp } = await import("../../../infrastructure/vscode/debug/build-and-launch.js");
 
       // Use unified build and launch workflow without debugger
@@ -286,10 +287,6 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
     errorManager.handleNotRunnableTarget(targetItem?.target.name || "unknown");
   }
 
-  if (!targetItem) {
-    throw new Error("No target item available for debug command");
-  }
-
   // Get destination
   context.updateProgressStatus("Searching for destination");
   const destination = await askDestinationToRunOn(context);
@@ -301,11 +298,16 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
   const timer = new Timer();
 
   await runTask(context, {
-    name: `Bazel Debug: ${targetItem.target.name}`,
+    name: `Bazel Debug: ${targetItem?.target.name}`,
     lock: "swiftbazel.bazel.debug",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
+      if (!targetItem) {
+        errorManager.handleNoTargetSelected();
+        return; // TypeScript needs this
+      }
+
       const { buildAndLaunchBazelApp } = await import("../../../infrastructure/vscode/debug/build-and-launch.js");
 
       // Use unified build and launch workflow with debugger attached

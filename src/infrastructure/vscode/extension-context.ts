@@ -258,7 +258,7 @@ export class ExtensionContext {
       callback: () => {},
     };
     const showLogsAction: ErrorMessageAction = {
-      label: "Show logs",
+      label: "Open in console",
       callback: () => commonLogger.show(),
     };
 
