@@ -402,6 +402,16 @@ async function launchApp(
       terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
     }
 
+    // Bring Simulator.app to foreground after launch
+    try {
+      await exec({
+        command: "open",
+        args: ["-a", "Simulator"],
+      });
+    } catch (error) {
+      commonLogger.debug("Failed to bring Simulator to foreground", { error });
+    }
+
     return launchResult;
   } else {
     terminal.write(" on device...\n");

@@ -85,22 +85,86 @@ export async function launchBazelAppOnSimulator(
   context.updateProgressStatus("Terminating existing instances");
   commonLogger.log(`Terminating any existing instances of the app`);
   try {
-    await exec({
+    // add timeout to terminate
+    const terminatePromise = exec({
       command: "xcrun",
       args: ["simctl", "terminate", simulator.udid, bundleId],
     });
+    const terminateTimeout = new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
+    await Promise.race([terminatePromise, terminateTimeout]);
   } catch (_error) {
     // App might not be running, ignore error
     commonLogger.debug("No existing instance to terminate");
   }
 
-  // 5. Install app on simulator
+  // 5. Install app on simulator (with timeout and retry)
   context.updateProgressStatus("Installing app on simulator");
   commonLogger.log(`Installing app on simulator: ${simulator.name}`);
-  await exec({
-    command: "xcrun",
-    args: ["simctl", "install", simulator.udid, appPath],
-  });
+  
+  const installTimeout = 10000; // 10 seconds timeout
+  let installAttempt = 0;
+  const maxAttempts = 2;
+  
+  while (installAttempt < maxAttempts) {
+    installAttempt++;
+    
+    try {
+      const installPromise = exec({
+        command: "xcrun",
+        args: ["simctl", "install", simulator.udid, appPath],
+      });
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Install timeout")), installTimeout)
+      );
+      
+      await Promise.race([installPromise, timeoutPromise]);
+      
+      // Success!
+      commonLogger.log("App installed successfully");
+      break;
+      
+    } catch (error) {
+      if (error instanceof Error && error.message === "Install timeout" && installAttempt < maxAttempts) {
+        // Install timed out, try restarting simulator
+        commonLogger.warn(`Install timed out (attempt ${installAttempt}/${maxAttempts}), restarting simulator`);
+        context.updateProgressStatus("Restarting simulator (install timeout)");
+        
+        try {
+          // Shutdown simulator
+          await exec({
+            command: "xcrun",
+            args: ["simctl", "shutdown", simulator.udid],
+          }).catch(() => {
+            // Ignore errors - might already be shut down
+          });
+          
+          // Wait a moment
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Boot simulator again
+          await exec({
+            command: "xcrun",
+            args: ["simctl", "boot", simulator.udid],
+          });
+          
+          // Wait for it to boot
+          await waitForSimulatorBoot(simulator.udid);
+          
+          commonLogger.log("Simulator restarted, retrying install");
+          context.updateProgressStatus("Retrying app installation");
+          
+          // Loop will retry install
+        } catch (restartError) {
+          commonLogger.error("Failed to restart simulator", { restartError });
+          throw new Error(`Install failed and simulator restart failed: ${restartError}`);
+        }
+      } else {
+        // Other error or max attempts reached
+        throw error;
+      }
+    }
+  }
 
   // 6. Launch app with or without debugger flag
   context.updateProgressStatus("Launching app on simulator");
@@ -440,7 +504,6 @@ export async function startDebugServer(options: {
   }
 
   // Simulator debugging: start local debugserver
-  commonLogger.log("Getting Xcode developer path for debugserver");
   const xcodeDevPath = await exec({
     command: "xcode-select",
     args: ["-p"],
@@ -457,21 +520,9 @@ export async function startDebugServer(options: {
     "debugserver",
   );
 
-  // Verify debugserver exists
-  try {
-    await exec({
-      command: "test",
-      args: ["-f", debugserverPath],
-    });
-    commonLogger.log("Debugserver found", { debugserverPath });
-  } catch (_error) {
-    throw new Error(`Debugserver not found at: ${debugserverPath}`);
-  }
-
   const debugserverArgs = [`localhost:${port}`, "--attach", pid.toString()];
 
   // Verify the target process is still running before attaching (simulator only)
-  commonLogger.log("Verifying target process is running", { pid });
   try {
     await exec({
       command: "ps",
@@ -497,35 +548,19 @@ export async function startDebugServer(options: {
     commonLogger.log("Spawning debugserver process...", {
       command: debugserverPath,
       args: debugserverArgs,
-      fullCommand: `${debugserverPath} ${debugserverArgs.join(" ")}`,
     });
 
-    let debugserverProcess;
-    try {
-      debugserverProcess = spawn(debugserverPath, debugserverArgs, {
-        detached: false,
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-    } catch (spawnError) {
-      commonLogger.error("Failed to spawn debugserver", { spawnError });
-      reject(new Error(`Failed to spawn debugserver: ${spawnError}`));
-      return;
-    }
-
-    if (!debugserverProcess || !debugserverProcess.pid) {
-      commonLogger.error("debugserver process did not start");
-      reject(new Error("debugserver process did not start - no PID"));
-      return;
-    }
+    const debugserverProcess = spawn(debugserverPath, debugserverArgs, {
+      detached: false,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
 
     let started = false;
     let allStdout = "";
     let allStderr = "";
 
-    commonLogger.log("debugserver process spawned successfully", {
+    commonLogger.log("debugserver process spawned", {
       pid: debugserverProcess.pid,
-      port,
-      targetPid: pid,
     });
 
     // Listen for stdout/stderr for debugging
@@ -581,13 +616,12 @@ export async function startDebugServer(options: {
     // from Node.js is unreliable due to permissions/environment issues.
     // We've verified manually that debugserver DOES start listening,
     // so just wait a reasonable time and proceed.
-    const waitTime = 1000; // 1 second should be enough for debugserver to attach
+    const waitTime = 2000; // 2 seconds should be plenty for debugserver to attach
 
     commonLogger.log("Waiting for debugserver to attach and start listening", {
       port,
       waitTime,
       debugserverPid: debugserverProcess.pid,
-      targetPid: pid,
     });
 
     setTimeout(() => {
@@ -603,11 +637,10 @@ export async function startDebugServer(options: {
         return;
       }
 
-      commonLogger.log("debugserver ready, assuming it's listening", {
+      commonLogger.log("debugserver wait complete, assuming it's listening", {
         processAlive: !debugserverProcess.killed,
         processPid: debugserverProcess.pid,
         exitCode: debugserverProcess.exitCode,
-        elapsed: waitTime,
       });
 
       started = true;
