@@ -363,30 +363,17 @@ async function launchApp(
         await vscode.debug.stopDebugging(activeSession);
         commonLogger.log("Stopped debug session", { sessionId: activeSession.id });
         terminal.write("   ✅ Stopped VS Code debug session\n");
+        
+        // Wait for session to clean up (VS Code stops debugserver automatically)
+        await new Promise(resolve => setTimeout(resolve, 800));
+        terminal.write("   ✅ Debug session cleaned up\n");
       } catch (error) {
         commonLogger.warn("Failed to stop debug session", { error });
         terminal.write("   ⚠️  Could not stop session cleanly\n");
       }
-      
-      // Wait for session to clean up
-      await new Promise(resolve => setTimeout(resolve, 500));
+    } else {
+      commonLogger.debug("No active debug session to stop");
     }
-    
-    // 2. Kill all debugserver processes (aggressive cleanup)
-    terminal.write("   Killing all debugserver processes...\n");
-    try {
-      await exec({
-        command: "pkill",
-        args: ["-9", "debugserver"],
-      });
-      terminal.write("   ✅ Killed debugserver processes\n");
-    } catch (_error) {
-      // Ignore - no processes to kill
-      terminal.write("   No debugserver processes running\n");
-    }
-    
-    // 3. Wait for everything to fully clean up
-    await new Promise(resolve => setTimeout(resolve, 500));
   }
 
   progress.nextStep("Launching app");

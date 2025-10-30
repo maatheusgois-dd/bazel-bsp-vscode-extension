@@ -371,49 +371,58 @@ export async function startDebugServer(options: {
   // Kill any existing debugserver processes (comprehensive cleanup)
   commonLogger.log("Cleaning up any existing debugserver processes", { port });
   
-  try {
-    // Method 1: Kill all debugserver processes globally
-    await exec({
-      command: "pkill",
-      args: ["-9", "debugserver"],
-    }).catch(() => {
-      commonLogger.debug("No global debugserver processes to kill");
-    });
+  // Use Promise.race with timeout for all cleanup operations
+  const cleanupTimeout = 2000; // 2 seconds max for cleanup
+  
+  const cleanupPromise = (async () => {
+    try {
+      // Method 1: Kill all debugserver processes globally
+      await exec({
+        command: "pkill",
+        args: ["-9", "debugserver"],
+      }).catch(() => {
+        commonLogger.debug("No global debugserver processes to kill");
+      });
 
-    // Method 2: Find and kill processes on this specific port using lsof
-    const existingProcess = await exec({
-      command: "lsof",
-      args: ["-ti", `:${port}`],
-    }).catch(() => "");
+      // Method 2: Find and kill processes on this specific port using lsof
+      // Add timeout to lsof in case it hangs
+      const lsofPromise = exec({
+        command: "lsof",
+        args: ["-ti", `:${port}`],
+      }).catch(() => "");
+      
+      const lsofTimeout = new Promise<string>((resolve) => setTimeout(() => resolve(""), 500));
+      const existingProcess = await Promise.race([lsofPromise, lsofTimeout]);
 
-    if (existingProcess.trim()) {
-      const pids = existingProcess.trim().split("\n");
-      for (const existingPid of pids) {
-        if (existingPid) {
-          commonLogger.log("Killing process on port", { port, pid: existingPid });
-          await exec({
-            command: "kill",
-            args: ["-9", existingPid],
-          }).catch(() => {});
+      if (existingProcess.trim()) {
+        const pids = existingProcess.trim().split("\n");
+        for (const existingPid of pids) {
+          if (existingPid) {
+            commonLogger.log("Killing process on port", { port, pid: existingPid });
+            await exec({
+              command: "kill",
+              args: ["-9", existingPid],
+            }).catch(() => {});
+          }
         }
       }
+
+      commonLogger.log("Debugserver cleanup complete");
+    } catch (error) {
+      // Ignore errors - might not be any processes to kill
+      commonLogger.debug("Error during cleanup (expected if no existing debugserver)", { error });
     }
+  })();
 
-    // Method 3: Kill debugservers attached to old PIDs
-    await exec({
-      command: "pkill",
-      args: ["-9", "-f", `debugserver.*--attach`],
-    }).catch(() => {
-      commonLogger.debug("No debugserver --attach processes found");
-    });
+  // Race cleanup against timeout
+  const timeoutPromise = new Promise<void>((resolve) => {
+    setTimeout(() => {
+      commonLogger.warn("Cleanup timeout reached, continuing anyway");
+      resolve();
+    }, cleanupTimeout);
+  });
 
-    // Wait for processes to fully terminate
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    commonLogger.log("Debugserver cleanup complete");
-  } catch (error) {
-    // Ignore errors - might not be any processes to kill
-    commonLogger.debug("Error during cleanup (expected if no existing debugserver)", { error });
-  }
+  await Promise.race([cleanupPromise, timeoutPromise]);
 
   // For physical devices, use remote debugging via LLDB
   if (deviceId) {
@@ -431,6 +440,7 @@ export async function startDebugServer(options: {
   }
 
   // Simulator debugging: start local debugserver
+  commonLogger.log("Getting Xcode developer path for debugserver");
   const xcodeDevPath = await exec({
     command: "xcode-select",
     args: ["-p"],
@@ -447,9 +457,21 @@ export async function startDebugServer(options: {
     "debugserver",
   );
 
+  // Verify debugserver exists
+  try {
+    await exec({
+      command: "test",
+      args: ["-f", debugserverPath],
+    });
+    commonLogger.log("Debugserver found", { debugserverPath });
+  } catch (_error) {
+    throw new Error(`Debugserver not found at: ${debugserverPath}`);
+  }
+
   const debugserverArgs = [`localhost:${port}`, "--attach", pid.toString()];
 
   // Verify the target process is still running before attaching (simulator only)
+  commonLogger.log("Verifying target process is running", { pid });
   try {
     await exec({
       command: "ps",
@@ -475,19 +497,35 @@ export async function startDebugServer(options: {
     commonLogger.log("Spawning debugserver process...", {
       command: debugserverPath,
       args: debugserverArgs,
+      fullCommand: `${debugserverPath} ${debugserverArgs.join(" ")}`,
     });
 
-    const debugserverProcess = spawn(debugserverPath, debugserverArgs, {
-      detached: false,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    let debugserverProcess;
+    try {
+      debugserverProcess = spawn(debugserverPath, debugserverArgs, {
+        detached: false,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+    } catch (spawnError) {
+      commonLogger.error("Failed to spawn debugserver", { spawnError });
+      reject(new Error(`Failed to spawn debugserver: ${spawnError}`));
+      return;
+    }
+
+    if (!debugserverProcess || !debugserverProcess.pid) {
+      commonLogger.error("debugserver process did not start");
+      reject(new Error("debugserver process did not start - no PID"));
+      return;
+    }
 
     let started = false;
     let allStdout = "";
     let allStderr = "";
 
-    commonLogger.log("debugserver process spawned", {
+    commonLogger.log("debugserver process spawned successfully", {
       pid: debugserverProcess.pid,
+      port,
+      targetPid: pid,
     });
 
     // Listen for stdout/stderr for debugging
@@ -543,12 +581,13 @@ export async function startDebugServer(options: {
     // from Node.js is unreliable due to permissions/environment issues.
     // We've verified manually that debugserver DOES start listening,
     // so just wait a reasonable time and proceed.
-    const waitTime = 2000; // 2 seconds should be plenty for debugserver to attach
+    const waitTime = 1000; // 1 second should be enough for debugserver to attach
 
     commonLogger.log("Waiting for debugserver to attach and start listening", {
       port,
       waitTime,
       debugserverPid: debugserverProcess.pid,
+      targetPid: pid,
     });
 
     setTimeout(() => {
@@ -564,10 +603,11 @@ export async function startDebugServer(options: {
         return;
       }
 
-      commonLogger.log("debugserver wait complete, assuming it's listening", {
+      commonLogger.log("debugserver ready, assuming it's listening", {
         processAlive: !debugserverProcess.killed,
         processPid: debugserverProcess.pid,
         exitCode: debugserverProcess.exitCode,
+        elapsed: waitTime,
       });
 
       started = true;
