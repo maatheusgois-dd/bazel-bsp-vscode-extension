@@ -77,8 +77,8 @@ export async function launchBazelAppOnSimulator(
       args: ["simctl", "boot", simulator.udid],
     });
 
-    // Wait for simulator to be fully booted
-    await waitForSimulatorBoot(simulator.udid);
+    // Wait for simulator to be fully booted (with longer timeout)
+    await waitForSimulatorBoot(simulator.udid, 60000);
   }
 
   // 4. Terminate existing instances (before installing)
@@ -101,7 +101,7 @@ export async function launchBazelAppOnSimulator(
   context.updateProgressStatus("Installing app on simulator");
   commonLogger.log(`Installing app on simulator: ${simulator.name}`);
   
-  const installTimeout = 10000; // 10 seconds timeout
+  const installTimeout = 20000; // 20 seconds timeout
   let installAttempt = 0;
   const maxAttempts = 2;
   
@@ -139,8 +139,8 @@ export async function launchBazelAppOnSimulator(
             // Ignore errors - might already be shut down
           });
           
-          // Wait a moment
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait longer for shutdown to complete
+          await new Promise(resolve => setTimeout(resolve, 3000));
           
           // Boot simulator again
           await exec({
@@ -148,8 +148,8 @@ export async function launchBazelAppOnSimulator(
             args: ["simctl", "boot", simulator.udid],
           });
           
-          // Wait for it to boot
-          await waitForSimulatorBoot(simulator.udid);
+          // Wait for it to boot with longer timeout
+          await waitForSimulatorBoot(simulator.udid, 60000);
           
           commonLogger.log("Simulator restarted, retrying install");
           context.updateProgressStatus("Retrying app installation");
@@ -341,7 +341,7 @@ export async function launchBazelAppOnDevice(
 /**
  * Wait for simulator to finish booting
  */
-async function waitForSimulatorBoot(udid: string, timeoutMs = 30000): Promise<void> {
+async function waitForSimulatorBoot(udid: string, timeoutMs = 60000): Promise<void> {
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeoutMs) {
