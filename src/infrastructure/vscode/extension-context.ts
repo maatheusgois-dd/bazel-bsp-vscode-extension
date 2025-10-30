@@ -37,6 +37,7 @@ export type LastLaunchedAppBazelSimulatorContext = {
   buildLabel: string;
   simulatorId: string;
   simulatorName: string;
+  pid?: number;
 };
 
 export type LastLaunchedAppBazelDeviceContext = {

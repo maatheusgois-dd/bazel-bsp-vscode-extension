@@ -58,28 +58,15 @@ export async function launchBazelAppOnSimulator(
 
   context.updateProgressStatus("Preparing simulator");
 
-  // 1. Get simulator with fresh state
+  // 1. Ensure only the target simulator is booted (shuts down others)
+  const { ensureSingleSimulator } = await import("../../../shared/utils/simulator-utils.js");
+  await ensureSingleSimulator(context, simulatorId);
+
+  // 2. Get fresh simulator state after ensuring it's booted
   const simulator = await getSimulatorByUdid(context, { udid: simulatorId });
 
-  // 2. Open Simulator.app if not already open
-  context.updateProgressStatus("Opening Simulator");
-  await exec({
-    command: "open",
-    args: ["-g", "-a", "Simulator"],
-  });
-
-  // 3. Boot simulator if needed
-  if (!simulator.isBooted) {
-    context.updateProgressStatus("Booting simulator");
-    commonLogger.log(`Booting simulator: ${simulator.name}`);
-    await exec({
-      command: "xcrun",
-      args: ["simctl", "boot", simulator.udid],
-    });
-
-    // Wait for simulator to be fully booted (with longer timeout)
-    await waitForSimulatorBoot(simulator.udid, 60000);
-  }
+  // 3. Wait for simulator to be fully ready
+  await waitForSimulatorBoot(simulator.udid, 60000);
 
   // 4. Terminate existing instances (before installing)
   context.updateProgressStatus("Terminating existing instances");
@@ -101,7 +88,7 @@ export async function launchBazelAppOnSimulator(
   context.updateProgressStatus("Installing app on simulator");
   commonLogger.log(`Installing app on simulator: ${simulator.name}`);
   
-  const installTimeout = 20000; // 20 seconds timeout
+  const installTimeout = 200000; // 200 seconds timeout
   let installAttempt = 0;
   const maxAttempts = 2;
   
@@ -612,23 +599,36 @@ export async function startDebugServer(options: {
       }
     });
 
-    // debugserver with --attach doesn't print to stdout and port detection
-    // from Node.js is unreliable due to permissions/environment issues.
-    // We've verified manually that debugserver DOES start listening,
-    // so just wait a reasonable time and proceed.
-    const waitTime = 2000; // 2 seconds should be plenty for debugserver to attach
+    // Wait for debugserver to actually start listening on the port
+    const maxWaitTime = 10000; // 10 seconds max
+    const startTime = Date.now();
+    const checkInterval = 200; // Check every 200ms
 
     commonLogger.log("Waiting for debugserver to attach and start listening", {
       port,
-      waitTime,
+      maxWaitTime,
       debugserverPid: debugserverProcess.pid,
     });
 
-    setTimeout(() => {
+    const checkPort = async (): Promise<boolean> => {
+      try {
+        // Use lsof to check if port is listening
+        const result = await exec({
+          command: "lsof",
+          args: ["-ti", `:${port}`],
+        });
+        return result.trim().length > 0;
+      } catch {
+        return false;
+      }
+    };
+
+    const waitForPort = setInterval(async () => {
       // Check if process exited during wait
       if (debugserverProcess.exitCode !== null) {
+        clearInterval(waitForPort);
         const errorMsg = `debugserver exited with code ${debugserverProcess.exitCode} during startup. stderr: ${allStderr || "(empty)"}, stdout: ${allStdout || "(empty)"}`;
-        commonLogger.error("debugserver exited before timeout", {
+        commonLogger.error("debugserver exited before port was ready", {
           exitCode: debugserverProcess.exitCode,
           stdout: allStdout,
           stderr: allStderr,
@@ -637,14 +637,32 @@ export async function startDebugServer(options: {
         return;
       }
 
-      commonLogger.log("debugserver wait complete, assuming it's listening", {
-        processAlive: !debugserverProcess.killed,
-        processPid: debugserverProcess.pid,
-        exitCode: debugserverProcess.exitCode,
-      });
+      // Check if port is listening
+      const isListening = await checkPort();
+      if (isListening) {
+        clearInterval(waitForPort);
+        commonLogger.log("debugserver is now listening on port", {
+          port,
+          elapsed: Date.now() - startTime,
+          processPid: debugserverProcess.pid,
+        });
+        started = true;
+        resolve();
+        return;
+      }
 
-      started = true;
-      resolve();
-    }, waitTime);
+      // Check timeout
+      const elapsed = Date.now() - startTime;
+      if (elapsed > maxWaitTime) {
+        clearInterval(waitForPort);
+        commonLogger.warn("debugserver port check timeout, assuming it's ready", {
+          port,
+          elapsed,
+          processPid: debugserverProcess.pid,
+        });
+        started = true;
+        resolve();
+      }
+    }, checkInterval);
   });
 }

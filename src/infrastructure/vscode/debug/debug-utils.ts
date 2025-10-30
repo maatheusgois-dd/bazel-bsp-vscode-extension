@@ -1,5 +1,6 @@
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
 import { type DeviceCtlProcess, getRunningProcesses } from "../../apple-platforms/devicectl.adapter.js";
+import { exec } from "../../../shared/utils/exec.js";
 
 /**
  * Wait while the process is launched on the device and return the process information.
@@ -46,5 +47,57 @@ export async function waitForProcessToLaunch(
 
     // Wait for 1 second before checking again
     await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
+/**
+ * Wait for a process to be launched on a simulator
+ */
+export async function waitForSimulatorProcessToLaunch(
+  options: {
+    simulatorId: string;
+    bundleId: string;
+    timeoutMs: number;
+  },
+): Promise<number> {
+  const { simulatorId, bundleId, timeoutMs } = options;
+
+  const startTime = Date.now();
+
+  while (true) {
+    const elapsedTime = Date.now() - startTime;
+    if (elapsedTime > timeoutMs) {
+      throw new Error(`Timeout waiting for simulator process to launch: ${bundleId}`);
+    }
+
+    try {
+      // Query the simulator for running processes using simctl
+      const output = await exec({
+        command: "xcrun",
+        args: ["simctl", "spawn", simulatorId, "launchctl", "list"],
+      });
+
+      // Look for our bundle ID in the running processes
+      if (output.includes(bundleId)) {
+        // Get the actual PID using ps
+        const psOutput = await exec({
+          command: "pgrep",
+          args: ["-f", bundleId],
+        });
+
+        const pidMatch = psOutput.trim().split("\n")[0];
+        if (pidMatch) {
+          const pid = Number.parseInt(pidMatch, 10);
+          if (!Number.isNaN(pid)) {
+            return pid;
+          }
+        }
+      }
+    } catch (error) {
+      // Process not found yet, continue waiting
+    }
+
+    // Wait for 500ms before checking again
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 }

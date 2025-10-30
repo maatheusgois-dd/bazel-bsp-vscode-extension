@@ -5,6 +5,7 @@ import type {
 } from "../../domain/entities/destination/simulator-types.js";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
 import { ExtensionError } from "../errors/errors.js";
+import { exec } from "./exec.js";
 
 export async function getSimulatorByUdid(
   context: ExtensionContext,
@@ -115,4 +116,71 @@ export function parseSimulatorRuntime(runtime: string): {
     return { os: "watchOS", version };
   }
   return null;
+}
+
+// Ensures only the specified simulator device is open
+export async function ensureSingleSimulator(context: ExtensionContext, deviceNameOrUdid: string) {
+  context.updateProgressStatus(`Ensuring single Simulator: ${deviceNameOrUdid}`);
+
+  try {
+    // 1) Get devices list as JSON
+    const output = await exec({
+      command: "xcrun",
+      args: ["simctl", "list", "devices", "--json"],
+    });
+
+    const devices = JSON.parse(output).devices; // map keyed by runtime
+    let target = null;
+    const bootedUDIDs = [];
+
+    // 2) Find target device and collect booted UDIDs
+    // Support both UDID and name for backwards compatibility
+    for (const runtime of Object.keys(devices)) {
+      for (const d of devices[runtime]) {
+        if (d.state === "Booted") bootedUDIDs.push(d.udid);
+        // Try matching by UDID first (exact match), then by name
+        if (d.udid === deviceNameOrUdid || d.name === deviceNameOrUdid) {
+          target = d;
+        }
+      }
+    }
+
+    if (!target) {
+      throw new Error(`Simulator device not found: "${deviceNameOrUdid}"`);
+    }
+
+    // 3) Shutdown other booted devices (except the target if it's already booted)
+    const othersToShutdown = bootedUDIDs.filter((u) => u !== target.udid);
+    for (const udid of othersToShutdown) {
+      context.updateProgressStatus(`Shutting down extra simulator ${udid}`);
+      // ignore errors if already shutting down
+      await exec({
+        command: "xcrun",
+        args: ["simctl", "shutdown", udid],
+      }).catch(() => {});
+    }
+
+    // 4) Boot the target if not booted
+    if (target.state !== "Booted") {
+      context.updateProgressStatus(`Booting ${target.name}`);
+      await exec({
+        command: "xcrun",
+        args: ["simctl", "boot", target.udid],
+      });
+    } else {
+      context.updateProgressStatus(`${target.name} already booted`);
+    }
+
+    // 5) Open Simulator.app (won't open a second app instance; windows = devices)
+    context.updateProgressStatus("Opening Simulator");
+    await exec({
+      command: "open",
+      args: ["-g", "-a", "Simulator"],
+    });
+
+    context.updateProgressStatus("Simulator ready — single device ensured");
+  } catch (err) {
+    context.updateProgressStatus("Failed to ensure single Simulator");
+    throw err;
+  }
 }

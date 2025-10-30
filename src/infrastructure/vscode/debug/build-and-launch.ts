@@ -572,6 +572,7 @@ export async function buildAndLaunchBazelApp(
       buildLabel: bazelItem.target.buildLabel,
       simulatorId: destination.udid,
       simulatorName: destination.name,
+      pid: launchResult.pid,
     });
   } else {
     context.updateWorkspaceState("build.lastLaunchedApp", {
