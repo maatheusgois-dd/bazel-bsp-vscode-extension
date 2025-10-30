@@ -49,11 +49,13 @@ export async function launchBazelAppOnSimulator(
   const { appPath, bundleId, destination, waitForDebugger, env = {}, args = [] } = options;
   const simulatorId = destination.udid;
 
-  commonLogger.log("Launching Bazel app on simulator", {
+  commonLogger.log("🚀 Launching Bazel app on simulator", {
     appPath,
     bundleId,
-    simulatorId,
+    simulator: `${destination.name} (${simulatorId})`,
     waitForDebugger,
+    hasArgs: args.length > 0,
+    hasEnv: Object.keys(env).length > 0,
   });
 
   context.updateProgressStatus("Preparing simulator");
@@ -108,12 +110,22 @@ export async function launchBazelAppOnSimulator(
       await Promise.race([installPromise, timeoutPromise]);
 
       // Success!
-      commonLogger.log("App installed successfully");
+      commonLogger.log("✅ App installed successfully on simulator", {
+        simulator: simulator.name,
+        appPath,
+        bundleId,
+        attempt: installAttempt,
+      });
       break;
     } catch (error) {
       if (error instanceof Error && error.message === "Install timeout" && installAttempt < maxAttempts) {
         // Install timed out, try restarting simulator
-        commonLogger.warn(`Install timed out (attempt ${installAttempt}/${maxAttempts}), restarting simulator`);
+        commonLogger.warn(`⚠️ Install timed out after ${installTimeout / 1000}s (attempt ${installAttempt}/${maxAttempts})`, {
+          simulator: simulator.name,
+          udid: simulator.udid,
+          appPath,
+          timeout: installTimeout,
+        });
         context.updateProgressStatus("Restarting simulator (install timeout)");
 
         try {
@@ -137,13 +149,32 @@ export async function launchBazelAppOnSimulator(
           // Wait for it to boot with longer timeout
           await waitForSimulatorBoot(simulator.udid, 60000);
 
-          commonLogger.log("Simulator restarted, retrying install");
+          commonLogger.log("♻️ Simulator restarted successfully, retrying installation", {
+        simulator: simulator.name,
+        attempt: installAttempt + 1,
+      });
           context.updateProgressStatus("Retrying app installation");
 
           // Loop will retry install
         } catch (restartError) {
-          commonLogger.error("Failed to restart simulator", { restartError });
-          throw new Error(`Install failed and simulator restart failed: ${restartError}`);
+          const errorMsg = restartError instanceof Error ? restartError.message : String(restartError);
+          commonLogger.error("Failed to restart simulator after install timeout", { 
+            restartError, 
+            simulator: simulator.name,
+            udid: simulator.udid,
+            attempt: installAttempt,
+          });
+          throw new Error(
+            `App installation failed and simulator restart failed.\n` +
+            `Simulator: ${simulator.name} (${simulator.udid})\n` +
+            `Attempt: ${installAttempt}/${maxAttempts}\n` +
+            `Error: ${errorMsg}\n\n` +
+            `Try:\n` +
+            `1. Restart Simulator.app manually\n` +
+            `2. Run: xcrun simctl shutdown all && xcrun simctl boot ${simulator.udid}\n` +
+            `3. Check available disk space\n` +
+            `4. Check Console.app for simulator errors`
+          );
         }
       } else {
         // Other error or max attempts reached
@@ -167,7 +198,13 @@ export async function launchBazelAppOnSimulator(
   // Prepare environment variables (simctl requires SIMCTL_CHILD_ prefix)
   const launchEnv = Object.fromEntries(Object.entries(env).map(([key, value]) => [`SIMCTL_CHILD_${key}`, value]));
 
-  commonLogger.log("Launching app", { launchArgs, launchEnv });
+  commonLogger.log("🎯 Launching app on simulator with arguments", { 
+    bundleId,
+    simulator: `${simulator.name} (${simulator.udid})`,
+    waitForDebugger,
+    args: launchArgs,
+    envVars: Object.keys(launchEnv).length,
+  });
 
   const output = await exec({
     command: "xcrun",
@@ -179,12 +216,26 @@ export async function launchBazelAppOnSimulator(
   // Output format: "com.example.MyApp: 12345"
   const pidMatch = output.match(/:\s*(\d+)/);
   if (!pidMatch) {
-    throw new Error(`Failed to extract PID from launch output: ${output}`);
+    throw new Error(
+      `Failed to extract PID from simulator launch output.\n` +
+      `Bundle ID: ${bundleId}\n` +
+      `Simulator: ${simulator.name} (${simulator.udid})\n` +
+      `Output: ${output}\n\n` +
+      `The app may have failed to launch. Check:\n` +
+      `1. Simulator console for errors\n` +
+      `2. App is properly code signed\n` +
+      `3. Simulator has enough disk space`
+    );
   }
 
   const pid = Number.parseInt(pidMatch[1], 10);
 
-  commonLogger.log("App launched successfully", { pid, bundleId });
+  commonLogger.log("✅ Simulator app launched successfully", { 
+    pid, 
+    bundleId, 
+    simulator: `${simulator.name} (${simulator.udid})`,
+    waitingForDebugger: waitForDebugger,
+  });
 
   return {
     pid,
@@ -204,11 +255,13 @@ export async function launchBazelAppOnDevice(
   const { appPath, bundleId, destination, waitForDebugger, env = {}, args = [] } = options;
   const deviceId = destination.udid;
 
-  commonLogger.log("Launching Bazel app on device", {
+  commonLogger.log("🚀 Launching Bazel app on physical device", {
     appPath,
     bundleId,
-    deviceId,
+    device: `${destination.name} (${deviceId})`,
     waitForDebugger,
+    hasArgs: args.length > 0,
+    hasEnv: Object.keys(env).length > 0,
   });
 
   // Check if device is locked and wait for unlock
@@ -232,10 +285,21 @@ export async function launchBazelAppOnDevice(
       );
 
       if (!unlocked) {
-        throw new Error(`Device "${destination.name}" is locked. Please unlock your device and try again.`);
+        throw new Error(
+          `Device is locked and could not be unlocked within 2 minutes.\n` +
+          `Device: ${destination.name}\n` +
+          `UDID: ${deviceId}\n\n` +
+          `Please:\n` +
+          `1. Unlock your device manually\n` +
+          `2. Keep the device unlocked during installation\n` +
+          `3. Try again after unlocking`
+        );
       }
 
-      commonLogger.log("Device unlocked, continuing with installation");
+      commonLogger.log("✅ Device unlocked successfully, continuing with installation", {
+        deviceId,
+        deviceName: destination.name,
+      });
     }
   } catch (lockCheckError) {
     // If lock check fails, log but continue - don't block installation
@@ -291,7 +355,14 @@ export async function launchBazelAppOnDevice(
   // Prepare environment variables (devicectl requires DEVICECTL_CHILD_ prefix)
   const launchEnv = Object.fromEntries(Object.entries(env).map(([key, value]) => [`DEVICECTL_CHILD_${key}`, value]));
 
-  commonLogger.log("Launching app on device", { launchArgs, launchEnv });
+  commonLogger.log("🎯 Launching app on device with arguments", { 
+    bundleId,
+    deviceId,
+    deviceName: destination.name,
+    waitForDebugger,
+    args: launchArgs,
+    envVars: Object.keys(launchEnv).length,
+  });
 
   await exec({
     command: "xcrun",
@@ -312,11 +383,26 @@ export async function launchBazelAppOnDevice(
   const pid = result.result?.process?.processIdentifier;
 
   if (!pid) {
-    commonLogger.error("Failed to extract PID from devicectl output", { result });
-    throw new Error("Failed to extract PID from launch output. Check logs for details.");
+    commonLogger.error("Failed to extract PID from devicectl output", { result, bundleId, deviceId });
+    throw new Error(
+      `Failed to extract PID from device launch output.\n` +
+      `Bundle ID: ${bundleId}\n` +
+      `Device: ${deviceId}\n\n` +
+      `The app may have failed to launch on the device. Check:\n` +
+      `1. App is properly code signed for this device\n` +
+      `2. Device has the app's provisioning profile\n` +
+      `3. Device is not locked\n` +
+      `4. Open console for detailed devicectl output`
+    );
   }
 
-  commonLogger.log("App launched successfully on device", { pid, bundleId });
+  commonLogger.log("✅ Device app launched successfully", { 
+    pid, 
+    bundleId, 
+    deviceId,
+    deviceName: destination.name,
+    waitingForDebugger: waitForDebugger,
+  });
 
   return {
     pid,
@@ -339,7 +425,14 @@ export async function getBundleIdentifier(appPath: string): Promise<string> {
       args: ["-d", appPath],
     });
   } catch (_error) {
-    throw new Error(`App bundle does not exist: ${appPath}`);
+    throw new Error(
+      `App bundle not found at expected path.\n` +
+      `Path: ${appPath}\n\n` +
+      `This usually means the build output is in a different location. Try:\n` +
+      `1. Clean and rebuild: bazel clean\n` +
+      `2. Check the build succeeded without errors\n` +
+      `3. Verify the target produces an .app bundle`
+    );
   }
 
   // Check if Info.plist exists
@@ -362,7 +455,15 @@ export async function getBundleIdentifier(appPath: string): Promise<string> {
     } catch {
       // Ignore ls error
     }
-    throw new Error(`Info.plist not found at: ${plistPath}`);
+    throw new Error(
+      `Info.plist not found in app bundle.\n` +
+      `Expected at: ${plistPath}\n` +
+      `App bundle: ${appPath}\n\n` +
+      `The app bundle may be corrupted. Try:\n` +
+      `1. Clean build: bazel clean\n` +
+      `2. Rebuild the target\n` +
+      `3. Check build rules produce valid .app structure`
+    );
   }
 
   // Read bundle identifier
@@ -373,7 +474,16 @@ export async function getBundleIdentifier(appPath: string): Promise<string> {
     });
     return output.trim();
   } catch (error) {
-    throw new Error(`Failed to read CFBundleIdentifier from ${plistPath}: ${error}`);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to read bundle identifier from Info.plist.\n` +
+      `Plist path: ${plistPath}\n` +
+      `Error: ${errorMsg}\n\n` +
+      `The Info.plist may be corrupted or missing CFBundleIdentifier. Try:\n` +
+      `1. Open Info.plist and verify CFBundleIdentifier exists\n` +
+      `2. Rebuild the app bundle\n` +
+      `3. Check build rules properly set bundle identifier`
+    );
   }
 }
 
@@ -389,7 +499,11 @@ export async function startDebugServer(options: {
   const { pid, port, deviceId } = options;
 
   // Kill any existing debugserver processes (comprehensive cleanup)
-  commonLogger.log("Cleaning up any existing debugserver processes", { port });
+  commonLogger.log("🧹 Cleaning up any existing debugserver processes", { 
+    port,
+    targetPid: pid,
+    isDevice: !!deviceId,
+  });
 
   // Use Promise.race with timeout for all cleanup operations
   const cleanupTimeout = 2000; // 2 seconds max for cleanup
@@ -446,7 +560,12 @@ export async function startDebugServer(options: {
 
   // For physical devices, use remote debugging via LLDB
   if (deviceId) {
-    commonLogger.log("Device debugging: setting up remote connection", { deviceId, pid, port });
+    commonLogger.log("🔌 Device debugging: setting up remote LLDB connection", { 
+      deviceId, 
+      targetPid: pid, 
+      port,
+      mode: "remote-ios",
+    });
 
     // For device debugging, LLDB connects directly to the device process
     // The app was launched with --start-stopped and is waiting for debugger
@@ -455,7 +574,12 @@ export async function startDebugServer(options: {
     // Wait a moment to ensure the process is ready on device
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    commonLogger.log("Device ready for remote debugging", { port, pid });
+    commonLogger.log("✅ Device ready for remote LLDB debugging", { 
+      port, 
+      targetPid: pid,
+      deviceId,
+      note: "LLDB will attach remotely via devicectl",
+    });
     return;
   }
 
@@ -486,14 +610,22 @@ export async function startDebugServer(options: {
     });
     commonLogger.log("Target process is running", { pid });
   } catch (_error) {
-    throw new Error(`Target process ${pid} is not running. App may have crashed or exited.`);
+    throw new Error(
+      `Target process is not running.\n` +
+      `PID: ${pid}\n\n` +
+      `The app crashed or exited before debugserver could attach. Try:\n` +
+      `1. Run the app without debugging first to check for crashes\n` +
+      `2. Check simulator/device console for crash logs\n` +
+      `3. Verify the app binary is valid`
+    );
   }
 
-  commonLogger.log("Starting debugserver", {
+  commonLogger.log("🔌 Starting debugserver for simulator", {
     debugserverPath,
     args: debugserverArgs,
-    pid,
-    port,
+    targetPid: pid,
+    listeningPort: port,
+    debugserverLocation: "local",
   });
 
   // Import spawn to run debugserver in background

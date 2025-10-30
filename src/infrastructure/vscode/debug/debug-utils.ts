@@ -23,14 +23,28 @@ export async function waitForProcessToLaunch(
     // after some time and throw an error.
     const elapsedTime = Date.now() - startTime; // in milliseconds
     if (elapsedTime > timeoutMs) {
-      throw new Error(`Timeout waiting for the process to launch: ${appName}`);
+      throw new Error(
+        `Timeout waiting for process to launch after ${Math.round(elapsedTime / 1000)}s.\n` +
+        `App: ${appName}\n` +
+        `Device: ${deviceId}\n` +
+        `Timeout: ${Math.round(timeoutMs / 1000)}s\n\n` +
+        `The app may have crashed during launch. Check device console for crash logs.`
+      );
     }
 
     // Query the running processes on the device using the devicectl command
     const result = await getRunningProcesses(context, { deviceId: deviceId });
     const runningProcesses = result?.result?.runningProcesses ?? [];
     if (runningProcesses.length === 0) {
-      throw new Error("No running processes found on the device");
+      throw new Error(
+        `No running processes found on device.\n` +
+        `Device: ${deviceId}\n` +
+        `App: ${appName}\n\n` +
+        `The device may be disconnected or locked. Try:\n` +
+        `1. Unlock your device\n` +
+        `2. Trust this computer if prompted\n` +
+        `3. Reconnect the device`
+      );
     }
 
     // Example of a running process:

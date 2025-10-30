@@ -261,7 +261,14 @@ class DynamicDebugConfigurationProvider implements vscode.DebugConfigurationProv
   ): Promise<vscode.DebugConfiguration> {
     const launchContext = this.context.getWorkspaceState("build.lastLaunchedApp");
     if (!launchContext) {
-      throw new Error("No last launched app found, please launch the app first using the swiftbazel extension");
+      throw new Error(
+        `No app has been launched yet.\n\n` +
+        `Before debugging, you must first launch the app using one of:\n` +
+        `1. Click the ▶ (Run) button on a Bazel target\n` +
+        `2. Run command: swiftbazel: Build & Run\n` +
+        `3. Use Cmd+R on a selected target\n\n` +
+        `Then attach the debugger by pressing F5`
+      );
     }
 
     // Pass the "codelldbAttributes" to the lldb debugger
@@ -325,8 +332,19 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     });
 
     if (!launchContext) {
-      commonLogger.error("No launch context found - cannot debug");
-      throw new Error("No Bazel app launched. Please build and run a Bazel target first.");
+      commonLogger.error("No launch context found - cannot debug", {
+        workspaceState: this.context.getWorkspaceState("build.lastLaunchedApp"),
+      });
+      throw new Error(
+        `No Bazel app has been launched yet.\n\n` +
+        `To debug a Bazel target:\n` +
+        `1. Select a binary target in BAZEL TARGETS tree\n` +
+        `2. Click the 🐛 (Debug) button\n` +
+        `   OR\n` +
+        `1. Run command: swiftbazel: Bazel Debug\n` +
+        `2. Select your target when prompted\n\n` +
+        `This will build, launch, and attach the debugger automatically.`
+      );
     }
 
     if (launchContext.type === "bazel-simulator") {
@@ -373,7 +391,20 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
       });
 
       if (!pid) {
-        throw new Error("No PID found in launch context. Please run the app again.");
+        commonLogger.error("No PID in launch context for device debugging", {
+          launchContext,
+          deviceUDID,
+          targetName,
+        });
+        throw new Error(
+          `Process ID not found in launch context.\n` +
+          `Target: ${targetName}\n` +
+          `Device: ${deviceUDID}\n\n` +
+          `The app launch may have failed. Try:\n` +
+          `1. Re-run the debug command (it will rebuild and relaunch)\n` +
+          `2. Check device console for app launch errors\n` +
+          `3. Verify the app installs successfully without debugging first`
+        );
       }
 
       // For device debugging with devicectl's --start-stopped:
@@ -443,11 +474,20 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
       return resolvedConfig;
     }
 
+    const contextType = (launchContext as any).type || "unknown";
     commonLogger.error("Unsupported launch context type", {
-      type: (launchContext as any).type,
+      type: contextType,
+      launchContext,
     });
 
-    throw new Error(`Unsupported launch context type for Bazel debugging: ${(launchContext as any).type}`);
+    throw new Error(
+      `Unsupported app launch type for Bazel debugging.\n` +
+      `Launch type: ${contextType}\n\n` +
+      `Currently supported:\n` +
+      `- bazel-simulator: Bazel app on iOS Simulator\n` +
+      `- bazel-device: Bazel app on physical iOS device\n\n` +
+      `This is likely a bug. Please report this issue.`
+    );
   }
 }
 

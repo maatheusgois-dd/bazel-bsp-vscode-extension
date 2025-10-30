@@ -170,7 +170,15 @@ export async function takeSimulatorScreenshotCommand(
         // Verify file was created and has content
         const stats = await fs.stat(screenshotPath);
         if (stats.size === 0) {
-          throw new Error("Screenshot file was created but is empty");
+          throw new Error(
+            `Screenshot file was created but is empty (0 bytes).\n` +
+            `Path: ${screenshotPath}\n` +
+            `Simulator: ${simulatorUdid}\n\n` +
+            `This may indicate the simulator screen is blank. Try:\n` +
+            `1. Ensure the simulator is fully booted\n` +
+            `2. Bring Simulator.app to foreground\n` +
+            `3. Wait a moment and try again`
+          );
         }
 
         // Read the screenshot file

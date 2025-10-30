@@ -82,11 +82,14 @@ async function buildBazelTarget(
   const { bazelItem, destination, attachDebugger } = options;
 
   progress.nextStep("Building with debug symbols");
-
+  
   if (attachDebugger) {
     terminal.write(`🔨 Step 1/6: Building ${bazelItem.target.name} with debug symbols...\n`);
+    terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
+    terminal.write(`   Platform: ${destination.type === "iOSSimulator" ? "iOS Simulator" : "iOS Device"}\n`);
   } else {
     terminal.write(`🔨 Step 1/4: Building ${bazelItem.target.name}...\n`);
+    terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
   }
 
   // Build flags based on destination type
@@ -117,9 +120,17 @@ async function buildBazelTarget(
           120000, // 2 minutes timeout
         );
 
-        if (!unlocked) {
-          throw new Error(`Device "${destination.name}" is locked. Please unlock your device and try again.`);
-        }
+      if (!unlocked) {
+        throw new Error(
+          `Device is locked and could not be unlocked within 2 minutes.\n` +
+          `Device: ${destination.name}\n` +
+          `UDID: ${destination.udid}\n\n` +
+          `Please:\n` +
+          `1. Unlock your device manually\n` +
+          `2. Keep the device unlocked during the build\n` +
+          `3. Try the build again after unlocking`
+        );
+      }
 
         terminal.write("   ✅ Device unlocked\n");
       }
@@ -128,7 +139,14 @@ async function buildBazelTarget(
       commonLogger.warn("Lock check failed, continuing anyway", { lockCheckError });
     }
   } else {
-    throw new Error(`Unsupported destination type: ${destination.type}`);
+    throw new Error(
+      `Unsupported destination type for build.\n` +
+      `Type: ${destination.type}\n\n` +
+      `Currently supported:\n` +
+      `- iOSSimulator\n` +
+      `- iOSDevice\n\n` +
+      `Please select an iOS simulator or device from the DESTINATIONS view.`
+    );
   }
 
   // Add debug symbols if debugging
@@ -160,16 +178,18 @@ async function locateAppBundle(
 ): Promise<string> {
   const { bazelItem, destination, attachDebugger } = options;
 
-  progress.nextStep("Locating app bundle");
-
-  if (attachDebugger) {
-    terminal.write("\n📦 Step 2/6: Locating app bundle...\n");
-  } else {
-    terminal.write("\n📦 Step 2/4: Locating app bundle...\n");
-  }
-
   // Convert build label to path: "//Apps/Foo:Bar" → "Apps/Foo/Bar"
   const packagePath = bazelItem.target.buildLabel.replace("//", "").replace(":", "/");
+
+  progress.nextStep("Locating app bundle");
+  
+  if (attachDebugger) {
+    terminal.write("\n📦 Step 2/6: Locating app bundle...\n");
+    terminal.write(`   Package: ${packagePath}\n`);
+  } else {
+    terminal.write("\n📦 Step 2/4: Locating app bundle...\n");
+    terminal.write(`   Package: ${packagePath}\n`);
+  }
 
   // Find Bazel workspace root
   let workspaceRoot = bazelItem.package.path;
@@ -203,7 +223,7 @@ async function locateAppBundle(
     attempts++;
   }
 
-  terminal.write(`   Workspace root: ${workspaceRoot}\n`);
+  terminal.write(`   Workspace: ${path.basename(workspaceRoot)}\n`);
 
   // Look for app bundle or IPA
   const basePaths = [
@@ -254,7 +274,16 @@ async function locateAppBundle(
       terminal.write(`      - ${basePath}.ipa\n`);
       terminal.write(`      - ${basePath}.app\n`);
     }
-    throw new Error(`App bundle not found. Expected: bazel-bin/${packagePath}.{ipa,app}`);
+    throw new Error(
+      `App bundle not found after build.\n` +
+      `Expected: bazel-bin/${packagePath}.{ipa,app}\n` +
+      `Build label: ${bazelItem.target.buildLabel}\n\n` +
+      `Build may have succeeded but output location is unexpected. Try:\n` +
+      `1. Check build output for the actual location\n` +
+      `2. Look in workspace root for bazel-bin directory\n` +
+      `3. Run: bazel info bazel-bin\n` +
+      `4. Verify target type produces an application bundle`
+    );
   }
 
   return appPath;
@@ -397,9 +426,12 @@ async function launchApp(
       args: launchArgs,
     });
 
-    terminal.write(`   ✅ App launched, PID: ${launchResult.pid}\n`);
+    terminal.write(`   ✅ App launched successfully\n`);
+    terminal.write(`   Process ID: ${launchResult.pid}\n`);
     if (attachDebugger) {
       terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
+    } else {
+      terminal.write("   🏃 App is now running\n");
     }
 
     // Bring Simulator.app to foreground after launch
@@ -426,13 +458,16 @@ async function launchApp(
     args: launchArgs,
   });
 
-  terminal.write(`   ✅ App launched, PID: ${launchResult.pid}\n`);
-  if (attachDebugger) {
-    terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
-  }
+    terminal.write(`   ✅ App launched successfully\n`);
+    terminal.write(`   Process ID: ${launchResult.pid}\n`);
+    if (attachDebugger) {
+      terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
+    } else {
+      terminal.write("   🏃 App is now running on device\n");
+    }
 
-  return launchResult;
-}
+    return launchResult;
+  }
 
 /**
  * Attach debugger to the launched app
@@ -452,7 +487,9 @@ async function attachDebuggerToApp(
   // Step 5: Start debugserver
   progress.nextStep("Starting debugserver");
   terminal.write("\n🔌 Step 5/6: Starting debugserver...\n");
-  terminal.write(`   Starting debugserver on port ${debugPort}...\n`);
+  terminal.write(`   Port: ${debugPort}\n`);
+  terminal.write(`   PID: ${launchResult.pid}\n`);
+  terminal.write(`   Type: ${destination.type === "iOSDevice" ? "Remote (device)" : "Local (simulator)"}\n`);
 
   try {
     await startDebugServer({
@@ -460,7 +497,7 @@ async function attachDebuggerToApp(
       port: debugPort,
       deviceId: destination.type === "iOSDevice" ? destination.udid : undefined,
     });
-    terminal.write(`   ✅ Debugserver listening on port ${debugPort}\n`);
+    terminal.write(`   ✅ Debugserver ready and listening\n`);
   } catch (error) {
     terminal.write(`   ⚠️  Failed to start debugserver: ${error}\n`);
     throw error;
@@ -472,9 +509,9 @@ async function attachDebuggerToApp(
 
   try {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    terminal.write(`   Workspace: ${workspaceFolder?.name || "undefined"}\n`);
-
     const isDevice = destination.type === "iOSDevice";
+    terminal.write(`   Workspace: ${workspaceFolder?.name || "undefined"}\n`);
+    terminal.write(`   Debug type: ${isDevice ? "lldb-dap (device)" : "lldb-dap (simulator)"}\n`);
 
     // The debug provider will handle the actual LLDB commands based on launch context
     const debugConfig: vscode.DebugConfiguration = {
@@ -487,24 +524,32 @@ async function attachDebuggerToApp(
       timeout: 100000,
     };
 
-    terminal.write("   Debug config:\n");
-    terminal.write(`     - type: ${debugConfig.type}\n`);
-    terminal.write(`     - debugPort: ${debugConfig.debugPort}\n`);
-    terminal.write(`     - target: ${isDevice ? "Device" : "Simulator"}\n`);
-    terminal.write("   Calling vscode.debug.startDebugging()...\n");
+    terminal.write("   Connecting LLDB...\n");
     const started = await vscode.debug.startDebugging(workspaceFolder, debugConfig);
 
     if (started) {
       terminal.write("\n   ✅ Debugger attached successfully!\n\n");
-      terminal.write("🎉 Happy debugging! Set breakpoints and inspect variables.\n");
+      terminal.write("🎉 Happy debugging!\n");
+      terminal.write("   • Set breakpoints in your code\n");
+      terminal.write("   • Use Debug Console to inspect variables\n");
+      terminal.write("   • Use step over/into/out controls\n");
     } else {
       terminal.write("\n   ⚠️  Failed to start debugger automatically.\n");
-      terminal.write("   Please start debugging manually by pressing F5.\n\n");
+      terminal.write("   Debugserver is running. You can attach manually:\n");
+      terminal.write("   1. Open Run and Debug panel (Cmd+Shift+D)\n");
+      terminal.write("   2. Press F5 or click 'Start Debugging'\n\n");
     }
   } catch (error) {
-    terminal.write(`\n   ❌ Error starting debugger: ${error}\n`);
-    terminal.write("\n   Please start debugging manually by pressing F5.\n\n");
-    commonLogger.error("Error starting debugger", { error });
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    terminal.write(`\n   ❌ Error attaching debugger: ${errorMsg}\n`);
+    terminal.write("\n   Debugserver is running on port ${debugPort}.\n");
+    terminal.write("   You can try attaching manually by pressing F5.\n\n");
+    commonLogger.error("Error starting debugger", { 
+      error,
+      debugPort,
+      destination: destination.type,
+      launchResultPid: launchResult.pid,
+    });
   }
 }
 
@@ -533,11 +578,15 @@ export async function buildAndLaunchBazelApp(
     taskName: attachDebugger ? `Debug: ${bazelItem.target.name}` : `Run: ${bazelItem.target.name}`,
   });
 
-  terminal.write(
-    attachDebugger
-      ? `🐛 Starting debug workflow for ${bazelItem.target.name}\n\n`
-      : `🚀 Starting launch workflow for ${bazelItem.target.name}\n\n`,
-  );
+  if (attachDebugger) {
+    terminal.write(`🐛 Starting debug workflow for ${bazelItem.target.name}\n`);
+    terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
+    terminal.write(`   Destination: ${destination.name} (${destination.type})\n\n`);
+  } else {
+    terminal.write(`🚀 Starting launch workflow for ${bazelItem.target.name}\n`);
+    terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
+    terminal.write(`   Destination: ${destination.name} (${destination.type})\n\n`);
+  }
 
   // Step 1: Build
   await buildBazelTarget(context, terminal, progress, { bazelItem, destination, attachDebugger });
@@ -548,6 +597,7 @@ export async function buildAndLaunchBazelApp(
   // Get bundle ID
   const bundleId = await getBundleIdentifier(appPath);
   terminal.write(`   Bundle ID: ${bundleId}\n`);
+  terminal.write(`   App path: ${path.basename(appPath)}\n`);
 
   // Step 3: Prepare app
   await prepareApp(terminal, progress, { appPath, destination, attachDebugger });
@@ -595,12 +645,16 @@ export async function buildAndLaunchBazelApp(
   }
 
   progress.complete();
-
-  terminal.write(
-    attachDebugger
-      ? "\n✅ Debug workflow completed. Debugger is attached and running.\n"
-      : "\n✅ Launch completed successfully.\n",
-  );
+  
+  if (attachDebugger) {
+    terminal.write("\n✅ Debug workflow completed successfully.\n");
+    terminal.write("   Debugger is attached and ready.\n");
+    terminal.write("   Your app is now running with full debugging support.\n");
+  } else {
+    terminal.write("\n✅ Launch completed successfully.\n");
+    terminal.write(`   App is running: ${bundleId}\n`);
+    terminal.write(`   On: ${destination.name}\n`);
+  }
 
   return {
     appPath,
