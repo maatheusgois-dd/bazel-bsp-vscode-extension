@@ -29,12 +29,12 @@ export class OperationCancelledError extends Error {
  */
 export class ProgressManager {
   private steps: readonly ProgressStep[];
-  private currentStepIndex: number = -1;
+  private currentStepIndex = -1;
   private context: ExtensionContext;
   private taskName: string;
   private startTime: number;
-  private stepStartTime: number = 0;
-  private _cancelled: boolean = false;
+  private stepStartTime = 0;
+  private _cancelled = false;
   private cancellable: boolean;
 
   constructor(options: ProgressOptions) {
@@ -43,18 +43,18 @@ export class ProgressManager {
     this.taskName = options.taskName || "Operation";
     this.cancellable = options.cancellable ?? true; // Default to cancellable
     this.startTime = Date.now();
-    
+
     // Register cancel callback with status bar
     if (this.cancellable) {
       this.context.progressStatusBar.registerCancelCallback(() => {
         this.cancel();
       });
     }
-    
+
     commonLogger.log("Progress Manager initialized", {
       taskName: this.taskName,
       totalSteps: this.steps.length,
-      steps: this.steps.map(s => s.name),
+      steps: this.steps.map((s) => s.name),
       cancellable: this.cancellable,
     });
   }
@@ -96,9 +96,9 @@ export class ProgressManager {
 
     const progress = this.calculateProgress();
     const progressText = this.formatProgressText(step.name, progress);
-    
+
     this.context.updateProgressStatus(progressText, this.cancellable);
-    
+
     commonLogger.log("Step started", {
       step: step.name,
       stepNumber: this.currentStepIndex + 1,
@@ -121,7 +121,7 @@ export class ProgressManager {
     const step = this.steps[this.currentStepIndex];
     const progress = this.calculateProgress();
     const progressText = this.formatProgressText(`${step.name}: ${detail}`, progress);
-    
+
     this.context.updateProgressStatus(progressText, this.cancellable);
   }
 
@@ -135,7 +135,7 @@ export class ProgressManager {
 
     const step = this.steps[this.currentStepIndex];
     const stepDuration = Date.now() - this.stepStartTime;
-    
+
     commonLogger.log("Step marked complete", {
       step: step.name,
       duration: `${(stepDuration / 1000).toFixed(2)}s`,
@@ -147,7 +147,7 @@ export class ProgressManager {
    */
   complete(): void {
     const totalDuration = Date.now() - this.startTime;
-    
+
     commonLogger.log("Progress Manager completed", {
       taskName: this.taskName,
       totalDuration: `${(totalDuration / 1000).toFixed(2)}s`,
@@ -161,21 +161,21 @@ export class ProgressManager {
    */
   private calculateProgress(): number {
     if (this.steps.length === 0) return 0;
-    
+
     // Calculate total weight
     const totalWeight = this.steps.reduce((sum, step) => sum + (step.weight || 1), 0);
-    
+
     // Calculate completed weight (all previous steps + partial current step)
     let completedWeight = 0;
     for (let i = 0; i < this.currentStepIndex; i++) {
       completedWeight += this.steps[i].weight || 1;
     }
-    
+
     // Add 50% of current step weight (assuming we're midway through it)
     if (this.currentStepIndex >= 0 && this.currentStepIndex < this.steps.length) {
       completedWeight += (this.steps[this.currentStepIndex].weight || 1) * 0.5;
     }
-    
+
     return Math.min(100, (completedWeight / totalWeight) * 100);
   }
 
@@ -185,7 +185,7 @@ export class ProgressManager {
   private formatProgressText(stepName: string, progress: number): string {
     const stepNum = this.currentStepIndex + 1;
     const totalSteps = this.steps.length;
-    
+
     return `[${progress.toFixed(0)}%] ${stepName} (${stepNum}/${totalSteps})`;
   }
 
@@ -266,7 +266,7 @@ export const ProgressSteps = {
     { name: "Code signing", weight: 1 },
     { name: "Finalizing build", weight: 1 },
   ],
-  
+
   DEBUG: [
     { name: "Building with debug symbols", weight: 3 },
     { name: "Locating app bundle", weight: 1 },
@@ -275,21 +275,21 @@ export const ProgressSteps = {
     { name: "Starting debugserver", weight: 1 },
     { name: "Attaching debugger", weight: 2 },
   ],
-  
+
   RUN: [
     { name: "Building target", weight: 3 },
     { name: "Preparing destination", weight: 1 },
     { name: "Installing app", weight: 2 },
     { name: "Launching app", weight: 1 },
   ],
-  
+
   TEST: [
     { name: "Building test target", weight: 2 },
     { name: "Preparing test environment", weight: 1 },
     { name: "Running tests", weight: 4 },
     { name: "Collecting results", weight: 1 },
   ],
-  
+
   INSTALL: [
     { name: "Locating app bundle", weight: 1 },
     { name: "Validating bundle", weight: 1 },
@@ -298,4 +298,3 @@ export const ProgressSteps = {
     { name: "Verifying installation", weight: 1 },
   ],
 } as const;
-

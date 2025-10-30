@@ -44,7 +44,7 @@ const createCommandTool = (
         resolve("completed");
       });
     });
-    
+
     commonLogger.log(`🚀 MCP: Starting command ${commandId}, waiting for completion...`);
 
     const timeoutPromise = new Promise<"timeout">((resolve) => {
@@ -86,23 +86,24 @@ const createCommandTool = (
 
       if (logContent.length > 0) {
         // Check the final status - look for success markers
-        const hasSuccess = logContent.includes('✅') || 
-                          logContent.toLowerCase().includes('completed successfully') ||
-                          logContent.toLowerCase().includes('launched successfully') ||
-                          logContent.includes('🎉');
-        
+        const hasSuccess =
+          logContent.includes("✅") ||
+          logContent.toLowerCase().includes("completed successfully") ||
+          logContent.toLowerCase().includes("launched successfully") ||
+          logContent.includes("🎉");
+
         // Only flag as error if no success markers found AND has error indicators
-        const hasError = !hasSuccess && (
-          logContent.toLowerCase().includes('error:') || 
-          logContent.includes('❌') ||
-          logContent.toLowerCase().includes('failed')
-        );
-        
+        const hasError =
+          !hasSuccess &&
+          (logContent.toLowerCase().includes("error:") ||
+            logContent.includes("❌") ||
+            logContent.toLowerCase().includes("failed"));
+
         return {
           content: [
             {
               type: "text",
-              text: hasError 
+              text: hasError
                 ? `Command ${commandId} encountered an error:\n\n${logContent}`
                 : `Command ${commandId} completed successfully.\n\nOutput:\n${logContent}`,
             },
@@ -110,7 +111,7 @@ const createCommandTool = (
           isError: hasError,
         };
       }
-      
+
       // No log content - command completed with no output
       return {
         content: [
@@ -216,12 +217,12 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
     extensionContext,
   );
   server.tool(
-    bazelTest.toolName, 
+    bazelTest.toolName,
     "Runs unit tests for the currently selected Bazel test target. Target must be a test type (ios_unit_test or swift_test).",
-    bazelTest.schema, 
-    bazelTest.implementation
+    bazelTest.schema,
+    bazelTest.implementation,
   );
-  
+
   const bazelRun = createCommandTool(
     "swiftbazel.bazel.debug",
     "bazel_run",
@@ -229,12 +230,12 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
     extensionContext,
   );
   server.tool(
-    bazelRun.toolName, 
+    bazelRun.toolName,
     "Builds, launches, and attaches LLDB debugger to the currently selected Bazel target on iOS simulator or device. Allows setting breakpoints and inspecting app state. This is the primary run command.",
-    bazelRun.schema, 
-    bazelRun.implementation
+    bazelRun.schema,
+    bazelRun.implementation,
   );
-  
+
   const bazelBuild = createCommandTool(
     "swiftbazel.bazel.buildSelected",
     "bazel_build",
@@ -242,10 +243,10 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
     extensionContext,
   );
   server.tool(
-    bazelBuild.toolName, 
+    bazelBuild.toolName,
     "Builds the currently selected Bazel target. Compiles code without running the app.",
-    bazelBuild.schema, 
-    bazelBuild.implementation
+    bazelBuild.schema,
+    bazelBuild.implementation,
   );
 
   // === SCREENSHOT COMMANDS ===

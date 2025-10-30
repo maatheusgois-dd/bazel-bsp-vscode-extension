@@ -363,7 +363,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
       const appPath = launchContext.appPath;
       const pid = launchContext.pid;
       const targetName = launchContext.targetName;
-      
+
       commonLogger.log("Resolving Bazel device debug configuration", {
         launchContext,
         deviceUDID,
@@ -380,7 +380,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
       // 1. App is already running but paused on device
       // 2. We need to find the device app path for proper symbol resolution
       // 3. Use the same approach as regular device debugging
-      
+
       // Wait for process to be available and get its device path
       const process = await waitForProcessToLaunch(this.context, {
         deviceId: deviceUDID,
@@ -405,32 +405,32 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
         debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
         program: appPath,
         pid: pid.toString(),
-        
+
         // LLDB commands executed upon debugger startup
         initCommands: [
           ...(config.initCommands || []),
           "platform select remote-ios",
           ...(continueOnAttach ? ["process handle SIGSTOP -p true -s false -n false"] : []),
         ],
-        
+
         // Set the platform file spec for symbol resolution
         preRunCommands: [
           ...(config.preRunCommands || []),
           `script lldb.target.module[0].SetPlatformFileSpec(lldb.SBFileSpec('${deviceAppPath}'))`,
         ],
-        
+
         // Attach to the process on the device
         processCreateCommands: [
           ...(config.processCreateCommands || []),
           `script lldb.debugger.HandleCommand("device select ${deviceUDID}")`,
           `script lldb.debugger.HandleCommand("device process attach --continue --pid ${pid}")`,
         ],
-        
+
         postRunCommands: [
           ...(config.postRunCommands || []),
           `script print("swiftbazel: Debugger attached to device process ${pid}")`,
         ],
-        
+
         internalConsoleOptions: "openOnSessionStart",
         timeout: 100000,
       };

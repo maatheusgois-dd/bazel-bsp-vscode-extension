@@ -118,6 +118,37 @@ export function parseSimulatorRuntime(runtime: string): {
   return null;
 }
 
+/**
+ * Wait for simulator to finish booting
+ */
+export async function waitForSimulatorBoot(udid: string, timeoutMs = 60000): Promise<void> {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeoutMs) {
+    const output = await exec({
+      command: "xcrun",
+      args: ["simctl", "list", "devices", "-j", udid],
+    });
+
+    try {
+      const data = JSON.parse(output);
+      const devices = Object.values(data.devices).flat() as any[];
+      const device = devices.find((d) => d.udid === udid);
+
+      if (device?.state === "Booted") {
+        return;
+      }
+    } catch (_error) {
+      // Ignore parse errors, will retry
+    }
+
+    // Wait 1 second before checking again
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  throw new Error(`Simulator failed to boot within ${timeoutMs}ms`);
+}
+
 // Ensures only the specified simulator device is open
 export async function ensureSingleSimulator(context: ExtensionContext, deviceNameOrUdid: string) {
   context.updateProgressStatus(`Ensuring single Simulator: ${deviceNameOrUdid}`);

@@ -18,7 +18,7 @@ export async function selectDestinationForBuildCommand(context: ExtensionContext
     destinations: destinations,
     supportedPlatforms: undefined, // All platforms
   });
-  
+
   // Fire completion event for MCP server
   context.simpleTaskCompletionEmitter.fire();
 }

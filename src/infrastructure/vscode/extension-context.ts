@@ -222,7 +222,7 @@ export class ExtensionContext {
             await this.showCommandErrorMessage(`swiftbazel: ${error.message}`, {
               actions: error.options?.actions,
             });
-            
+
             // Fire completion event for MCP
             this.simpleTaskCompletionEmitter.fire();
             return;
@@ -236,7 +236,7 @@ export class ExtensionContext {
             error: error,
           });
           await this.showCommandErrorMessage(`swiftbazel: ${errorMessage}`);
-          
+
           // Fire completion event for MCP (in case ErrorManager already fired it, this is idempotent)
           this.simpleTaskCompletionEmitter.fire();
         }
@@ -317,7 +317,7 @@ export class ExtensionContext {
     void this.destinationsManager.refresh();
   }
 
-  updateProgressStatus(message: string, cancellable: boolean = false) {
+  updateProgressStatus(message: string, cancellable = false) {
     this.progressStatusBar.updateText(message, cancellable);
   }
 }

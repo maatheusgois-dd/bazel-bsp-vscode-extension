@@ -173,9 +173,10 @@ export async function takeSimulatorScreenshotCommand(
           throw new Error("Screenshot file was created but is empty");
         }
 
-        // Read the screenshot file as base64
+        // Read the screenshot file
         const imageBuffer = await fs.readFile(screenshotPath);
-        const _base64Image = imageBuffer.toString("base64");
+        // Convert to base64 for potential future use
+        imageBuffer.toString("base64");
 
         terminal.write(`Screenshot saved successfully (${stats.size} bytes)\n`);
 

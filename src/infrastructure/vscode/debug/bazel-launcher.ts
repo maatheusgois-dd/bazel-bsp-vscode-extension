@@ -11,7 +11,7 @@ import type { SimulatorDestination } from "../../../domain/entities/destination/
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
 import { commonLogger } from "../../../shared/logger/logger.js";
 import { exec } from "../../../shared/utils/exec.js";
-import { getSimulatorByUdid } from "../../../shared/utils/simulator-utils.js";
+import { getSimulatorByUdid, waitForSimulatorBoot } from "../../../shared/utils/simulator-utils.js";
 
 export interface BazelLaunchOptions {
   /** Path to the .app bundle */
@@ -70,7 +70,7 @@ export async function launchBazelAppOnSimulator(
 
   // 4. Terminate existing instances (before installing)
   context.updateProgressStatus("Terminating existing instances");
-  commonLogger.log(`Terminating any existing instances of the app`);
+  commonLogger.log("Terminating any existing instances of the app");
   try {
     // add timeout to terminate
     const terminatePromise = exec({
@@ -87,36 +87,35 @@ export async function launchBazelAppOnSimulator(
   // 5. Install app on simulator (with timeout and retry)
   context.updateProgressStatus("Installing app on simulator");
   commonLogger.log(`Installing app on simulator: ${simulator.name}`);
-  
+
   const installTimeout = 200000; // 200 seconds timeout
   let installAttempt = 0;
   const maxAttempts = 2;
-  
+
   while (installAttempt < maxAttempts) {
     installAttempt++;
-    
+
     try {
       const installPromise = exec({
         command: "xcrun",
         args: ["simctl", "install", simulator.udid, appPath],
       });
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Install timeout")), installTimeout)
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Install timeout")), installTimeout),
       );
-      
+
       await Promise.race([installPromise, timeoutPromise]);
-      
+
       // Success!
       commonLogger.log("App installed successfully");
       break;
-      
     } catch (error) {
       if (error instanceof Error && error.message === "Install timeout" && installAttempt < maxAttempts) {
         // Install timed out, try restarting simulator
         commonLogger.warn(`Install timed out (attempt ${installAttempt}/${maxAttempts}), restarting simulator`);
         context.updateProgressStatus("Restarting simulator (install timeout)");
-        
+
         try {
           // Shutdown simulator
           await exec({
@@ -125,22 +124,22 @@ export async function launchBazelAppOnSimulator(
           }).catch(() => {
             // Ignore errors - might already be shut down
           });
-          
+
           // Wait longer for shutdown to complete
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+
           // Boot simulator again
           await exec({
             command: "xcrun",
             args: ["simctl", "boot", simulator.udid],
           });
-          
+
           // Wait for it to boot with longer timeout
           await waitForSimulatorBoot(simulator.udid, 60000);
-          
+
           commonLogger.log("Simulator restarted, retrying install");
           context.updateProgressStatus("Retrying app installation");
-          
+
           // Loop will retry install
         } catch (restartError) {
           commonLogger.error("Failed to restart simulator", { restartError });
@@ -214,13 +213,15 @@ export async function launchBazelAppOnDevice(
 
   // Check if device is locked and wait for unlock
   try {
-    const { isDeviceLocked, waitForDeviceUnlock } = await import("../../../infrastructure/apple-platforms/devicectl.adapter.js");
-    
+    const { isDeviceLocked, waitForDeviceUnlock } = await import(
+      "../../../infrastructure/apple-platforms/devicectl.adapter.js"
+    );
+
     const locked = await isDeviceLocked(context, deviceId);
     if (locked) {
       commonLogger.log("Device is locked, waiting for unlock", { deviceId });
       context.updateProgressStatus("⏸️  Awaiting device unlock");
-      
+
       const unlocked = await waitForDeviceUnlock(
         context,
         deviceId,
@@ -243,7 +244,7 @@ export async function launchBazelAppOnDevice(
 
   // 1. Terminate existing instances (before installing)
   context.updateProgressStatus("Terminating existing instances");
-  commonLogger.log(`Terminating any existing instances of the app`);
+  commonLogger.log("Terminating any existing instances of the app");
   try {
     await exec({
       command: "xcrun",
@@ -265,7 +266,7 @@ export async function launchBazelAppOnDevice(
 
   // 3. Launch app with devicectl using JSON output
   context.updateProgressStatus("Launching app on device");
-  
+
   // Use a temp file for JSON output
   const { tempFilePath, readJsonFile } = await import("../../../shared/utils/files.js");
   await using tmpPath = await tempFilePath(context, {
@@ -312,7 +313,7 @@ export async function launchBazelAppOnDevice(
 
   if (!pid) {
     commonLogger.error("Failed to extract PID from devicectl output", { result });
-    throw new Error(`Failed to extract PID from launch output. Check logs for details.`);
+    throw new Error("Failed to extract PID from launch output. Check logs for details.");
   }
 
   commonLogger.log("App launched successfully on device", { pid, bundleId });
@@ -323,38 +324,6 @@ export async function launchBazelAppOnDevice(
     deviceId,
     appPath,
   };
-}
-
-/**
- * Wait for simulator to finish booting
- */
-async function waitForSimulatorBoot(udid: string, timeoutMs = 60000): Promise<void> {
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeoutMs) {
-    const output = await exec({
-      command: "xcrun",
-      args: ["simctl", "list", "devices", "-j", udid],
-    });
-
-    try {
-      const data = JSON.parse(output);
-      const devices = Object.values(data.devices).flat() as any[];
-      const device = devices.find((d) => d.udid === udid);
-
-      if (device?.state === "Booted") {
-        commonLogger.log("Simulator booted successfully");
-        return;
-      }
-    } catch (error) {
-      commonLogger.warn("Failed to parse simulator list output", { error });
-    }
-
-    // Wait 1 second before checking again
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-
-  throw new Error(`Simulator failed to boot within ${timeoutMs}ms`);
 }
 
 /**
@@ -421,10 +390,10 @@ export async function startDebugServer(options: {
 
   // Kill any existing debugserver processes (comprehensive cleanup)
   commonLogger.log("Cleaning up any existing debugserver processes", { port });
-  
+
   // Use Promise.race with timeout for all cleanup operations
   const cleanupTimeout = 2000; // 2 seconds max for cleanup
-  
+
   const cleanupPromise = (async () => {
     try {
       // Method 1: Kill all debugserver processes globally
@@ -441,7 +410,7 @@ export async function startDebugServer(options: {
         command: "lsof",
         args: ["-ti", `:${port}`],
       }).catch(() => "");
-      
+
       const lsofTimeout = new Promise<string>((resolve) => setTimeout(() => resolve(""), 500));
       const existingProcess = await Promise.race([lsofPromise, lsofTimeout]);
 
@@ -478,14 +447,14 @@ export async function startDebugServer(options: {
   // For physical devices, use remote debugging via LLDB
   if (deviceId) {
     commonLogger.log("Device debugging: setting up remote connection", { deviceId, pid, port });
-    
+
     // For device debugging, LLDB connects directly to the device process
     // The app was launched with --start-stopped and is waiting for debugger
     // No local debugserver needed - LLDB will attach remotely
-    
+
     // Wait a moment to ensure the process is ready on device
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
     commonLogger.log("Device ready for remote debugging", { port, pid });
     return;
   }

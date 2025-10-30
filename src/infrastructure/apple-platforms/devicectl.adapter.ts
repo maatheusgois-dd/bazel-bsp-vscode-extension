@@ -141,19 +141,19 @@ export async function isDeviceLocked(context: ExtensionContext, deviceId: string
     });
 
     const result = await readJsonFile<{ result?: { lockState?: string } }>(tmpPath.path);
-    
-    commonLogger.debug("Device lock state", { 
-      deviceId, 
+
+    commonLogger.debug("Device lock state", {
+      deviceId,
       lockState: result.result?.lockState,
-      fullResult: result 
+      fullResult: result,
     });
-    
+
     // lockState can be: "unlocked", "locked", "passcode-locked"
     // If lockState is missing or undefined, assume unlocked
     if (!result.result?.lockState) {
       return false;
     }
-    
+
     return result.result.lockState !== "unlocked";
   } catch (error) {
     // If we can't determine lock state, assume unlocked to not block operation
@@ -169,14 +169,14 @@ export async function waitForDeviceUnlock(
   context: ExtensionContext,
   deviceId: string,
   onWaiting?: (elapsed: number) => void,
-  timeoutMs: number = 60000, // 1 minute default
+  timeoutMs = 60000, // 1 minute default
 ): Promise<boolean> {
   const startTime = Date.now();
   const checkInterval = 1000; // Check every second
 
   while (Date.now() - startTime < timeoutMs) {
     const locked = await isDeviceLocked(context, deviceId);
-    
+
     if (!locked) {
       return true; // Device is unlocked
     }
@@ -188,7 +188,7 @@ export async function waitForDeviceUnlock(
     }
 
     // Wait before checking again
-    await new Promise(resolve => setTimeout(resolve, checkInterval));
+    await new Promise((resolve) => setTimeout(resolve, checkInterval));
   }
 
   return false; // Timeout - device still locked

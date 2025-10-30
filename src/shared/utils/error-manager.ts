@@ -37,7 +37,7 @@ export class ErrorManager {
   handleNoTargetSelected(): never {
     return this.handleError(
       "No Bazel target selected. Please select a target from the BAZEL TARGETS tree view first.",
-      { command: "bazel" }
+      { command: "bazel" },
     );
   }
 
@@ -45,30 +45,30 @@ export class ErrorManager {
    * Handle invalid target type error
    */
   handleInvalidTargetType(targetName: string, expectedType: string, actualType: string): never {
-    return this.handleError(
-      `Target "${targetName}" is not a ${expectedType} target (type: ${actualType})`,
-      { command: "bazel", details: { targetName, expectedType, actualType } }
-    );
+    return this.handleError(`Target "${targetName}" is not a ${expectedType} target (type: ${actualType})`, {
+      command: "bazel",
+      details: { targetName, expectedType, actualType },
+    });
   }
 
   /**
    * Handle test target validation error
    */
   handleNotTestTarget(targetName: string): never {
-    return this.handleError(
-      `Target "${targetName}" is not a test target`,
-      { command: "bazel.test", details: { targetName } }
-    );
+    return this.handleError(`Target "${targetName}" is not a test target`, {
+      command: "bazel.test",
+      details: { targetName },
+    });
   }
 
   /**
    * Handle runnable target validation error
    */
   handleNotRunnableTarget(targetName: string): never {
-    return this.handleError(
-      `Target "${targetName}" is not a runnable target (must be a binary/app)`,
-      { command: "bazel.run", details: { targetName } }
-    );
+    return this.handleError(`Target "${targetName}" is not a runnable target (must be a binary/app)`, {
+      command: "bazel.run",
+      details: { targetName },
+    });
   }
 
   /**
@@ -76,10 +76,10 @@ export class ErrorManager {
    */
   handleCommandError(commandName: string, error: unknown): never {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return this.handleError(
-      `Error executing ${commandName}: ${errorMessage}`,
-      { command: commandName, details: error }
-    );
+    return this.handleError(`Error executing ${commandName}: ${errorMessage}`, {
+      command: commandName,
+      details: error,
+    });
   }
 }
 
@@ -89,4 +89,3 @@ export class ErrorManager {
 export function createErrorManager(context?: ExtensionContext): ErrorManager {
   return new ErrorManager(context);
 }
-

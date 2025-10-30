@@ -1,6 +1,6 @@
 /**
  * Unified Build and Launch Workflow
- * 
+ *
  * This module provides common build and launch functionality used by both
  * regular run commands and debug commands. The only difference is whether
  * the debugger is attached after launch.
@@ -14,14 +14,14 @@ import type { ExtensionContext } from "../../../infrastructure/vscode/extension-
 import type { BazelTreeItem } from "../../../presentation/tree-providers/export.provider.js";
 import { commonLogger } from "../../../shared/logger/logger.js";
 import { exec } from "../../../shared/utils/exec.js";
-import type { TaskTerminal } from "../../../shared/utils/tasks.js";
 import { ProgressManager } from "../../../shared/utils/progress-manager.js";
+import type { TaskTerminal } from "../../../shared/utils/tasks.js";
 import {
+  type BazelLaunchResult,
   getBundleIdentifier,
   launchBazelAppOnDevice,
   launchBazelAppOnSimulator,
   startDebugServer,
-  type BazelLaunchResult,
 } from "./bazel-launcher.js";
 
 const DEFAULT_DEBUG_PORT = 6667;
@@ -77,12 +77,12 @@ async function buildBazelTarget(
     bazelItem: BazelTreeItem;
     destination: SimulatorDestination | DeviceDestination;
     attachDebugger: boolean;
-  }
+  },
 ): Promise<void> {
   const { bazelItem, destination, attachDebugger } = options;
 
   progress.nextStep("Building with debug symbols");
-  
+
   if (attachDebugger) {
     terminal.write(`🔨 Step 1/6: Building ${bazelItem.target.name} with debug symbols...\n`);
   } else {
@@ -97,17 +97,17 @@ async function buildBazelTarget(
     platformFlag = "--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64";
   } else if (destination.type === "iOSDevice") {
     platformFlag = "--ios_multi_cpus=arm64";
-    
+
     // Check if device is locked before starting build
     try {
       const { isDeviceLocked, waitForDeviceUnlock } = await import("../../apple-platforms/devicectl.adapter.js");
       const locked = await isDeviceLocked(context, destination.udid);
-      
+
       if (locked) {
         terminal.write(`\n⚠️  Device "${destination.name}" is locked\n`);
         terminal.write("   Waiting for device to be unlocked...\n");
         progress.updateStep("Awaiting device unlock");
-        
+
         const unlocked = await waitForDeviceUnlock(
           context,
           destination.udid,
@@ -156,12 +156,12 @@ async function locateAppBundle(
     bazelItem: BazelTreeItem;
     destination: SimulatorDestination | DeviceDestination;
     attachDebugger: boolean;
-  }
+  },
 ): Promise<string> {
   const { bazelItem, destination, attachDebugger } = options;
 
   progress.nextStep("Locating app bundle");
-  
+
   if (attachDebugger) {
     terminal.write("\n📦 Step 2/6: Locating app bundle...\n");
   } else {
@@ -235,7 +235,7 @@ async function locateAppBundle(
     }
   } else {
     // For simulator, look for .app
-    for (const tryPath of basePaths.map(p => `${p}.app`)) {
+    for (const tryPath of basePaths.map((p) => `${p}.app`)) {
       try {
         await terminal.execute({
           command: "test",
@@ -270,12 +270,12 @@ async function prepareApp(
     appPath: string;
     destination: SimulatorDestination | DeviceDestination;
     attachDebugger: boolean;
-  }
+  },
 ): Promise<void> {
   const { appPath, destination, attachDebugger } = options;
 
   progress.nextStep("Preparing app");
-  
+
   if (attachDebugger) {
     terminal.write("\n🔏 Step 3/6: Preparing app...\n");
   } else {
@@ -340,32 +340,32 @@ async function launchApp(
     attachDebugger: boolean;
     launchArgs: string[];
     launchEnv: Record<string, string>;
-  }
+  },
 ): Promise<BazelLaunchResult> {
   const { appPath, bundleId, destination, attachDebugger, launchArgs, launchEnv } = options;
 
   // Stop any existing debug sessions before launching (if debugging)
   if (attachDebugger) {
     terminal.write("\n🛑 Cleaning up existing debug sessions and processes...\n");
-    
+
     // 1. Stop VS Code debug sessions
     const activeSession = vscode.debug.activeDebugSession;
     if (activeSession) {
-      commonLogger.log("Stopping existing debug session before launch", { 
+      commonLogger.log("Stopping existing debug session before launch", {
         sessionId: activeSession.id,
         sessionType: activeSession.type,
-        sessionName: activeSession.name || "unnamed"
+        sessionName: activeSession.name || "unnamed",
       });
-      
+
       terminal.write(`   Stopping debug session: ${activeSession.name || activeSession.type}...\n`);
-      
+
       try {
         await vscode.debug.stopDebugging(activeSession);
         commonLogger.log("Stopped debug session", { sessionId: activeSession.id });
         terminal.write("   ✅ Stopped VS Code debug session\n");
-        
+
         // Wait for session to clean up (VS Code stops debugserver automatically)
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 800));
         terminal.write("   ✅ Debug session cleaned up\n");
       } catch (error) {
         commonLogger.warn("Failed to stop debug session", { error });
@@ -377,7 +377,7 @@ async function launchApp(
   }
 
   progress.nextStep("Launching app");
-  
+
   if (attachDebugger) {
     terminal.write("\n🚀 Step 4/6: Launching app");
   } else {
@@ -413,40 +413,39 @@ async function launchApp(
     }
 
     return launchResult;
-  } else {
-    terminal.write(" on device...\n");
-    terminal.write(`   Device: ${destination.name} (${destination.udid})\n`);
-
-    const launchResult = await launchBazelAppOnDevice(context, {
-      appPath,
-      bundleId,
-      destination: destination as DeviceDestination,
-      waitForDebugger: attachDebugger,
-      env: launchEnv,
-      args: launchArgs,
-    });
-
-    terminal.write(`   ✅ App launched, PID: ${launchResult.pid}\n`);
-    if (attachDebugger) {
-      terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
-    }
-
-    return launchResult;
   }
+  terminal.write(" on device...\n");
+  terminal.write(`   Device: ${destination.name} (${destination.udid})\n`);
+
+  const launchResult = await launchBazelAppOnDevice(context, {
+    appPath,
+    bundleId,
+    destination: destination as DeviceDestination,
+    waitForDebugger: attachDebugger,
+    env: launchEnv,
+    args: launchArgs,
+  });
+
+  terminal.write(`   ✅ App launched, PID: ${launchResult.pid}\n`);
+  if (attachDebugger) {
+    terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
+  }
+
+  return launchResult;
 }
 
 /**
  * Attach debugger to the launched app
  */
 async function attachDebuggerToApp(
-  context: ExtensionContext,
+  _context: ExtensionContext,
   terminal: TaskTerminal,
   progress: ProgressManager,
   options: {
     launchResult: BazelLaunchResult;
     debugPort: number;
     destination: SimulatorDestination | DeviceDestination;
-  }
+  },
 ): Promise<void> {
   const { launchResult, debugPort, destination } = options;
 
@@ -537,7 +536,7 @@ export async function buildAndLaunchBazelApp(
   terminal.write(
     attachDebugger
       ? `🐛 Starting debug workflow for ${bazelItem.target.name}\n\n`
-      : `🚀 Starting launch workflow for ${bazelItem.target.name}\n\n`
+      : `🚀 Starting launch workflow for ${bazelItem.target.name}\n\n`,
   );
 
   // Step 1: Build
@@ -596,11 +595,11 @@ export async function buildAndLaunchBazelApp(
   }
 
   progress.complete();
-  
+
   terminal.write(
     attachDebugger
       ? "\n✅ Debug workflow completed. Debugger is attached and running.\n"
-      : "\n✅ Launch completed successfully.\n"
+      : "\n✅ Launch completed successfully.\n",
   );
 
   return {
@@ -609,4 +608,3 @@ export async function buildAndLaunchBazelApp(
     launchResult,
   };
 }
-

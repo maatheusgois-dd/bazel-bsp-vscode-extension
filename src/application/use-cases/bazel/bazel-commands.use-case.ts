@@ -5,10 +5,10 @@ import type { BazelTreeItem } from "../../../presentation/tree-providers/export.
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
 import { commonLogger } from "../../../shared/logger/logger.js";
 import { getWorkspaceConfig } from "../../../shared/utils/config.js";
-import { exec } from "../../../shared/utils/exec.js";
-import { Timer } from "../../../shared/utils/timer.js";
 import { ErrorManager } from "../../../shared/utils/error-manager.js";
+import { exec } from "../../../shared/utils/exec.js";
 import { ProgressManager, ProgressSteps } from "../../../shared/utils/progress-manager.js";
+import { Timer } from "../../../shared/utils/timer.js";
 
 import { DEFAULT_BUILD_PROBLEM_MATCHERS } from "../../../shared/constants/build-constants.js";
 import {
@@ -59,16 +59,17 @@ async function reconstructBazelItemFromCache(context: ExtensionContext): Promise
  */
 export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-  
+
   // If no bazelItem provided, try to get from saved target
-  if (!bazelItem) {
+  let targetItem = bazelItem;
+  if (!targetItem) {
     const selectedTarget = context.buildManager.getSelectedBazelTarget();
     if (selectedTarget) {
-      bazelItem = selectedTarget;
+      targetItem = selectedTarget;
     } else {
       // Try to reconstruct from cached data
-      bazelItem = await reconstructBazelItemFromCache(context);
-      if (!bazelItem) {
+      targetItem = await reconstructBazelItemFromCache(context);
+      if (!targetItem) {
         errorManager.handleNoTargetSelected();
       }
     }
@@ -82,16 +83,16 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
   const progress = new ProgressManager({
     steps: ProgressSteps.BUILD,
     context,
-    taskName: `Build: ${bazelItem?.target.name}`,
+    taskName: `Build: ${targetItem?.target.name}`,
   });
 
   await runTask(context, {
-    name: `Bazel Build: ${bazelItem?.target.name}`,
+    name: `Bazel Build: ${targetItem?.target.name}`,
     lock: "swiftbazel.bazel.build",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
-      terminal.write(`Building Bazel target: ${bazelItem?.target.buildLabel}\n\n`);
+      terminal.write(`Building Bazel target: ${targetItem?.target.buildLabel}\n\n`);
 
       progress.nextStep("Resolving dependencies");
       terminal.write("📦 Resolving dependencies...\n");
@@ -103,7 +104,7 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
       let platformFlag: string;
       if (destination.type === "iOSSimulator") {
         platformFlag = "--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64";
-        terminal.write(`   Building for iOS Simulator...\n`);
+        terminal.write("   Building for iOS Simulator...\n");
       } else if (destination.type === "iOSDevice") {
         platformFlag = "--ios_multi_cpus=arm64";
         terminal.write(`   Building for iOS Device (${destination.name})...\n`);
@@ -116,15 +117,15 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
         command: "sh",
         args: [
           "-c",
-          `cd "${bazelItem?.package.path}" && bazel build ${bazelItem?.target.buildLabel} ${platformFlag}`,
+          `cd "${targetItem?.package.path}" && bazel build ${targetItem?.target.buildLabel} ${platformFlag}`,
         ],
       });
 
       progress.nextStep("Linking binaries");
       progress.nextStep("Code signing");
       progress.nextStep("Finalizing build");
-      terminal.write(`\n✅ Build completed for ${bazelItem?.target.name}\n`);
-      
+      terminal.write(`\n✅ Build completed for ${targetItem?.target.name}\n`);
+
       progress.complete();
       writeTimingResults(terminal, timer, "bazel", "build");
     },
@@ -136,39 +137,45 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
  */
 export async function bazelTestCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-  
+
   // If no bazelItem provided, try to get from saved target
-  if (!bazelItem) {
+  let targetItem = bazelItem;
+  if (!targetItem) {
     const selectedTarget = context.buildManager.getSelectedBazelTarget();
     if (selectedTarget) {
-      bazelItem = selectedTarget;
+      targetItem = selectedTarget;
     } else {
       // Try to reconstruct from cached data
-      bazelItem = await reconstructBazelItemFromCache(context);
-      if (!bazelItem) {
+      targetItem = await reconstructBazelItemFromCache(context);
+      if (!targetItem) {
         errorManager.handleNoTargetSelected();
       }
     }
   }
 
-  if (!bazelItem?.target.testLabel) {
-    errorManager.handleNotTestTarget(bazelItem?.target.name || "unknown");
+  if (!targetItem?.target.testLabel) {
+    errorManager.handleNotTestTarget(targetItem?.target.name || "unknown");
+  }
+
+  const testLabel = targetItem?.target.testLabel;
+  if (!testLabel) {
+    throw new Error("Test label is required for test targets");
   }
 
   const timer = new Timer();
   const progress = new ProgressManager({
     steps: ProgressSteps.TEST,
     context,
-    taskName: `Test: ${bazelItem?.target.name}`,
+    taskName: `Test: ${targetItem?.target.name}`,
   });
 
   await runTask(context, {
-    name: `Bazel Test: ${bazelItem?.target.name}`,
+    name: `Bazel Test: ${targetItem?.target.name}`,
     lock: "swiftbazel.bazel.test",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
-      terminal.write(`Running Bazel tests: ${bazelItem?.target.testLabel}\n\n`);
+      terminal.write(`Running Bazel tests: ${testLabel}\n\n`);
 
       progress.nextStep("Building test target");
       terminal.write("🔨 Building test target...\n");
@@ -181,12 +188,12 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
 
       await terminal.execute({
         command: "sh",
-        args: ["-c", `cd "${bazelItem?.package.path}" && bazel test ${bazelItem?.target.testLabel!} --test_output=all`],
+        args: ["-c", `cd "${targetItem?.package.path}" && bazel test ${testLabel} --test_output=all`],
       });
 
       progress.nextStep("Collecting results");
-      terminal.write(`\n✅ Tests completed for ${bazelItem?.target.name}\n`);
-      
+      terminal.write(`\n✅ Tests completed for ${targetItem?.target.name}\n`);
+
       progress.complete();
       writeTimingResults(terminal, timer, "bazel", "test");
     },
@@ -198,23 +205,28 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
  */
 export async function bazelRunCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-  
+
   // If no bazelItem provided, try to get from saved target
-  if (!bazelItem) {
+  let targetItem = bazelItem;
+  if (!targetItem) {
     const selectedTarget = context.buildManager.getSelectedBazelTarget();
     if (selectedTarget) {
-      bazelItem = selectedTarget;
+      targetItem = selectedTarget;
     } else {
       // Try to reconstruct from cached data
-      bazelItem = await reconstructBazelItemFromCache(context);
-      if (!bazelItem) {
+      targetItem = await reconstructBazelItemFromCache(context);
+      if (!targetItem) {
         errorManager.handleNoTargetSelected();
       }
     }
   }
 
-  if (bazelItem?.target.type !== "binary") {
-    errorManager.handleNotRunnableTarget(bazelItem?.target.name || "unknown");
+  if (targetItem?.target.type !== "binary") {
+    errorManager.handleNotRunnableTarget(targetItem?.target.name || "unknown");
+  }
+
+  if (!targetItem) {
+    throw new Error("No target item available for run command");
   }
 
   // Get destination
@@ -228,7 +240,7 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
   const timer = new Timer();
 
   await runTask(context, {
-    name: `Bazel Run: ${bazelItem?.target.name}`,
+    name: `Bazel Run: ${targetItem.target.name}`,
     lock: "swiftbazel.bazel.run",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
@@ -237,7 +249,7 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
 
       // Use unified build and launch workflow without debugger
       await buildAndLaunchBazelApp(context, terminal, {
-        bazelItem: bazelItem!,
+        bazelItem: targetItem,
         destination: destination as any,
         attachDebugger: false,
         launchArgs,
@@ -254,23 +266,28 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
  */
 export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-  
+
   // If no bazelItem provided, try to get from saved target
-  if (!bazelItem) {
+  let targetItem = bazelItem;
+  if (!targetItem) {
     const selectedTarget = context.buildManager.getSelectedBazelTarget();
     if (selectedTarget) {
-      bazelItem = selectedTarget;
+      targetItem = selectedTarget;
     } else {
       // Try to reconstruct from cached data
-      bazelItem = await reconstructBazelItemFromCache(context);
-      if (!bazelItem) {
+      targetItem = await reconstructBazelItemFromCache(context);
+      if (!targetItem) {
         errorManager.handleNoTargetSelected();
       }
     }
   }
 
-  if (bazelItem?.target.type !== "binary") {
-    errorManager.handleNotRunnableTarget(bazelItem?.target.name || "unknown");
+  if (targetItem?.target.type !== "binary") {
+    errorManager.handleNotRunnableTarget(targetItem?.target.name || "unknown");
+  }
+
+  if (!targetItem) {
+    throw new Error("No target item available for debug command");
   }
 
   // Get destination
@@ -284,7 +301,7 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
   const timer = new Timer();
 
   await runTask(context, {
-    name: `Bazel Debug: ${bazelItem?.target.name}`,
+    name: `Bazel Debug: ${targetItem.target.name}`,
     lock: "swiftbazel.bazel.debug",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
@@ -293,7 +310,7 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
 
       // Use unified build and launch workflow with debugger attached
       await buildAndLaunchBazelApp(context, terminal, {
-        bazelItem: bazelItem!,
+        bazelItem: targetItem,
         destination: destination as any,
         attachDebugger: true,
         launchArgs,

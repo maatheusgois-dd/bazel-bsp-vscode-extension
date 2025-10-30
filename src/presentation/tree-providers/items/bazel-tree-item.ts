@@ -61,7 +61,7 @@ export class BazelTreeItem extends vscode.TreeItem {
     } else {
       contextValue = "swiftbazel.bazel.target.library";
     }
-    
+
     // Add selection state to context value
     if (isSelected) {
       contextValue += "&selected=true";

@@ -136,7 +136,7 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
       this.iconPath = new vscode.ThemeIcon("package", iconColor);
       contextValue = "bazelTarget-buildable";
     }
-    
+
     // Add selection state to context value
     if (isSelected) {
       contextValue += "&selected=true";

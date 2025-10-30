@@ -73,7 +73,7 @@ export class ProgressStatusBar {
     });
   }
 
-  updateText(text: string, cancellable: boolean = false) {
+  updateText(text: string, cancellable = false) {
     const scopeId = this.context.getExecutionScopeId() ?? DEFAULT_SCOPE_ID;
     this.messageMapping.set(scopeId, text);
     this.cancellableMapping.set(scopeId, cancellable);
@@ -94,7 +94,7 @@ export class ProgressStatusBar {
   cancelCurrentOperation() {
     const scopeId = this.context.getExecutionScopeId() ?? DEFAULT_SCOPE_ID;
     const callback = this.cancelCallbacks.get(scopeId);
-    
+
     if (callback) {
       callback();
       // Remove the operation from tracking
@@ -137,8 +137,8 @@ export class ProgressStatusBar {
     this.statusBar.show();
 
     // Check if any operation is cancellable
-    const anyCancellable = Array.from(this.cancellableMapping.values()).some(c => c);
-    
+    const anyCancellable = Array.from(this.cancellableMapping.values()).some((c) => c);
+
     if (anyCancellable) {
       this.cancelButton.show();
     } else {
@@ -149,10 +149,12 @@ export class ProgressStatusBar {
     if (this.messageMapping.size === 1) {
       const text = this.messageMapping.values().next().value;
       this.statusBar.text = `$(gear~spin) ${text}...`;
-      
+
       const isCancellable = Array.from(this.cancellableMapping.values())[0];
       if (isCancellable) {
-        this.statusBar.tooltip = new vscode.MarkdownString("Click to open terminal\n\n$(x) Click **Cancel** button to stop");
+        this.statusBar.tooltip = new vscode.MarkdownString(
+          "Click to open terminal\n\n$(x) Click **Cancel** button to stop",
+        );
       } else {
         this.statusBar.tooltip = "Click to open terminal";
       }

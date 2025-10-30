@@ -126,7 +126,7 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
   private writeEmitter = new vscode.EventEmitter<string>();
   private closeEmitter = new vscode.EventEmitter<number>();
   private process: ChildProcess | null = null;
-  private uiLogListenerDisposable: vscode.Disposable | undefined;
+  private _uiLogListenerDisposable: vscode.Disposable | undefined;
 
   public context: ExtensionContext;
 
@@ -138,7 +138,7 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
   ) {
     this.context = context;
     // --- ADD Listener in Constructor ---
-    this.uiLogListenerDisposable = this.setupUiLogListener();
+    this._uiLogListenerDisposable = this.setupUiLogListener();
     // -----------------------------------
   }
 
@@ -301,6 +301,7 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
   }
 
   close(): void {
+    this._uiLogListenerDisposable?.dispose();
     this.closeSuccessfully();
   }
 
@@ -376,7 +377,7 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
 
 export class TaskTerminalV1 implements TaskTerminal {
   constructor(
-    private context: ExtensionContext,
+    _context: ExtensionContext,
     private options: {
       name: string;
       source?: string;
