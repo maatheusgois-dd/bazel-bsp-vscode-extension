@@ -353,8 +353,8 @@ async function launchApp(
     if (activeSession) {
       commonLogger.log("Stopping existing debug session before launch", { 
         sessionId: activeSession.id,
-        type: activeSession.type,
-        name: activeSession.name || "unnamed"
+        sessionType: activeSession.type,
+        sessionName: activeSession.name || "unnamed"
       });
       
       terminal.write(`   Stopping debug session: ${activeSession.name || activeSession.type}...\n`);
