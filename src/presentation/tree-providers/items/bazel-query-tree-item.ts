@@ -124,17 +124,24 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
       this.description = "✓";
     }
 
-    // Set icon based on target type
+    // Set icon and context value based on target type
+    let contextValue: string;
     if (targetType === "runnable") {
       this.iconPath = new vscode.ThemeIcon("play", iconColor);
-      this.contextValue = "bazelTarget-runnable";
+      contextValue = "bazelTarget-runnable";
     } else if (targetType === "test") {
       this.iconPath = new vscode.ThemeIcon("beaker", iconColor);
-      this.contextValue = "bazelTarget-test";
+      contextValue = "bazelTarget-test";
     } else {
       this.iconPath = new vscode.ThemeIcon("package", iconColor);
-      this.contextValue = "bazelTarget-buildable";
+      contextValue = "bazelTarget-buildable";
     }
+    
+    // Add selection state to context value
+    if (isSelected) {
+      contextValue += "&selected=true";
+    }
+    this.contextValue = contextValue;
 
     this.tooltip = `${this.fullPath}\nType: ${targetType}`;
 

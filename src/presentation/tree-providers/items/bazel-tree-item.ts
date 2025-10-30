@@ -53,13 +53,20 @@ export class BazelTreeItem extends vscode.TreeItem {
     }
 
     // Set context value based on target type for conditional menu items
+    let contextValue: string;
     if (this.target.type === "test") {
-      this.contextValue = "swiftbazel.bazel.target.test";
+      contextValue = "swiftbazel.bazel.target.test";
     } else if (this.target.type === "binary") {
-      this.contextValue = "swiftbazel.bazel.target.binary";
+      contextValue = "swiftbazel.bazel.target.binary";
     } else {
-      this.contextValue = "swiftbazel.bazel.target.library";
+      contextValue = "swiftbazel.bazel.target.library";
     }
+    
+    // Add selection state to context value
+    if (isSelected) {
+      contextValue += "&selected=true";
+    }
+    this.contextValue = contextValue;
 
     // Add type, package info, and selection indicator to description
     let description = `${this.target.type} • ${this.package.name}`;

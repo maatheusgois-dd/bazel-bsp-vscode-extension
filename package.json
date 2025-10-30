@@ -705,22 +705,22 @@
         },
         {
           "command": "swiftbazel.bazel.build",
-          "when": "viewItem == swiftbazel.bazel.target.library || viewItem == swiftbazel.bazel.target.binary",
+          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.(library|binary).*&selected=true.*/",
           "group": "inline@2"
         },
         {
           "command": "swiftbazel.bazel.test",
-          "when": "viewItem == swiftbazel.bazel.target.test",
+          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.test.*&selected=true.*/",
           "group": "inline@2"
         },
         {
           "command": "swiftbazel.bazel.run",
-          "when": "viewItem == swiftbazel.bazel.target.binary",
+          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.binary.*&selected=true.*/",
           "group": "inline@3"
         },
         {
           "command": "swiftbazel.bazel.debug",
-          "when": "viewItem == swiftbazel.bazel.target.binary",
+          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.binary.*&selected=true.*/",
           "group": "inline@4"
         },
         {
@@ -750,22 +750,22 @@
         },
         {
           "command": "swiftbazel.bazel.build",
-          "when": "viewItem == bazelTarget-buildable || viewItem == bazelTarget-runnable",
+          "when": "viewItem =~ /^bazelTarget-(buildable|runnable).*&selected=true.*/",
           "group": "inline@1"
         },
         {
           "command": "swiftbazel.bazel.test",
-          "when": "viewItem == bazelTarget-test",
+          "when": "viewItem =~ /^bazelTarget-test.*&selected=true.*/",
           "group": "inline@1"
         },
         {
           "command": "swiftbazel.bazel.run",
-          "when": "viewItem == bazelTarget-runnable",
+          "when": "viewItem =~ /^bazelTarget-runnable.*&selected=true.*/",
           "group": "inline@2"
         },
         {
           "command": "swiftbazel.bazel.debug",
-          "when": "viewItem == bazelTarget-runnable",
+          "when": "viewItem =~ /^bazelTarget-runnable.*&selected=true.*/",
           "group": "inline@3"
         },
         {
