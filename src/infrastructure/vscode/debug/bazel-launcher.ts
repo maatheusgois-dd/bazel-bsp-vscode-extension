@@ -81,16 +81,9 @@ export async function launchBazelAppOnSimulator(
     await waitForSimulatorBoot(simulator.udid);
   }
 
-  // 4. Install app on simulator
-  context.updateProgressStatus("Installing app on simulator");
-  commonLogger.log(`Installing app on simulator: ${simulator.name}`);
-  await exec({
-    command: "xcrun",
-    args: ["simctl", "install", simulator.udid, appPath],
-  });
-
-  // 5. Terminate existing instances
-  context.updateProgressStatus("Preparing to launch");
+  // 4. Terminate existing instances (before installing)
+  context.updateProgressStatus("Terminating existing instances");
+  commonLogger.log(`Terminating any existing instances of the app`);
   try {
     await exec({
       command: "xcrun",
@@ -98,7 +91,16 @@ export async function launchBazelAppOnSimulator(
     });
   } catch (_error) {
     // App might not be running, ignore error
+    commonLogger.debug("No existing instance to terminate");
   }
+
+  // 5. Install app on simulator
+  context.updateProgressStatus("Installing app on simulator");
+  commonLogger.log(`Installing app on simulator: ${simulator.name}`);
+  await exec({
+    command: "xcrun",
+    args: ["simctl", "install", simulator.udid, appPath],
+  });
 
   // 6. Launch app with or without debugger flag
   context.updateProgressStatus("Launching app on simulator");
@@ -106,7 +108,7 @@ export async function launchBazelAppOnSimulator(
     "simctl",
     "launch",
     ...(waitForDebugger ? ["--wait-for-debugger"] : []),
-    "--terminate-running-process",
+    "--terminate-running-process", // Extra safety in case another instance started
     simulator.udid,
     bundleId,
     ...args,
@@ -188,7 +190,21 @@ export async function launchBazelAppOnDevice(
     commonLogger.warn("Lock check failed, continuing with installation", { lockCheckError });
   }
 
-  // 1. Install app on device
+  // 1. Terminate existing instances (before installing)
+  context.updateProgressStatus("Terminating existing instances");
+  commonLogger.log(`Terminating any existing instances of the app`);
+  try {
+    await exec({
+      command: "xcrun",
+      args: ["devicectl", "device", "process", "terminate", "--device", deviceId, bundleId],
+    });
+    commonLogger.log("Terminated existing instance");
+  } catch (_error) {
+    // App might not be running, ignore error
+    commonLogger.debug("No existing instance to terminate");
+  }
+
+  // 2. Install app on device
   context.updateProgressStatus("Installing app on device");
   commonLogger.log(`Installing app on device: ${destination.name}`);
   await exec({
@@ -196,7 +212,7 @@ export async function launchBazelAppOnDevice(
     args: ["devicectl", "device", "install", "app", "--device", deviceId, appPath],
   });
 
-  // 2. Launch app with devicectl using JSON output
+  // 3. Launch app with devicectl using JSON output
   context.updateProgressStatus("Launching app on device");
   
   // Use a temp file for JSON output
@@ -352,9 +368,19 @@ export async function startDebugServer(options: {
 }): Promise<void> {
   const { pid, port, deviceId } = options;
 
-  // Kill any existing debugserver on this port
+  // Kill any existing debugserver processes (comprehensive cleanup)
+  commonLogger.log("Cleaning up any existing debugserver processes", { port });
+  
   try {
-    // Method 1: Find by port using lsof
+    // Method 1: Kill all debugserver processes globally
+    await exec({
+      command: "pkill",
+      args: ["-9", "debugserver"],
+    }).catch(() => {
+      commonLogger.debug("No global debugserver processes to kill");
+    });
+
+    // Method 2: Find and kill processes on this specific port using lsof
     const existingProcess = await exec({
       command: "lsof",
       args: ["-ti", `:${port}`],
@@ -364,7 +390,7 @@ export async function startDebugServer(options: {
       const pids = existingProcess.trim().split("\n");
       for (const existingPid of pids) {
         if (existingPid) {
-          commonLogger.log("Killing existing process on port", { port, pid: existingPid });
+          commonLogger.log("Killing process on port", { port, pid: existingPid });
           await exec({
             command: "kill",
             args: ["-9", existingPid],
@@ -373,14 +399,17 @@ export async function startDebugServer(options: {
       }
     }
 
-    // Method 2: Also try pkill as fallback
+    // Method 3: Kill debugservers attached to old PIDs
     await exec({
       command: "pkill",
-      args: ["-9", "-f", `debugserver.*${port}`],
-    }).catch(() => {});
+      args: ["-9", "-f", `debugserver.*--attach`],
+    }).catch(() => {
+      commonLogger.debug("No debugserver --attach processes found");
+    });
 
-    // Wait a bit for processes to die
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    // Wait for processes to fully terminate
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    commonLogger.log("Debugserver cleanup complete");
   } catch (error) {
     // Ignore errors - might not be any processes to kill
     commonLogger.debug("Error during cleanup (expected if no existing debugserver)", { error });

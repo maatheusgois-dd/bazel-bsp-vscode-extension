@@ -344,6 +344,51 @@ async function launchApp(
 ): Promise<BazelLaunchResult> {
   const { appPath, bundleId, destination, attachDebugger, launchArgs, launchEnv } = options;
 
+  // Stop any existing debug sessions before launching (if debugging)
+  if (attachDebugger) {
+    terminal.write("\n🛑 Cleaning up existing debug sessions and processes...\n");
+    
+    // 1. Stop VS Code debug sessions
+    const activeSession = vscode.debug.activeDebugSession;
+    if (activeSession) {
+      commonLogger.log("Stopping existing debug session before launch", { 
+        sessionId: activeSession.id,
+        type: activeSession.type,
+        name: activeSession.name || "unnamed"
+      });
+      
+      terminal.write(`   Stopping debug session: ${activeSession.name || activeSession.type}...\n`);
+      
+      try {
+        await vscode.debug.stopDebugging(activeSession);
+        commonLogger.log("Stopped debug session", { sessionId: activeSession.id });
+        terminal.write("   ✅ Stopped VS Code debug session\n");
+      } catch (error) {
+        commonLogger.warn("Failed to stop debug session", { error });
+        terminal.write("   ⚠️  Could not stop session cleanly\n");
+      }
+      
+      // Wait for session to clean up
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    // 2. Kill all debugserver processes (aggressive cleanup)
+    terminal.write("   Killing all debugserver processes...\n");
+    try {
+      await exec({
+        command: "pkill",
+        args: ["-9", "debugserver"],
+      });
+      terminal.write("   ✅ Killed debugserver processes\n");
+    } catch (_error) {
+      // Ignore - no processes to kill
+      terminal.write("   No debugserver processes running\n");
+    }
+    
+    // 3. Wait for everything to fully clean up
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
   progress.nextStep("Launching app");
   
   if (attachDebugger) {
@@ -397,6 +442,7 @@ async function launchApp(
  * Attach debugger to the launched app
  */
 async function attachDebuggerToApp(
+  context: ExtensionContext,
   terminal: TaskTerminal,
   progress: ProgressManager,
   options: {
@@ -544,7 +590,7 @@ export async function buildAndLaunchBazelApp(
 
   // Steps 5-6: Attach debugger (only if debugging)
   if (attachDebugger) {
-    await attachDebuggerToApp(terminal, progress, {
+    await attachDebuggerToApp(context, terminal, progress, {
       launchResult,
       debugPort,
       destination,
