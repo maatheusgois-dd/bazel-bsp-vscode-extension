@@ -55,25 +55,38 @@ async function reconstructBazelItemFromCache(context: ExtensionContext): Promise
 }
 
 /**
+ * Resolve Bazel target from parameter, selected target, or cache
+ * @throws Error if no target can be resolved
+ */
+async function resolveTargetItem(
+  context: ExtensionContext,
+  bazelItem: BazelTreeItem | undefined,
+  errorManager: ErrorManager,
+): Promise<BazelTreeItem> {
+  if (bazelItem) {
+    return bazelItem;
+  }
+
+  const selectedTarget = context.buildManager.getSelectedBazelTarget();
+  if (selectedTarget) {
+    return selectedTarget;
+  }
+
+  // Try to reconstruct from cached data
+  const cachedTarget = await reconstructBazelItemFromCache(context);
+  if (cachedTarget) {
+    return cachedTarget;
+  }
+
+  errorManager.handleNoTargetSelected();
+}
+
+/**
  * Build a Bazel target
  */
 export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-
-  // If no bazelItem provided, try to get from saved target
-  let targetItem = bazelItem;
-  if (!targetItem) {
-    const selectedTarget = context.buildManager.getSelectedBazelTarget();
-    if (selectedTarget) {
-      targetItem = selectedTarget;
-    } else {
-      // Try to reconstruct from cached data
-      targetItem = await reconstructBazelItemFromCache(context);
-      if (!targetItem) {
-        errorManager.handleNoTargetSelected();
-      }
-    }
-  }
+  const targetItem = await resolveTargetItem(context, bazelItem, errorManager);
 
   // Get destination to determine build platform
   context.updateProgressStatus("Searching for destination");
@@ -137,21 +150,7 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
  */
 export async function bazelTestCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-
-  // If no bazelItem provided, try to get from saved target
-  let targetItem = bazelItem;
-  if (!targetItem) {
-    const selectedTarget = context.buildManager.getSelectedBazelTarget();
-    if (selectedTarget) {
-      targetItem = selectedTarget;
-    } else {
-      // Try to reconstruct from cached data
-      targetItem = await reconstructBazelItemFromCache(context);
-      if (!targetItem) {
-        errorManager.handleNoTargetSelected();
-      }
-    }
-  }
+  const targetItem = await resolveTargetItem(context, bazelItem, errorManager);
 
   if (!targetItem?.target.testLabel) {
     errorManager.handleNotTestTarget(targetItem?.target.name || "unknown");
@@ -205,21 +204,7 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
  */
 export async function bazelRunCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-
-  // If no bazelItem provided, try to get from saved target
-  let targetItem = bazelItem;
-  if (!targetItem) {
-    const selectedTarget = context.buildManager.getSelectedBazelTarget();
-    if (selectedTarget) {
-      targetItem = selectedTarget;
-    } else {
-      // Try to reconstruct from cached data
-      targetItem = await reconstructBazelItemFromCache(context);
-      if (!targetItem) {
-        errorManager.handleNoTargetSelected();
-      }
-    }
-  }
+  const targetItem = await resolveTargetItem(context, bazelItem, errorManager);
 
   if (targetItem?.target.type !== "binary") {
     errorManager.handleNotRunnableTarget(targetItem?.target.name || "unknown");
@@ -267,21 +252,7 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
  */
 export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
   const errorManager = new ErrorManager(context);
-
-  // If no bazelItem provided, try to get from saved target
-  let targetItem = bazelItem;
-  if (!targetItem) {
-    const selectedTarget = context.buildManager.getSelectedBazelTarget();
-    if (selectedTarget) {
-      targetItem = selectedTarget;
-    } else {
-      // Try to reconstruct from cached data
-      targetItem = await reconstructBazelItemFromCache(context);
-      if (!targetItem) {
-        errorManager.handleNoTargetSelected();
-      }
-    }
-  }
+  const targetItem = await resolveTargetItem(context, bazelItem, errorManager);
 
   if (targetItem?.target.type !== "binary") {
     errorManager.handleNotRunnableTarget(targetItem?.target.name || "unknown");

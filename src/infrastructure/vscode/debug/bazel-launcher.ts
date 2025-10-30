@@ -266,41 +266,17 @@ export async function launchBazelAppOnDevice(
 
   // Check if device is locked and wait for unlock
   try {
-    const { isDeviceLocked, waitForDeviceUnlock } = await import(
+    const { ensureDeviceUnlocked } = await import(
       "../../../infrastructure/apple-platforms/devicectl.adapter.js"
     );
-
-    const locked = await isDeviceLocked(context, deviceId);
-    if (locked) {
-      commonLogger.log("Device is locked, waiting for unlock", { deviceId });
-      context.updateProgressStatus("⏸️  Awaiting device unlock");
-
-      const unlocked = await waitForDeviceUnlock(
-        context,
-        deviceId,
-        (elapsed) => {
-          context.updateProgressStatus(`⏸️  Awaiting device unlock (${elapsed}s)`);
-        },
-        120000, // 2 minutes timeout
-      );
-
-      if (!unlocked) {
-        throw new Error(
-          `Device is locked and could not be unlocked within 2 minutes.\n` +
-          `Device: ${destination.name}\n` +
-          `UDID: ${deviceId}\n\n` +
-          `Please:\n` +
-          `1. Unlock your device manually\n` +
-          `2. Keep the device unlocked during installation\n` +
-          `3. Try again after unlocking`
-        );
-      }
-
-      commonLogger.log("✅ Device unlocked successfully, continuing with installation", {
-        deviceId,
-        deviceName: destination.name,
-      });
-    }
+    
+    await ensureDeviceUnlocked(context, {
+      deviceId,
+      deviceName: destination.name,
+      onWaiting: (elapsed) => {
+        context.updateProgressStatus(`⏸️  Awaiting device unlock (${elapsed}s)`);
+      },
+    });
   } catch (lockCheckError) {
     // If lock check fails, log but continue - don't block installation
     commonLogger.warn("Lock check failed, continuing with installation", { lockCheckError });

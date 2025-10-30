@@ -193,3 +193,53 @@ export async function waitForDeviceUnlock(
 
   return false; // Timeout - device still locked
 }
+
+/**
+ * Ensure device is unlocked before proceeding with operation
+ * Waits up to 2 minutes for device to be unlocked
+ * @throws Error if device remains locked after timeout
+ */
+export async function ensureDeviceUnlocked(
+  context: ExtensionContext,
+  options: {
+    deviceId: string;
+    deviceName: string;
+    onWaiting?: (elapsed: number) => void;
+  },
+): Promise<void> {
+  const { deviceId, deviceName, onWaiting } = options;
+
+  const locked = await isDeviceLocked(context, deviceId);
+  if (!locked) {
+    return; // Device is already unlocked
+  }
+
+  commonLogger.log("⏸️ Device is locked, waiting for unlock", { 
+    deviceId, 
+    deviceName,
+  });
+
+  const unlocked = await waitForDeviceUnlock(
+    context,
+    deviceId,
+    onWaiting,
+    120000, // 2 minutes timeout
+  );
+
+  if (!unlocked) {
+    throw new Error(
+      `Device is locked and could not be unlocked within 2 minutes.\n` +
+      `Device: ${deviceName}\n` +
+      `UDID: ${deviceId}\n\n` +
+      `Please:\n` +
+      `1. Unlock your device manually\n` +
+      `2. Keep the device unlocked during the operation\n` +
+      `3. Try again after unlocking`
+    );
+  }
+
+  commonLogger.log("✅ Device unlocked successfully", {
+    deviceId,
+    deviceName,
+  });
+}

@@ -103,37 +103,18 @@ async function buildBazelTarget(
 
     // Check if device is locked before starting build
     try {
-      const { isDeviceLocked, waitForDeviceUnlock } = await import("../../apple-platforms/devicectl.adapter.js");
-      const locked = await isDeviceLocked(context, destination.udid);
-
-      if (locked) {
-        terminal.write(`\n⚠️  Device "${destination.name}" is locked\n`);
-        terminal.write("   Waiting for device to be unlocked...\n");
-        progress.updateStep("Awaiting device unlock");
-
-        const unlocked = await waitForDeviceUnlock(
-          context,
-          destination.udid,
-          (elapsed) => {
-            progress.updateStep(`Awaiting device unlock (${elapsed}s)`);
-          },
-          120000, // 2 minutes timeout
-        );
-
-      if (!unlocked) {
-        throw new Error(
-          `Device is locked and could not be unlocked within 2 minutes.\n` +
-          `Device: ${destination.name}\n` +
-          `UDID: ${destination.udid}\n\n` +
-          `Please:\n` +
-          `1. Unlock your device manually\n` +
-          `2. Keep the device unlocked during the build\n` +
-          `3. Try the build again after unlocking`
-        );
-      }
-
-        terminal.write("   ✅ Device unlocked\n");
-      }
+      const { ensureDeviceUnlocked } = await import("../../apple-platforms/devicectl.adapter.js");
+      
+      terminal.write("   Checking device lock state...\n");
+      await ensureDeviceUnlocked(context, {
+        deviceId: destination.udid,
+        deviceName: destination.name,
+        onWaiting: (elapsed) => {
+          progress.updateStep(`Awaiting device unlock (${elapsed}s)`);
+          terminal.write(`\r   ⏸️  Waiting for device unlock... ${elapsed}s`);
+        },
+      });
+      terminal.write("\n   ✅ Device ready\n");
     } catch (lockCheckError) {
       // If lock check fails, log but continue - don't block the build
       commonLogger.warn("Lock check failed, continuing anyway", { lockCheckError });
@@ -527,7 +508,13 @@ async function attachDebuggerToApp(
     terminal.write("   Connecting LLDB...\n");
     const started = await vscode.debug.startDebugging(workspaceFolder, debugConfig);
 
-    if (started) {
+    // Wait a moment for debug session to initialize
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Check if debug session is actually active (more reliable than 'started' return value)
+    const hasActiveSession = vscode.debug.activeDebugSession !== undefined;
+
+    if (started || hasActiveSession) {
       terminal.write("\n   ✅ Debugger attached successfully!\n\n");
       terminal.write("🎉 Happy debugging!\n");
       terminal.write("   • Set breakpoints in your code\n");
@@ -581,11 +568,15 @@ export async function buildAndLaunchBazelApp(
   if (attachDebugger) {
     terminal.write(`🐛 Starting debug workflow for ${bazelItem.target.name}\n`);
     terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
-    terminal.write(`   Destination: ${destination.name} (${destination.type})\n\n`);
+    terminal.write(`   Destination: ${destination.name}\n`);
+    terminal.write(`   Type: ${destination.type === "iOSSimulator" ? "📱 iOS Simulator" : "📲 Physical iOS Device"}\n`);
+    terminal.write(`   UDID: ${destination.udid}\n\n`);
   } else {
     terminal.write(`🚀 Starting launch workflow for ${bazelItem.target.name}\n`);
     terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
-    terminal.write(`   Destination: ${destination.name} (${destination.type})\n\n`);
+    terminal.write(`   Destination: ${destination.name}\n`);
+    terminal.write(`   Type: ${destination.type === "iOSSimulator" ? "📱 iOS Simulator" : "📲 Physical iOS Device"}\n`);
+    terminal.write(`   UDID: ${destination.udid}\n\n`);
   }
 
   // Step 1: Build

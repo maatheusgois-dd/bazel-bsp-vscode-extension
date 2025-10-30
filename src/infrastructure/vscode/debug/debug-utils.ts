@@ -2,6 +2,14 @@ import type { ExtensionContext } from "../../../infrastructure/vscode/extension-
 import { type DeviceCtlProcess, getRunningProcesses } from "../../apple-platforms/devicectl.adapter.js";
 
 /**
+ * Extract device app path from file:// URL returned by devicectl
+ * Example: "file:///private/var/containers/Bundle/Application/ABC/MyApp.app/MyApp" → "/private/var/containers/Bundle/Application/ABC/MyApp.app"
+ */
+export function extractDeviceAppPath(deviceExecutableURL: string): string | undefined {
+  return deviceExecutableURL.match(/^file:\/\/(.*\.app)/)?.[1];
+}
+
+/**
  * Wait while the process is launched on the device and return the process information.
  */
 export async function waitForProcessToLaunch(
