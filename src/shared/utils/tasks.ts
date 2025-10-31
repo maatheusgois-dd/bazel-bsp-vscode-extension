@@ -218,9 +218,65 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
     this.writeLine();
 
     let hasOutput = false;
+    let progressCancelled = false;
 
     return new Promise<void>((resolve, reject) => {
       const workspacePath = getWorkspacePath();
+
+      // Show progress notification with cancel button
+      // Extract meaningful command from shell execution
+      let displayTitle = options.command;
+      if (options.command === "sh" && options.args && options.args.length > 1) {
+        const shellCommand = options.args[1]; // Get the command from -c flag
+        if (typeof shellCommand === "string") {
+          // Extract the main command after cd or directly
+          const commandMatch = shellCommand.match(/(?:cd .+ && )?(\w+)/);
+          if (commandMatch) {
+            displayTitle = commandMatch[1]; // e.g., "bazel", "xcrun", "codesign"
+          }
+        }
+      }
+
+      vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: `${displayTitle}`,
+          cancellable: true,
+        },
+        async (progress, token) => {
+          // Handle cancellation
+          token.onCancellationRequested(() => {
+            commonLogger.log("User cancelled command execution", { command: commandPrint });
+            progressCancelled = true;
+
+            const pid = this.process?.pid;
+            if (pid) {
+              this.writeLine("🛑 Cancelling command...", { color: "yellow" });
+              // Kill whole process group
+              try {
+                process.kill(-pid, "SIGTERM");
+              } catch (killError) {
+                commonLogger.warn("Error killing process", { killError, pid });
+              }
+            }
+          });
+
+          progress.report({ message: "Running..." });
+
+          return new Promise<void>((progressResolve) => {
+            // Resolve when process completes
+            const checkCompletion = () => {
+              if (this.process === null) {
+                progressResolve();
+              }
+            };
+            const interval = setInterval(checkCompletion, 100);
+
+            // Cleanup interval when done
+            setTimeout(() => clearInterval(interval), 3000000); // 50 minutes max
+          });
+        },
+      );
 
       // Collect lines and send them to the callback
       // This is usefull when you need to listen to task output and make some actions based on it
@@ -277,6 +333,13 @@ export class TaskTerminalV2 implements vscode.Pseudoterminal, TaskTerminal {
         stderrBuffer.flush();
 
         this.process = null;
+
+        // If cancelled by user, treat as successful cancellation
+        if (progressCancelled) {
+          reject(new ExecuteTaskError("Command cancelled by user", { command: commandPrint, errorCode: 130 }));
+          return;
+        }
+
         if (code !== 0) {
           reject(
             new ExecuteTaskError("Command returned non-zero exit code", { command: commandPrint, errorCode: code }),
