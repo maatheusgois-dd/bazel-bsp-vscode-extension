@@ -36,12 +36,18 @@ export class BazelTargetStatusBar {
       }
 
       this.item.text = `${icon} ${selectedTargetData.targetName}`;
-      this.item.tooltip = `Selected Bazel Target: ${selectedTargetData.targetName} (${targetType})\nPackage: ${selectedTargetData.packageName}\nBuild: Ctrl+Shift+P → "Bazel Build Selected"`;
-      this.item.command = "swiftbazel.bazel.buildSelected"; // Allow clicking to build
+      this.item.tooltip = `Selected Bazel Target: ${selectedTargetData.targetName} (${targetType})\nPackage: ${selectedTargetData.packageName}\nClick to open Bazel Targets view`;
+      this.item.command = {
+        command: "workbench.view.extension.swiftbazel-view",
+        title: "Open Bazel Targets",
+      };
     } else {
       this.item.text = "$(target) No Bazel target";
-      this.item.tooltip = "No Bazel target selected";
-      this.item.command = undefined;
+      this.item.tooltip = "No Bazel target selected\nClick to open Bazel Targets view";
+      this.item.command = {
+        command: "workbench.view.extension.swiftbazel-view",
+        title: "Open Bazel Targets",
+      };
     }
   }
 
