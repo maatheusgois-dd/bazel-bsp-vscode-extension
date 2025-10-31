@@ -22,19 +22,20 @@ This document lists all functions that need to be tested, organized by architect
 
 #### BuildManager (`src/application/services/build-manager.service.ts`)
 
-- [ ] `on()` - Test event listener registration
-- [ ] `initializeWithContext()` - Test initialization with cached target restoration
-- [ ] `refresh()` - Test event emission on refresh
-- [ ] `setCurrentWorkspacePath()` - Test workspace path update and caching
-- [ ] `setSelectedBazelTarget()` - Test target selection and serialization
-- [ ] `getSelectedBazelTarget()` - Test retrieval of selected target
-- [ ] `getSelectedBazelTargetData()` - Test serialized data retrieval with fallback
+- [x] `on()` - Test event listener registration (100% coverage) ✅
+- [x] `initializeWithContext()` - Test initialization with cached target restoration (100% coverage) ✅
+- [x] `refresh()` - Test event emission on refresh (100% coverage) ✅
+- [x] `setCurrentWorkspacePath()` - Test workspace path update and caching (100% coverage) ✅
+- [x] `setSelectedBazelTarget()` - Test target selection and serialization (100% coverage) ✅
+- [x] `getSelectedBazelTarget()` - Test retrieval of selected target (100% coverage) ✅
+- [x] `getSelectedBazelTargetData()` - Test serialized data retrieval with fallback (100% coverage) ✅
 
 **Test Scenarios:**
-- Restore target from cache on init
-- Handle missing context gracefully
-- Event emission on state changes
-- Serialization/deserialization of target data
+- ✅ Restore target from cache on init
+- ✅ Handle missing context gracefully
+- ✅ Event emission on state changes
+- ✅ Serialization/deserialization of target data
+- ✅ Complete workflow integration
 
 ---
 
@@ -108,13 +109,16 @@ This document lists all functions that need to be tested, organized by architect
 
 #### ToolsManager (`src/application/services/tools-manager.service.ts`)
 
-- [ ] `refresh()` - Test tool installation check
-- [ ] `getTools()` - Test tool list retrieval
+- [x] `refresh()` - Test tool installation check (100% coverage) ✅
+- [x] `getTools()` - Test tool list retrieval (100% coverage) ✅
+- [x] `on()` - Test event system (100% coverage) ✅
 
 **Test Scenarios:**
-- All tools installed
-- Some tools missing
-- Command execution failures
+- ✅ All tools installed
+- ✅ Some tools missing
+- ✅ Command execution failures
+- ✅ Caching behavior
+- ✅ Event emission
 
 ---
 
@@ -753,7 +757,15 @@ Domain entities are mostly type definitions and don't require unit tests, but va
 
 #### Quick Pick (`src/shared/utils/quick-pick.ts`)
 
-Testing done via integration tests - mock vscode.window.showQuickPick
+- [x] `showQuickPick()` - Test quick pick dialog (100% coverage) ✅
+- [x] `showInputBox()` - Test input box dialog (100% coverage) ✅
+- [x] `QuickPickCancelledError` - Test error class (100% coverage) ✅
+
+**Test Scenarios:**
+- ✅ User selection
+- ✅ User cancellation  
+- ✅ Separator handling
+- ✅ Multiple context types
 
 ---
 
@@ -927,7 +939,7 @@ tests/
 
 ## Current Test Coverage Status
 
-**Overall: 65.22% statements, 60.39% functions, 65.84% lines, 54.83% branches**
+**Overall: 70.44% statements, 69.56% functions, 71.14% lines, 58.66% branches** ✅
 
 ### Completed Tests (100% coverage)
 - ✅ timer.ts
@@ -936,23 +948,30 @@ tests/
 - ✅ helpers.ts
 - ✅ errors.ts
 - ✅ error-manager.ts
-- ✅ bazel-parser.ts (93.1% branches)
-- ✅ logger.ts (98%)
+- ✅ bazel-parser.ts
+- ✅ quick-pick.ts
+- ✅ build-manager.service.ts
+- ✅ tools-manager.service.ts
+
+### High Coverage (80%+)
 - ✅ files.ts (84%)
+- ✅ logger.ts (98%)
 
 ### Tests Added
-- 10 test suites
-- 266 tests passing
-- 0 failing
+- **13 test suites**
+- **330+ tests passing**
+- **0 failing**
+- **~5 seconds** total execution time
 
-### Next Priority
+### Next Priority (To reach 80%+)
 - exec.ts (15.55%) - High impact
 - bazel-utils.ts (17.43%) - High impact
-- Application services (BuildManager, DestinationsManager, etc.)
+- DevicesManager, SimulatorsManager, DestinationsManager services
+- Debug providers and launchers
 
 ---
 
 *Generated: 2025-10-31*
 *Last Updated: 2025-10-31*
-*Status: 65.22% coverage achieved, target 60%+ met for statements/functions/lines*
+*Status: **70.44% coverage achieved** - Exceeded 60% target, approaching 80% 🎯*
 
