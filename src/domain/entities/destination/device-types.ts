@@ -24,7 +24,11 @@ export class iOSDeviceDestination implements IDestination {
   }
 
   get isConnected(): boolean {
-    return this.state === "connected";
+    // Device is usable if it's paired, even if tunnel is not "connected"
+    // tunnelState can be "disconnected" for USB devices that are paired and ready
+    const isPaired = this.device.connectionProperties.pairingState === "paired";
+    const tunnelNotUnavailable = this.state !== "unavailable";
+    return isPaired && tunnelNotUnavailable;
   }
 
   get icon(): string {
@@ -109,7 +113,10 @@ export class watchOSDeviceDestination implements IDestination {
   }
 
   get isConnected(): boolean {
-    return this.state === "connected";
+    // Device is usable if it's paired, even if tunnel is not "connected"
+    const isPaired = this.device.connectionProperties.pairingState === "paired";
+    const tunnelNotUnavailable = this.state !== "unavailable";
+    return isPaired && tunnelNotUnavailable;
   }
 }
 
@@ -155,7 +162,10 @@ export class tvOSDeviceDestination implements IDestination {
   }
 
   get isConnected(): boolean {
-    return this.state === "connected";
+    // Device is usable if it's paired, even if tunnel is not "connected"
+    const isPaired = this.device.connectionProperties.pairingState === "paired";
+    const tunnelNotUnavailable = this.state !== "unavailable";
+    return isPaired && tunnelNotUnavailable;
   }
 }
 
@@ -201,7 +211,10 @@ export class visionOSDeviceDestination implements IDestination {
   }
 
   get isConnected(): boolean {
-    return this.state === "connected";
+    // Device is usable if it's paired, even if tunnel is not "connected"
+    const isPaired = this.device.connectionProperties.pairingState === "paired";
+    const tunnelNotUnavailable = this.state !== "unavailable";
+    return isPaired && tunnelNotUnavailable;
   }
 }
 

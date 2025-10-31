@@ -88,7 +88,7 @@ export async function listDevices(context: ExtensionContext): Promise<DeviceCtlL
 }
 
 /**
- * Check if a device is connected
+ * Check if a device is connected and usable
  */
 export async function isDeviceConnected(
   context: ExtensionContext,
@@ -96,15 +96,32 @@ export async function isDeviceConnected(
 ): Promise<{ connected: boolean; device?: DeviceCtlDevice }> {
   try {
     const devices = await listDevices(context);
-    const device = devices.result.devices.find((d) => d.identifier === deviceId);
+
+    // Search by identifier OR udid (case-insensitive)
+    const deviceIdLower = deviceId.toLowerCase();
+    const device = devices.result.devices.find(
+      (d) => d.identifier.toLowerCase() === deviceIdLower || d.hardwareProperties.udid.toLowerCase() === deviceIdLower,
+    );
 
     if (!device) {
+      commonLogger.warn("Device not found in devicectl list", {
+        searchId: deviceId,
+        availableDevices: devices.result.devices.map((d) => ({
+          identifier: d.identifier,
+          udid: d.hardwareProperties.udid,
+          name: d.deviceProperties.name,
+        })),
+      });
       return { connected: false };
     }
 
-    // Check tunnel state
+    // Device is usable if:
+    // 1. It's paired (pairingState === "paired")
+    // 2. Tunnel is not unavailable (can be "connected" or "disconnected" for USB devices)
+    const isPaired = device.connectionProperties.pairingState === "paired";
     const tunnelState = device.connectionProperties.tunnelState;
-    const isConnected = tunnelState === "connected";
+    const tunnelNotUnavailable = tunnelState !== "unavailable";
+    const isConnected = isPaired && tunnelNotUnavailable;
 
     return { connected: isConnected, device };
   } catch (error) {
@@ -129,23 +146,56 @@ export async function ensureDeviceConnected(
   const { connected, device } = await isDeviceConnected(context, deviceId);
 
   if (!connected) {
-    const message = device
-      ? `Device "${deviceName}" is not connected.\n\nTunnel state: ${device.connectionProperties.tunnelState}\n\nPlease:\n1. Connect the device via USB or WiFi\n2. Unlock the device\n3. Trust this computer if prompted`
-      : `Device "${deviceName}" not found.\n\nPlease:\n1. Connect the device\n2. Unlock the device\n3. Trust this computer if prompted\n4. Refresh devices list`;
+    let title: string;
+    let message: string;
 
-    const action = await vscode.window.showErrorMessage(message, "Refresh Devices", "Cancel");
+    if (device) {
+      // Device found but not connected
+      const tunnelState = device.connectionProperties.tunnelState;
+      const transportType = device.connectionProperties.transportType;
+
+      title = `📱 Device Not Connected: ${deviceName}`;
+      message = `Connection Status:\n• Tunnel: ${tunnelState}\n• Transport: ${transportType}\n• Pairing: ${device.connectionProperties.pairingState}\n\nTo reconnect:\n${transportType === "wired" ? "1. Check USB cable connection\n" : "1. Ensure device and computer are on same WiFi\n"}2. Unlock the device\n3. Trust this computer if prompted\n4. Try disconnecting and reconnecting`;
+    } else {
+      // Device not found at all
+      title = `📱 Device Not Found: ${deviceName}`;
+      message =
+        "The device is not detected by devicectl.\n\n" +
+        "To fix:\n" +
+        "1. Connect device via USB cable\n" +
+        "2. Unlock the device\n" +
+        `3. Tap "Trust" on device when prompted\n` +
+        "4. Check cable and port are working\n" +
+        "5. Try a different USB cable/port\n" +
+        "6. Restart Xcode if issues persist";
+    }
+
+    const action = await vscode.window.showErrorMessage(`${title}\n\n${message}`, "Refresh Devices", "Open Settings");
 
     if (action === "Refresh Devices") {
       await vscode.commands.executeCommand("swiftbazel.devices.refresh");
+      // After refresh, retry the connection check
+      const retryCheck = await isDeviceConnected(context, deviceId);
+      if (!retryCheck.connected) {
+        throw new Error(`📱 Device "${deviceName}" still not connected after refresh`);
+      }
+      return; // Success after refresh
     }
 
-    throw new Error(`Device "${deviceName}" is not connected`);
+    if (action === "Open Settings") {
+      await vscode.commands.executeCommand("workbench.action.openSettings", "swiftbazel");
+    }
+
+    throw new Error(
+      `📱 Device "${deviceName}" is not connected (${device?.connectionProperties.tunnelState || "not found"})`,
+    );
   }
 
-  commonLogger.log("Device connection verified", {
+  commonLogger.log("✅ Device connection verified", {
     deviceId,
     deviceName,
     tunnelState: device?.connectionProperties.tunnelState,
+    transportType: device?.connectionProperties.transportType,
   });
 }
 
