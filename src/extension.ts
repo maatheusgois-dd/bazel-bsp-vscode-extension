@@ -8,6 +8,8 @@ import { ToolsManager } from "./application/services/tools-manager.service.js";
 // Application Layer
 import {
   bazelBuildCommand,
+  bazelCleanCommand,
+  bazelCleanExpungeCommand,
   bazelDebugCommand,
   bazelRunCommand,
   bazelTestCommand,
@@ -142,6 +144,8 @@ export async function activate(context: vscode.ExtensionContext) {
     d(command("swiftbazel.bazel.test", bazelTestCommand));
     d(command("swiftbazel.bazel.run", bazelRunCommand));
     d(command("swiftbazel.bazel.debug", bazelDebugCommand));
+    d(command("swiftbazel.bazel.clean", bazelCleanCommand));
+    d(command("swiftbazel.bazel.cleanExpunge", bazelCleanExpungeCommand));
     d(command("swiftbazel.bazel.selectBuildMode", selectBazelBuildModeCommand));
     d(
       command("swiftbazel.bazel.selectTarget", (context, targetInfo) =>

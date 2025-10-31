@@ -201,6 +201,101 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
 }
 
 /**
+ * Clean Bazel build cache
+ */
+export async function bazelCleanCommand(context: ExtensionContext, expunge?: boolean): Promise<void> {
+  // If expunge not specified, ask user
+  if (expunge === undefined) {
+    const cleanOption = await vscode.window.showQuickPick(
+      [
+        {
+          label: "$(trash) Clean",
+          description: "Remove build outputs (fast, keeps analysis cache)",
+          value: false,
+        },
+        {
+          label: "$(trash-x) Clean with Expunge",
+          description: "Remove all caches and build outputs (slow, complete cleanup)",
+          value: true,
+        },
+      ],
+      {
+        title: "Select Clean Mode",
+        placeHolder: "Choose how to clean Bazel cache",
+      },
+    );
+
+    if (!cleanOption) {
+      return; // User cancelled
+    }
+
+    expunge = cleanOption.value;
+  }
+
+  const timer = new Timer();
+
+  await runTask(context, {
+    name: `Bazel Clean${expunge ? " (Expunge)" : ""}`,
+    lock: "swiftbazel.bazel.clean",
+    terminateLocked: true,
+    callback: async (terminal) => {
+      terminal.write(`🧹 Cleaning Bazel cache${expunge ? " with expunge" : ""}...\n\n`);
+
+      if (expunge) {
+        terminal.write("⚠️  Expunge will remove ALL caches and build outputs.\n");
+        terminal.write("   This includes:\n");
+        terminal.write("   • All build artifacts\n");
+        terminal.write("   • Analysis cache\n");
+        terminal.write("   • Repository cache\n");
+        terminal.write("   • Action cache\n\n");
+      } else {
+        terminal.write("Regular clean will remove build outputs but keep caches.\n\n");
+      }
+
+      // Get package path from selected target (in-memory or from cache)
+      const selectedTargetData = context.buildManager.getSelectedBazelTargetData();
+      
+      if (!selectedTargetData) {
+        throw new Error(
+          "No Bazel target selected.\n\n" +
+          "Please select a Bazel target first:\n" +
+          "1. Open BAZEL TARGETS view\n" +
+          "2. Click on a target to select it\n" +
+          "3. Run clean command again"
+        );
+      }
+      
+      // Use package path (directory containing BUILD file) - same as build command
+      const packagePath = selectedTargetData.packagePath;
+      
+      terminal.write(`Target: ${selectedTargetData.targetName}\n`);
+      terminal.write(`Package: ${selectedTargetData.packageName}\n`);
+      terminal.write(`Path: ${packagePath}\n\n`);
+
+      const cleanCommand = expunge ? "bazel clean --expunge" : "bazel clean";
+
+      await terminal.execute({
+        command: "sh",
+        args: ["-c", `cd "${packagePath}" && ${cleanCommand}`],
+      });
+
+      terminal.write(`\n✅ Bazel cache cleaned successfully\n`);
+      writeTimingResults(terminal, timer, "bazel", "clean");
+      
+      // Signal completion for MCP
+      context.simpleTaskCompletionEmitter.fire();
+    },
+  });
+}
+
+/**
+ * Clean Bazel cache with expunge (shortcut for Cmd+Shift+K)
+ */
+export async function bazelCleanExpungeCommand(context: ExtensionContext): Promise<void> {
+  await bazelCleanCommand(context, true);
+}
+
+/**
  * Select Bazel build mode (debug or release)
  */
 export async function selectBazelBuildModeCommand(context: ExtensionContext): Promise<void> {

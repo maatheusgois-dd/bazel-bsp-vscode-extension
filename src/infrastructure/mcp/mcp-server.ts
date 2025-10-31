@@ -11,6 +11,11 @@ import type { ExtensionContext } from "../../infrastructure/vscode/extension-con
 import { commonLogger } from "../../shared/logger/logger.js";
 // executeCommand import removed - now using individual command tools
 import {
+  type BazelCleanArgs,
+  bazelCleanImplementation,
+  bazelCleanSchema,
+} from "../../shared/utils/bazel-clean-tool.js";
+import {
   type TakeScreenshotArgs,
   takeScreenshotImplementation,
   takeScreenshotSchema,
@@ -247,6 +252,16 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
     "Builds the currently selected Bazel target. Compiles code without running the app.",
     bazelBuild.schema,
     bazelBuild.implementation,
+  );
+
+  // Bazel Clean
+  server.tool(
+    "bazel_clean",
+    "Clean Bazel build cache. Use expunge=true for complete cleanup (removes all caches), or expunge=false/omitted for regular clean (keeps analysis cache).",
+    bazelCleanSchema.shape,
+    async (args: BazelCleanArgs, frameworkExtra: RequestHandlerExtra<any, any>): Promise<CallToolResult> => {
+      return bazelCleanImplementation(args, { extensionContext }, frameworkExtra);
+    },
   );
 
   // === SCREENSHOT COMMANDS ===

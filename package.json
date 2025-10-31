@@ -404,6 +404,18 @@
         "description": "Select build mode (Debug or Release)"
       },
       {
+        "command": "swiftbazel.bazel.clean",
+        "title": "swiftbazel: Bazel Clean",
+        "icon": "$(trash)",
+        "description": "Clean Bazel build cache"
+      },
+      {
+        "command": "swiftbazel.bazel.cleanExpunge",
+        "title": "swiftbazel: Bazel Clean (Expunge)",
+        "icon": "$(trash-x)",
+        "description": "Clean Bazel build cache with expunge (complete cleanup)"
+      },
+      {
         "command": "swiftbazel.bazel.buildSelected",
         "title": "swiftbazel: Build Selected Bazel Target",
         "icon": "$(swiftbazel-tool)",
@@ -552,6 +564,16 @@
         "command": "swiftbazel.bazel.testSelected",
         "key": "cmd+u",
         "mac": "cmd+u"
+      },
+      {
+        "command": "swiftbazel.bazel.clean",
+        "key": "cmd+k",
+        "mac": "cmd+k"
+      },
+      {
+        "command": "swiftbazel.bazel.cleanExpunge",
+        "key": "cmd+shift+k",
+        "mac": "cmd+shift+k"
       }
     ],
     "menus": {
