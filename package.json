@@ -209,6 +209,7 @@
       {
         "type": "swiftbazel-lldb",
         "label": "swiftbazel (LLDB)",
+        "languages": ["swift", "objective-c", "objective-cpp"],
         "configurationSnippets": [
           {
             "label": "swiftbazel: Build and Run (Wait for debugger)",
@@ -530,11 +531,6 @@
         "command": "swiftbazel.system.openTerminalPanel",
         "title": "swiftbazel: Open Terminal Panel",
         "icon": "$(terminal)"
-      },
-      {
-        "command": "swiftbazel.system.troubleshootBreakpoints",
-        "title": "swiftbazel: Troubleshoot Breakpoints",
-        "icon": "$(debug-breakpoint-unverified)"
       },
       {
         "command": "swiftbazel.debugger.getAppPath",
