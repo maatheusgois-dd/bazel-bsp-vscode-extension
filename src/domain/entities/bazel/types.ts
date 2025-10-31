@@ -1,3 +1,12 @@
+// Build mode for Bazel compilation
+export enum BuildMode {
+  Debug = "debug",
+  Release = "release",
+  ReleaseWithSymbols = "release-with-symbols",
+}
+
+export type BuildModeString = "debug" | "release" | "release-with-symbols";
+
 // Types for Bazel query-based parser output
 export interface BazelQueryTarget {
   type: string; // Rule type (ios_application, swift_library, etc.)
@@ -25,10 +34,19 @@ export interface BazelQueryResult {
   tree: BazelTreeNode;
 }
 
+// Target type enum
+export enum BazelTargetType {
+  Library = "library",
+  Test = "test",
+  Binary = "binary",
+}
+
+export type BazelTargetTypeString = "library" | "test" | "binary";
+
 // Legacy types for backward compatibility
 export interface BazelTarget {
   name: string;
-  type: "library" | "test" | "binary";
+  type: BazelTargetTypeString;
   deps: string[];
   path?: string;
   resources?: string[];
@@ -56,6 +74,12 @@ export interface BazelParseResult {
   xcode_configurations: BazelXcodeConfiguration[];
   targets: BazelTarget[];
   targetsTest: BazelTarget[];
+}
+
+export interface BazelPackage {
+  name: string;
+  path: string;
+  targets: BazelTarget[];
 }
 
 export interface BazelPackageInfo {

@@ -9,10 +9,7 @@ import { ProgressManager, ProgressSteps } from "../../../shared/utils/progress-m
 import { Timer } from "../../../shared/utils/timer.js";
 
 import { DEFAULT_BUILD_PROBLEM_MATCHERS } from "../../../shared/constants/build-constants.js";
-import {
-  askDestinationToRunOn,
-  detectBazelWorkspacesPaths,
-} from "../../../shared/utils/bazel-utils.js";
+import { askDestinationToRunOn, detectBazelWorkspacesPaths } from "../../../shared/utils/bazel-utils.js";
 import { type TaskTerminal, runTask } from "../../../shared/utils/tasks.js";
 
 function writeTimingResults(terminal: TaskTerminal, timer: Timer, toolType: "bazel", operation: string) {
@@ -81,10 +78,13 @@ async function resolveTargetItem(
 /**
  * Get build mode from config/cache or ask user
  */
-async function getBuildMode(context: ExtensionContext, forceAsk: boolean = false): Promise<"debug" | "release" | "release-with-symbols" | undefined> {
+async function getBuildMode(
+  context: ExtensionContext,
+  forceAsk = false,
+): Promise<"debug" | "release" | "release-with-symbols" | undefined> {
   // Check config first
   const configMode = getWorkspaceConfig("bazel.buildMode");
-  
+
   if (!forceAsk && configMode && configMode !== "ask") {
     // Config has explicit preference
     return configMode;
@@ -92,7 +92,7 @@ async function getBuildMode(context: ExtensionContext, forceAsk: boolean = false
 
   // Check workspace state (last used mode)
   const savedMode = context.getWorkspaceState("bazel.buildMode");
-  
+
   if (!forceAsk && savedMode) {
     // Use last saved mode
     return savedMode;
@@ -148,7 +148,7 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
 
   // Get build mode from config/cache
   const buildMode = await getBuildMode(context);
-  
+
   if (buildMode === undefined) {
     return; // User cancelled
   }
@@ -166,7 +166,8 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
-      const modeLabel = buildMode === "debug" ? "Debug" : buildMode === "release-with-symbols" ? "Release with Symbols" : "Release";
+      const modeLabel =
+        buildMode === "debug" ? "Debug" : buildMode === "release-with-symbols" ? "Release with Symbols" : "Release";
       terminal.write(`Building Bazel target: ${targetItem?.target.buildLabel}\n`);
       terminal.write(`Build mode: ${modeLabel}\n\n`);
 
@@ -202,7 +203,9 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
  */
 export async function bazelCleanCommand(context: ExtensionContext, expunge?: boolean): Promise<void> {
   // If expunge not specified, ask user
-  if (expunge === undefined) {
+  let shouldExpunge = expunge;
+
+  if (shouldExpunge === undefined) {
     const cleanOption = await vscode.window.showQuickPick(
       [
         {
@@ -226,19 +229,19 @@ export async function bazelCleanCommand(context: ExtensionContext, expunge?: boo
       return; // User cancelled
     }
 
-    expunge = cleanOption.value;
+    shouldExpunge = cleanOption.value;
   }
 
   const timer = new Timer();
 
   await runTask(context, {
-    name: `Bazel Clean${expunge ? " (Expunge)" : ""}`,
+    name: `Bazel Clean${shouldExpunge ? " (Expunge)" : ""}`,
     lock: "swiftbazel.bazel.clean",
     terminateLocked: true,
     callback: async (terminal) => {
-      terminal.write(`🧹 Cleaning Bazel cache${expunge ? " with expunge" : ""}...\n\n`);
+      terminal.write(`🧹 Cleaning Bazel cache${shouldExpunge ? " with expunge" : ""}...\n\n`);
 
-      if (expunge) {
+      if (shouldExpunge) {
         terminal.write("⚠️  Expunge will remove ALL caches and build outputs.\n");
         terminal.write("   This includes:\n");
         terminal.write("   • All build artifacts\n");
@@ -251,34 +254,34 @@ export async function bazelCleanCommand(context: ExtensionContext, expunge?: boo
 
       // Get package path from selected target (in-memory or from cache)
       const selectedTargetData = context.buildManager.getSelectedBazelTargetData();
-      
+
       if (!selectedTargetData) {
         throw new Error(
           "No Bazel target selected.\n\n" +
-          "Please select a Bazel target first:\n" +
-          "1. Open BAZEL TARGETS view\n" +
-          "2. Click on a target to select it\n" +
-          "3. Run clean command again"
+            "Please select a Bazel target first:\n" +
+            "1. Open BAZEL TARGETS view\n" +
+            "2. Click on a target to select it\n" +
+            "3. Run clean command again",
         );
       }
-      
+
       // Use package path (directory containing BUILD file) - same as build command
       const packagePath = selectedTargetData.packagePath;
-      
+
       terminal.write(`Target: ${selectedTargetData.targetName}\n`);
       terminal.write(`Package: ${selectedTargetData.packageName}\n`);
       terminal.write(`Path: ${packagePath}\n\n`);
 
-      const cleanCommand = expunge ? "bazel clean --expunge" : "bazel clean";
+      const cleanCommand = shouldExpunge ? "bazel clean --expunge" : "bazel clean";
 
       await terminal.execute({
         command: "sh",
         args: ["-c", `cd "${packagePath}" && ${cleanCommand}`],
       });
 
-      terminal.write(`\n✅ Bazel cache cleaned successfully\n`);
+      terminal.write("\n✅ Bazel cache cleaned successfully\n");
       writeTimingResults(terminal, timer, "bazel", "clean");
-      
+
       // Signal completion for MCP
       context.simpleTaskCompletionEmitter.fire();
     },
@@ -297,7 +300,7 @@ export async function bazelCleanExpungeCommand(context: ExtensionContext): Promi
  */
 export async function selectBazelBuildModeCommand(context: ExtensionContext): Promise<void> {
   const buildMode = await getBuildMode(context, true);
-  
+
   if (buildMode === undefined) {
     return; // User cancelled
   }
@@ -307,13 +310,11 @@ export async function selectBazelBuildModeCommand(context: ExtensionContext): Pr
     "release-with-symbols": "Release with Symbols (optimized with symbols)",
     release: "Release (optimized, no symbols)",
   };
-  
+
   // Emit event to update status bar
   vscode.commands.executeCommand("swiftbazel.internal.updateBuildModeStatusBar");
-  
-  vscode.window.showInformationMessage(
-    `✅ Build mode set to: ${modeLabels[buildMode]}`
-  );
+
+  vscode.window.showInformationMessage(`✅ Build mode set to: ${modeLabels[buildMode]}`);
 }
 
 /**
@@ -529,7 +530,6 @@ export async function testSelectedBazelTargetCommand(
 
   await bazelTestCommand(context, bazelItem);
 }
-
 
 /**
  * Diagnose build setup

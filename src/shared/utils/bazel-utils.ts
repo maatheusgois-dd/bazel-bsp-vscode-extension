@@ -12,12 +12,6 @@ import { getWorkspaceConfig } from "../utils/config.js";
 import { splitSupportedDestinatinos } from "../utils/destination-utils.js";
 import { createDirectory, findFilesRecursive, removeDirectory } from "../utils/files.js";
 
-export type SelectedDestination = {
-  type: "simulator" | "device";
-  udid: string;
-  name?: string;
-};
-
 /**
  * Ask user to select one of the Booted/Shutdown simulators
  */
@@ -287,21 +281,5 @@ export async function restartSwiftLSP() {
 }
 
 // Legacy Bazel BUILD file parsing removed - use bazel query instead
-
-// Legacy compatibility types - keeping for backwards compatibility
-export interface BazelTarget {
-  name: string;
-  type: "library" | "test" | "binary";
-  buildLabel: string;
-  testLabel?: string;
-  deps: string[];
-  path?: string;
-  resources?: string[];
-}
-
-export interface BazelPackage {
-  name: string;
-  path: string;
-  targets: BazelTarget[];
-}
-
+// Legacy types moved to domain/entities/bazel/types.ts
+// SelectedDestination moved to domain/entities/destination/types.ts

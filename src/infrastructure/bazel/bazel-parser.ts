@@ -44,6 +44,7 @@ const TARGET_TYPES: TargetTypeConfig = {
   ] as const,
 } as const;
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Parser class provides organized namespace for related parsing functions
 export class BazelParser {
   /**
    * Run bazel query and parse all targets

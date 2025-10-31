@@ -42,9 +42,9 @@ import { registerDebugConfigurationProvider } from "./infrastructure/vscode/debu
 import { ExtensionContext } from "./infrastructure/vscode/extension-context.js";
 import { BazelBuildTaskProvider } from "./infrastructure/vscode/task-provider.js";
 
+import { BuildModeStatusBar } from "./presentation/status-bars/build-mode-status-bar.js";
 // Presentation Layer
 import { BazelTargetStatusBar } from "./presentation/status-bars/build-status-bar.js";
-import { BuildModeStatusBar } from "./presentation/status-bars/build-mode-status-bar.js";
 import { DestinationStatusBar } from "./presentation/status-bars/destination-status-bar.js";
 import { ProgressStatusBar } from "./presentation/status-bars/progress-status-bar.js";
 import { BazelTreeProvider } from "./presentation/tree-providers/bazel-tree.provider.js";
@@ -131,7 +131,7 @@ export async function activate(context: vscode.ExtensionContext) {
       context: _context,
     });
     d(buildModeStatusBar);
-    
+
     // Internal command to update build mode status bar
     d(command("swiftbazel.internal.updateBuildModeStatusBar", async () => buildModeStatusBar.update()));
 

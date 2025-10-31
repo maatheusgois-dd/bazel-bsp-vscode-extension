@@ -256,12 +256,12 @@ class DynamicDebugConfigurationProvider implements vscode.DebugConfigurationProv
     const launchContext = this.context.getWorkspaceState("build.lastLaunchedApp");
     if (!launchContext) {
       throw new Error(
-        `No app has been launched yet.\n\n` +
-        `Before debugging, you must first launch the app using one of:\n` +
-        `1. Click the ▶ (Run) button on a Bazel target\n` +
-        `2. Run command: swiftbazel: Build & Run\n` +
-        `3. Use Cmd+R on a selected target\n\n` +
-        `Then attach the debugger by pressing F5`
+        "No app has been launched yet.\n\n" +
+          "Before debugging, you must first launch the app using one of:\n" +
+          "1. Click the ▶ (Run) button on a Bazel target\n" +
+          "2. Run command: swiftbazel: Build & Run\n" +
+          "3. Use Cmd+R on a selected target\n\n" +
+          "Then attach the debugger by pressing F5",
       );
     }
 
@@ -380,7 +380,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     const deviceUDID = launchContext.destinationId;
     const appPath = launchContext.appPath;
     const pid = launchContext.pid;
-    
+
     commonLogger.log("Resolving Bazel device debug configuration", {
       launchContext,
       deviceUDID,
@@ -399,16 +399,14 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     // 2. We select the device by UDID
     // 3. Attach to the process by PID with --continue flag
     // 4. No platform connect needed - device commands work directly via USB
-    
+
     const resolvedConfig = {
       type: "lldb-dap",
       request: "attach",
       name: config.name || "swiftbazel: Bazel Debug (Device)",
       debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
       program: appPath,
-      preRunCommands: [
-        `platform select remote-ios`,
-      ],
+      preRunCommands: ["platform select remote-ios"],
       attachCommands: [
         `script lldb.debugger.HandleCommand("device select ${deviceUDID}")`,
         `script lldb.debugger.HandleCommand("device process attach --continue --pid ${pid}")`,

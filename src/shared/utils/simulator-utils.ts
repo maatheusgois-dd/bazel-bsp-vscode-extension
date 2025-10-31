@@ -147,13 +147,7 @@ export async function waitForSimulatorBoot(udid: string, timeoutMs = 60000): Pro
   }
 
   throw new Error(
-    `Simulator failed to boot within ${Math.round(timeoutMs / 1000)} seconds.\n` +
-    `Simulator UDID: ${udid}\n\n` +
-    `The simulator may be unresponsive. Try:\n` +
-    `1. Quit Simulator.app and try again\n` +
-    `2. Run: xcrun simctl shutdown all\n` +
-    `3. Restart your Mac if simulators are consistently stuck\n` +
-    `4. Check Console.app for CoreSimulator errors`
+    `Simulator failed to boot within ${Math.round(timeoutMs / 1000)} seconds.\nSimulator UDID: ${udid}\n\nThe simulator may be unresponsive. Try:\n1. Quit Simulator.app and try again\n2. Run: xcrun simctl shutdown all\n3. Restart your Mac if simulators are consistently stuck\n4. Check Console.app for CoreSimulator errors`,
   );
 }
 
@@ -186,13 +180,7 @@ export async function ensureSingleSimulator(context: ExtensionContext, deviceNam
 
     if (!target) {
       throw new Error(
-        `Simulator not found in available devices.\n` +
-        `Searched for: ${deviceNameOrUdid}\n\n` +
-        `The simulator may have been deleted or is unavailable. Try:\n` +
-        `1. Refresh the DESTINATIONS view\n` +
-        `2. Select a different simulator\n` +
-        `3. Check Xcode > Window > Devices and Simulators\n` +
-        `4. Create the simulator if it doesn't exist`
+        `Simulator not found in available devices.\nSearched for: ${deviceNameOrUdid}\n\nThe simulator may have been deleted or is unavailable. Try:\n1. Refresh the DESTINATIONS view\n2. Select a different simulator\n3. Check Xcode > Window > Devices and Simulators\n4. Create the simulator if it doesn't exist`,
       );
     }
 

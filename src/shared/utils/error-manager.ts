@@ -24,7 +24,7 @@ export class ErrorManager {
   }
 
   // Convenience methods for common error patterns
-  
+
   handleNoTargetSelected(): never {
     return this.throw("No Bazel target selected. Please select a target from the BAZEL TARGETS tree view first.", {
       command: "bazel",

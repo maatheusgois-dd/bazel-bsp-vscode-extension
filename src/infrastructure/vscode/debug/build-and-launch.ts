@@ -83,7 +83,7 @@ async function buildStep(
   const { bazelItem, destination, attachDebugger } = options;
 
   progress.nextStep("Building with debug symbols");
-  
+
   if (attachDebugger) {
     terminal.write(`🔨 Step 1/6: Building ${bazelItem.target.name} with debug symbols...\n`);
     terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
@@ -121,7 +121,7 @@ async function locateAppBundle(
   const packagePath = bazelItem.target.buildLabel.replace("//", "").replace(":", "/");
 
   progress.nextStep("Locating app bundle");
-  
+
   if (attachDebugger) {
     terminal.write("\n📦 Step 2/6: Locating app bundle...\n");
     terminal.write(`   Package: ${packagePath}\n`);
@@ -214,14 +214,7 @@ async function locateAppBundle(
       terminal.write(`      - ${basePath}.app\n`);
     }
     throw new Error(
-      `App bundle not found after build.\n` +
-      `Expected: bazel-bin/${packagePath}.{ipa,app}\n` +
-      `Build label: ${bazelItem.target.buildLabel}\n\n` +
-      `Build may have succeeded but output location is unexpected. Try:\n` +
-      `1. Check build output for the actual location\n` +
-      `2. Look in workspace root for bazel-bin directory\n` +
-      `3. Run: bazel info bazel-bin\n` +
-      `4. Verify target type produces an application bundle`
+      `App bundle not found after build.\nExpected: bazel-bin/${packagePath}.{ipa,app}\nBuild label: ${bazelItem.target.buildLabel}\n\nBuild may have succeeded but output location is unexpected. Try:\n1. Check build output for the actual location\n2. Look in workspace root for bazel-bin directory\n3. Run: bazel info bazel-bin\n4. Verify target type produces an application bundle`,
     );
   }
 
@@ -365,7 +358,7 @@ async function launchApp(
       args: launchArgs,
     });
 
-    terminal.write(`   ✅ App launched successfully\n`);
+    terminal.write("   ✅ App launched successfully\n");
     terminal.write(`   Process ID: ${launchResult.pid}\n`);
     if (attachDebugger) {
       terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
@@ -397,16 +390,16 @@ async function launchApp(
     args: launchArgs,
   });
 
-    terminal.write(`   ✅ App launched successfully\n`);
-    terminal.write(`   Process ID: ${launchResult.pid}\n`);
-    if (attachDebugger) {
-      terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
-    } else {
-      terminal.write("   🏃 App is now running on device\n");
-    }
-
-    return launchResult;
+  terminal.write("   ✅ App launched successfully\n");
+  terminal.write(`   Process ID: ${launchResult.pid}\n`);
+  if (attachDebugger) {
+    terminal.write("   ⏸️  App is paused, waiting for debugger to attach...\n");
+  } else {
+    terminal.write("   🏃 App is now running on device\n");
   }
+
+  return launchResult;
+}
 
 /**
  * Attach debugger to the launched app
@@ -436,7 +429,7 @@ async function attachDebuggerToApp(
       port: debugPort,
       deviceId: destination.type === "iOSDevice" ? destination.udid : undefined,
     });
-    terminal.write(`   ✅ Debugserver ready and listening\n`);
+    terminal.write("   ✅ Debugserver ready and listening\n");
   } catch (error) {
     terminal.write(`   ⚠️  Failed to start debugserver: ${error}\n`);
     throw error;
@@ -467,7 +460,7 @@ async function attachDebuggerToApp(
     const started = await vscode.debug.startDebugging(workspaceFolder, debugConfig);
 
     // Wait a moment for debug session to initialize
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Check if debug session is actually active (more reliable than 'started' return value)
     const hasActiveSession = vscode.debug.activeDebugSession !== undefined;
@@ -489,7 +482,7 @@ async function attachDebuggerToApp(
     terminal.write(`\n   ❌ Error attaching debugger: ${errorMsg}\n`);
     terminal.write("\n   Debugserver is running on port ${debugPort}.\n");
     terminal.write("   You can try attaching manually by pressing F5.\n\n");
-    commonLogger.error("Error starting debugger", { 
+    commonLogger.error("Error starting debugger", {
       error,
       debugPort,
       destination: destination.type,
@@ -594,7 +587,7 @@ export async function buildAndLaunchBazelApp(
   }
 
   progress.complete();
-  
+
   if (attachDebugger) {
     terminal.write("\n✅ Debug workflow completed successfully.\n");
     terminal.write("   Debugger is attached and ready.\n");

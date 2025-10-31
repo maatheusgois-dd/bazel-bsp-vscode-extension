@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import type { SelectedBazelTargetData } from "../../../application/services/build-manager.service.js";
-import type { BazelPackage, BazelTarget } from "../../../shared/utils/bazel-utils.js";
+import type { BazelPackage, BazelTarget } from "../../../domain/entities/bazel/types.js";
 
 // Forward declaration to avoid circular dependency
 export interface IBazelTreeProvider {

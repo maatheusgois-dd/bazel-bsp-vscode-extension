@@ -22,7 +22,7 @@ export class BuildModeStatusBar {
   update() {
     // Check config first
     const configMode = getWorkspaceConfig("bazel.buildMode");
-    
+
     // Check workspace state (last used mode)
     const savedMode = this.context.getWorkspaceState("bazel.buildMode");
 
@@ -60,4 +60,3 @@ export class BuildModeStatusBar {
     this.item.dispose();
   }
 }
-

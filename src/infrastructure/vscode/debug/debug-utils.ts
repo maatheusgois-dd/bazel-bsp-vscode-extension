@@ -32,11 +32,7 @@ export async function waitForProcessToLaunch(
     const elapsedTime = Date.now() - startTime; // in milliseconds
     if (elapsedTime > timeoutMs) {
       throw new Error(
-        `Timeout waiting for process to launch after ${Math.round(elapsedTime / 1000)}s.\n` +
-        `App: ${appName}\n` +
-        `Device: ${deviceId}\n` +
-        `Timeout: ${Math.round(timeoutMs / 1000)}s\n\n` +
-        `The app may have crashed during launch. Check device console for crash logs.`
+        `Timeout waiting for process to launch after ${Math.round(elapsedTime / 1000)}s.\nApp: ${appName}\nDevice: ${deviceId}\nTimeout: ${Math.round(timeoutMs / 1000)}s\n\nThe app may have crashed during launch. Check device console for crash logs.`,
       );
     }
 
@@ -45,13 +41,7 @@ export async function waitForProcessToLaunch(
     const runningProcesses = result?.result?.runningProcesses ?? [];
     if (runningProcesses.length === 0) {
       throw new Error(
-        `No running processes found on device.\n` +
-        `Device: ${deviceId}\n` +
-        `App: ${appName}\n\n` +
-        `The device may be disconnected or locked. Try:\n` +
-        `1. Unlock your device\n` +
-        `2. Trust this computer if prompted\n` +
-        `3. Reconnect the device`
+        `No running processes found on device.\nDevice: ${deviceId}\nApp: ${appName}\n\nThe device may be disconnected or locked. Try:\n1. Unlock your device\n2. Trust this computer if prompted\n3. Reconnect the device`,
       );
     }
 

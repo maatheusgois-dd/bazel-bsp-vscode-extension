@@ -214,8 +214,8 @@ export async function ensureDeviceUnlocked(
     return; // Device is already unlocked
   }
 
-  commonLogger.log("⏸️ Device is locked, waiting for unlock", { 
-    deviceId, 
+  commonLogger.log("⏸️ Device is locked, waiting for unlock", {
+    deviceId,
     deviceName,
   });
 
@@ -228,13 +228,7 @@ export async function ensureDeviceUnlocked(
 
   if (!unlocked) {
     throw new Error(
-      `Device is locked and could not be unlocked within 2 minutes.\n` +
-      `Device: ${deviceName}\n` +
-      `UDID: ${deviceId}\n\n` +
-      `Please:\n` +
-      `1. Unlock your device manually\n` +
-      `2. Keep the device unlocked during the operation\n` +
-      `3. Try again after unlocking`
+      `Device is locked and could not be unlocked within 2 minutes.\nDevice: ${deviceName}\nUDID: ${deviceId}\n\nPlease:\n1. Unlock your device manually\n2. Keep the device unlocked during the operation\n3. Try again after unlocking`,
     );
   }
 
