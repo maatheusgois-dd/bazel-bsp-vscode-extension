@@ -57,6 +57,8 @@ export class BazelParser {
         command: "bazel",
         args: ["query", "//...", "--output=label_kind"],
         cwd,
+        cancellable: true,
+        progressTitle: "Discovering Bazel targets",
       });
 
       const lines = output

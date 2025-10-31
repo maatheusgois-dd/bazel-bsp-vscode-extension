@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 import { ExecBaseError, ExecError } from "../errors/errors.js";
 import { commonLogger } from "../logger/logger.js";
 import { getWorkspacePath } from "./bazel-utils.js";
@@ -10,6 +11,10 @@ export async function exec(options: {
   args: string[];
   cwd?: string;
   env?: { [key: string]: string | null };
+  /** Show cancellable progress notification (default: false for short operations, true for long ones) */
+  cancellable?: boolean;
+  /** Custom display name for progress notification */
+  progressTitle?: string;
 }): Promise<string> {
   const cwd = options.cwd ?? getWorkspacePath();
 
@@ -23,18 +28,75 @@ export async function exec(options: {
   const env = prepareEnvVars(options.env);
 
   try {
-    const result = await execa(options.command, options.args, {
-      cwd: cwd,
-      env: env,
-    }).catch((error) => {
-      // Handle rejection manually
-      return {
-        failed: true,
-        exitCode: error.exitCode || 1,
-        stdout: error.stdout || "",
-        stderr: error.stderr || error.message || "Unknown error",
-      };
-    });
+    let result: any;
+    let subprocess: any;
+
+    if (options.cancellable) {
+      // Show cancellable progress notification
+      const displayTitle = options.progressTitle || options.command;
+
+      result = await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: displayTitle,
+          cancellable: true,
+        },
+        async (_progress, token) => {
+          // Start the process
+          subprocess = execa(options.command, options.args, {
+            cwd: cwd,
+            env: env,
+          });
+
+          // Handle cancellation
+          token.onCancellationRequested(() => {
+            commonLogger.log("User cancelled exec operation", {
+              command: options.command,
+              args: options.args,
+            });
+            subprocess.kill("SIGTERM");
+          });
+
+          // Wait for process to complete
+          return subprocess.catch((error: any) => {
+            // Handle rejection manually
+            return {
+              failed: true,
+              exitCode: error.exitCode || 1,
+              stdout: error.stdout || "",
+              stderr: error.stderr || error.message || "Unknown error",
+              killed: error.killed || false,
+            };
+          });
+        },
+      );
+    } else {
+      // Execute without progress notification
+      result = await execa(options.command, options.args, {
+        cwd: cwd,
+        env: env,
+      }).catch((error) => {
+        // Handle rejection manually
+        return {
+          failed: true,
+          exitCode: error.exitCode || 1,
+          stdout: error.stdout || "",
+          stderr: error.stderr || error.message || "Unknown error",
+          killed: error.killed || false,
+        };
+      });
+    }
+
+    // Check if operation was killed/cancelled
+    if (result.killed) {
+      throw new ExecError("Command cancelled by user", {
+        stderr: "Operation cancelled",
+        command: options.command,
+        args: options.args,
+        cwd: cwd,
+        errorMessage: "User cancelled operation",
+      });
+    }
 
     commonLogger.debug("Command executed", {
       command: options.command,

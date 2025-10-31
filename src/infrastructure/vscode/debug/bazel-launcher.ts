@@ -101,6 +101,8 @@ export async function launchBazelAppOnSimulator(
       const installPromise = exec({
         command: "xcrun",
         args: ["simctl", "install", simulator.udid, appPath],
+        cancellable: true,
+        progressTitle: `Installing app on ${simulator.name}`,
       });
 
       const timeoutPromise = new Promise((_, reject) =>
@@ -288,6 +290,8 @@ export async function launchBazelAppOnDevice(
   await exec({
     command: "xcrun",
     args: ["devicectl", "device", "install", "app", "--device", deviceId, appPath],
+    cancellable: true,
+    progressTitle: `Installing app on ${destination.name}`,
   });
 
   // 3. Launch app with devicectl using JSON output
