@@ -3,8 +3,8 @@ const vscode = {
   workspace: {
     workspaceFolders: [
       {
-        uri: { fsPath: '/mock/workspace' },
-        name: 'MockWorkspace',
+        uri: { fsPath: "/mock/workspace" },
+        name: "MockWorkspace",
         index: 0,
       },
     ],
@@ -20,15 +20,17 @@ const vscode = {
       show: jest.fn(),
       dispose: jest.fn(),
     })),
+    createQuickPick: jest.fn(),
     showQuickPick: jest.fn(),
+    showInputBox: jest.fn(),
     showInformationMessage: jest.fn(),
     showWarningMessage: jest.fn(),
     showErrorMessage: jest.fn(),
     withProgress: jest.fn((options, task) => task({ report: jest.fn() }, { onCancellationRequested: jest.fn() })),
     createStatusBarItem: jest.fn(() => ({
-      text: '',
-      tooltip: '',
-      command: '',
+      text: "",
+      tooltip: "",
+      command: "",
       show: jest.fn(),
       hide: jest.fn(),
       dispose: jest.fn(),
@@ -105,4 +107,3 @@ const vscode = {
 };
 
 module.exports = vscode;
-
