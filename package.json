@@ -521,21 +521,33 @@
         "icon": "$(swiftbazel-refresh)",
         "enablement": "view == swiftbazel.tools.view"
       },
-      {
-        "command": "swiftbazel.system.resetswiftbazelCache",
-        "title": "SwiftBazel: Reset Extension Cache",
-        "icon": "$(clear-all)"
-      },
-      {
-        "command": "swiftbazel.system.testErrorReporting",
-        "title": "SwiftBazel: Test Error Reporting",
-        "icon": "$(bug)"
-      },
-      {
-        "command": "swiftbazel.system.openTerminalPanel",
-        "title": "SwiftBazel: Open Terminal Panel",
-        "icon": "$(terminal)"
-      },
+        {
+          "command": "swiftbazel.system.resetswiftbazelCache",
+          "title": "SwiftBazel: Reset Extension Cache",
+          "icon": "$(clear-all)"
+        },
+        {
+          "command": "swiftbazel.system.testErrorReporting",
+          "title": "SwiftBazel: Test Error Reporting",
+          "icon": "$(bug)"
+        },
+        {
+          "command": "swiftbazel.system.openTerminalPanel",
+          "title": "SwiftBazel: Open Terminal Panel",
+          "icon": "$(terminal)"
+        },
+        {
+          "command": "swiftbazel.system.setupSwiftExtension",
+          "title": "SwiftBazel: Setup Swift Extension for BSP",
+          "icon": "$(settings-gear)",
+          "description": "Configure Swift extension settings for selected Bazel target"
+        },
+        {
+          "command": "swiftbazel.system.showSwiftConfigStatus",
+          "title": "SwiftBazel: Show Swift Configuration Status",
+          "icon": "$(info)",
+          "description": "Check Swift extension configuration"
+        },
       {
         "command": "swiftbazel.debugger.getAppPath",
         "title": "SwiftBazel: Get app path for debugging",
@@ -1258,7 +1270,7 @@
   },
   "extensionDependencies": [
     "vadimcn.vscode-lldb",
-    "swiftlang.swift-vscode",
+    "sswg.swift-lang",
     "llvm-vs-code-extensions.lldb-dap"
   ],
   "scripts": {

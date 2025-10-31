@@ -33,6 +33,10 @@ import {
   stopSimulatorCommand,
   takeSimulatorScreenshotCommand,
 } from "./application/use-cases/destination/simulator-commands.use-case.js";
+import {
+  setupSwiftExtensionCommand,
+  showSwiftConfigStatusCommand,
+} from "./application/use-cases/system/swift-setup.use-case.js";
 import { openTerminalPanel, resetswiftbazelCache } from "./application/use-cases/system/system-commands.use-case.js";
 import { installToolCommand, openDocumentationCommand } from "./application/use-cases/tools/tools-commands.use-case.js";
 
@@ -221,6 +225,8 @@ export async function activate(context: vscode.ExtensionContext) {
     // System
     d(command("swiftbazel.system.resetswiftbazelCache", resetswiftbazelCache));
     d(command("swiftbazel.system.openTerminalPanel", openTerminalPanel));
+    d(command("swiftbazel.system.setupSwiftExtension", setupSwiftExtensionCommand));
+    d(command("swiftbazel.system.showSwiftConfigStatus", showSwiftConfigStatusCommand));
     d(
       command("swiftbazel.system.cancelCurrentOperation", async (_context) => {
         progressStatusBar.cancelCurrentOperation();
