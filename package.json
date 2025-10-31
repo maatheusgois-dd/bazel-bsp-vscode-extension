@@ -440,6 +440,12 @@
         "description": "Debug Bazel target on iOS simulator or device"
       },
       {
+        "command": "swiftbazel.bazel.stop",
+        "title": "swiftbazel: Stop/Cancel",
+        "icon": "$(debug-stop)",
+        "description": "Stop debugging or cancel running build/test"
+      },
+      {
         "command": "swiftbazel.bazel.runSelected",
         "title": "swiftbazel: Run Selected Bazel Target",
         "icon": "$(run)",
@@ -747,6 +753,11 @@
           "group": "inline@4"
         },
         {
+          "command": "swiftbazel.bazel.stop",
+          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.binary.*&selected=true.*/",
+          "group": "inline@5"
+        },
+        {
           "command": "swiftbazel.bazel.selectTarget",
           "when": "viewItem =~ /swiftbazel\\.bazel\\.target/",
           "group": "context@1"
@@ -790,6 +801,11 @@
           "command": "swiftbazel.bazel.debug",
           "when": "viewItem =~ /^bazelTarget-runnable.*&selected=true.*/",
           "group": "inline@3"
+        },
+        {
+          "command": "swiftbazel.bazel.stop",
+          "when": "viewItem =~ /^bazelTarget-runnable.*&selected=true.*/",
+          "group": "inline@4"
         },
         {
           "command": "swiftbazel.bazelQuery.clearRecents",

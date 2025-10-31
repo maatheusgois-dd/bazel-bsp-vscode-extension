@@ -296,6 +296,39 @@ export async function bazelCleanExpungeCommand(context: ExtensionContext): Promi
 }
 
 /**
+ * Stop/Cancel current Bazel operation (build/run/debug)
+ */
+export async function bazelStopCommand(_context: ExtensionContext): Promise<void> {
+  // Check if there's an active debug session
+  const activeDebugSession = vscode.debug.activeDebugSession;
+
+  if (activeDebugSession) {
+    // Stop debugging
+    await vscode.debug.stopDebugging(activeDebugSession);
+    vscode.window.showInformationMessage("🛑 Stopped debug session");
+    return;
+  }
+
+  // Check if there's a running task
+  const runningTasks = vscode.tasks.taskExecutions;
+  const bazelTasks = runningTasks.filter(
+    (task) => task.task.source === "swiftbazel" || task.task.name.includes("Bazel"),
+  );
+
+  if (bazelTasks.length > 0) {
+    // Cancel all bazel tasks
+    for (const task of bazelTasks) {
+      task.terminate();
+    }
+    vscode.window.showInformationMessage(`🛑 Cancelled ${bazelTasks.length} task(s)`);
+    return;
+  }
+
+  // Nothing running
+  vscode.window.showInformationMessage("No active Bazel operations to stop");
+}
+
+/**
  * Select Bazel build mode (debug or release)
  */
 export async function selectBazelBuildModeCommand(context: ExtensionContext): Promise<void> {

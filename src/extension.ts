@@ -12,6 +12,7 @@ import {
   bazelCleanExpungeCommand,
   bazelDebugCommand,
   bazelRunCommand,
+  bazelStopCommand,
   bazelTestCommand,
   buildSelectedBazelTargetCommand,
   diagnoseBuildSetupCommand,
@@ -142,6 +143,7 @@ export async function activate(context: vscode.ExtensionContext) {
     d(command("swiftbazel.bazel.test", bazelTestCommand));
     d(command("swiftbazel.bazel.run", bazelRunCommand));
     d(command("swiftbazel.bazel.debug", bazelDebugCommand));
+    d(command("swiftbazel.bazel.stop", bazelStopCommand));
     d(command("swiftbazel.bazel.clean", bazelCleanCommand));
     d(command("swiftbazel.bazel.cleanExpunge", bazelCleanExpungeCommand));
     d(command("swiftbazel.bazel.selectBuildMode", selectBazelBuildModeCommand));
