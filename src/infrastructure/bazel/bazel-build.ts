@@ -43,6 +43,14 @@ export async function buildBazelTarget(options: BazelBuildOptions): Promise<void
   } else if (destination.type === "iOSDevice") {
     platformFlag = "--ios_multi_cpus=arm64";
     terminal.write(`   Platform: iOS Device (${destination.name})\n`);
+    const { ensureDeviceConnected } = await import("../apple-platforms/devicectl.adapter.js");
+
+    terminal.write("   Checking device connection...\n");
+    await ensureDeviceConnected(context, {
+      deviceId: destination.udid,
+      deviceName: destination.name,
+    });
+    terminal.write("   ✅ Device connected\n");
 
     // Check if device is locked before starting build
     try {

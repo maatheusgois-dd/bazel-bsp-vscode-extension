@@ -253,6 +253,12 @@ export async function launchBazelAppOnDevice(
     hasArgs: args.length > 0,
     hasEnv: Object.keys(env).length > 0,
   });
+  const { ensureDeviceConnected } = await import("../../../infrastructure/apple-platforms/devicectl.adapter.js");
+
+  await ensureDeviceConnected(context, {
+    deviceId,
+    deviceName: destination.name,
+  });
 
   // Check if device is locked and wait for unlock
   try {

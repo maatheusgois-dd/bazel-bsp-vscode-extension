@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 import type { ExtensionContext } from "../../infrastructure/vscode/extension-context.js";
 import { commonLogger } from "../../shared/logger/logger.js";
 import { exec } from "../../shared/utils/exec.js";
@@ -84,6 +85,68 @@ export async function listDevices(context: ExtensionContext): Promise<DeviceCtlL
   commonLogger.debug("Stdout devicectl list devices", { stdout: devicesStdout });
 
   return await readJsonFile<DeviceCtlListCommandOutput>(tmpPath.path);
+}
+
+/**
+ * Check if a device is connected
+ */
+export async function isDeviceConnected(
+  context: ExtensionContext,
+  deviceId: string,
+): Promise<{ connected: boolean; device?: DeviceCtlDevice }> {
+  try {
+    const devices = await listDevices(context);
+    const device = devices.result.devices.find((d) => d.identifier === deviceId);
+
+    if (!device) {
+      return { connected: false };
+    }
+
+    // Check tunnel state
+    const tunnelState = device.connectionProperties.tunnelState;
+    const isConnected = tunnelState === "connected";
+
+    return { connected: isConnected, device };
+  } catch (error) {
+    commonLogger.error("Error checking device connection", { error, deviceId });
+    return { connected: false };
+  }
+}
+
+/**
+ * Ensure device is connected, show error notification if not
+ * @throws Error if device is not connected
+ */
+export async function ensureDeviceConnected(
+  context: ExtensionContext,
+  options: {
+    deviceId: string;
+    deviceName: string;
+  },
+): Promise<void> {
+  const { deviceId, deviceName } = options;
+
+  const { connected, device } = await isDeviceConnected(context, deviceId);
+
+  if (!connected) {
+    const message = device
+      ? `Device "${deviceName}" is not connected.\n\nTunnel state: ${device.connectionProperties.tunnelState}\n\nPlease:\n1. Connect the device via USB or WiFi\n2. Unlock the device\n3. Trust this computer if prompted`
+      : `Device "${deviceName}" not found.\n\nPlease:\n1. Connect the device\n2. Unlock the device\n3. Trust this computer if prompted\n4. Refresh devices list`;
+
+    const action = await vscode.window.showErrorMessage(message, "Refresh Devices", "Cancel");
+
+    if (action === "Refresh Devices") {
+      await vscode.commands.executeCommand("swiftbazel.devices.refresh");
+    }
+
+    throw new Error(`Device "${deviceName}" is not connected`);
+  }
+
+  commonLogger.log("Device connection verified", {
+    deviceId,
+    deviceName,
+    tunnelState: device?.connectionProperties.tunnelState,
+  });
 }
 
 export type DeviceCtlProcessResult = {
