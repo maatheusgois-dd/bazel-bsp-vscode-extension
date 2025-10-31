@@ -1257,7 +1257,9 @@
     ]
   },
   "extensionDependencies": [
-    "vadimcn.vscode-lldb"
+    "vadimcn.vscode-lldb",
+    "swiftlang.swift-vscode",
+    "llvm-vs-code-extensions.lldb-dap"
   ],
   "scripts": {
     "build": "export NODE_OPTIONS=--no-warnings && node esbuild.config.mjs --sourcemap",
