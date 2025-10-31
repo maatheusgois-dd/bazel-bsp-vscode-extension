@@ -1,10 +1,10 @@
 # Run lint-staged for formatting
 npx lint-staged
 
-# Get changed test files
-CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|js)$' | grep -v 'coverage/' | grep -v 'node_modules/' | tr '\n' ' ')
+# Get changed source files (exclude config, coverage, node_modules)
+CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(src|tests)/.*\.(ts|js)$' | grep -v 'coverage/' | grep -v 'node_modules/' | tr '\n' ' ')
 
-# Run tests only if there are changed files
+# Run tests only if there are changed source/test files
 if [ -n "$CHANGED_FILES" ]; then
   npm run jest -- --bail --findRelatedTests $CHANGED_FILES
   
@@ -16,5 +16,5 @@ if [ -n "$CHANGED_FILES" ]; then
   
   echo "✅ Tests passed!"
 else
-  echo "✅ No test files changed."
+  echo "✅ No source/test files changed."
 fi
