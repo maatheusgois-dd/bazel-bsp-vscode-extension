@@ -357,6 +357,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
       request: "attach",
       name: config.name || "swiftbazel: Bazel Debug (Simulator)",
       debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
+      program: launchContext.appPath, // Add program path for symbol loading
       attachCommands: [`process connect connect://localhost:${debugPort}`],
       internalConsoleOptions: "openOnSessionStart",
       timeout: 100000,
@@ -367,6 +368,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
       debugPort,
       targetName: launchContext.targetName,
       buildLabel: launchContext.buildLabel,
+      appPath: launchContext.appPath,
     });
 
     return resolvedConfig;
