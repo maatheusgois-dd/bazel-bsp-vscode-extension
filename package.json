@@ -23,11 +23,13 @@
   ],
   "activationEvents": [
     "onCommand:workbench.action.tasks.runTask",
-    "workspaceContains:**/*.xcworkspace",
-    "workspaceContains:**/*.xcodeproj",
-    "workspaceContains:**/project.yml",
-    "workspaceContains:**/Podfile",
-    "workspaceContains:**/Package.swift",
+    "workspaceContains:**/BUILD",
+    "workspaceContains:**/WORKSPACE",
+    "workspaceContains:**/BUILD.bazel",
+    "workspaceContains:**/WORKSPACE.bazel",
+    "workspaceContains:**/BUILD.bazel.lock",
+    "workspaceContains:**/WORKSPACE.bazel.lock",
+    "workspaceContains:**/BUILD.bazel.lock",
     "onLanguage:swift",
     "onDebug"
   ],
