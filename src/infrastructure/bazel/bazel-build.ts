@@ -77,11 +77,22 @@ export async function buildBazelTarget(options: BazelBuildOptions): Promise<void
 
   // Set build flags based on mode
   if (buildMode === BuildMode.Debug) {
-    additionalFlags = ["--compilation_mode=dbg", "--copt=-g", "--strip=never"];
-    terminal.write("   Build mode: Debug (unoptimized with symbols)\n");
+    additionalFlags = [
+      "--compilation_mode=dbg",
+      "--copt=-g",
+      "--strip=never",
+      "--apple_generate_dsym=true", // Generate dSYM for debugging
+      "--objc_generate_linkmap=true", // Generate linkmap for debugging
+    ];
+    terminal.write("   Build mode: Debug (unoptimized with symbols + dSYM)\n");
   } else if (buildMode === BuildMode.ReleaseWithSymbols) {
-    additionalFlags = ["--compilation_mode=opt", "--copt=-g", "--strip=never"];
-    terminal.write("   Build mode: Release with Debug Symbols (optimized with symbols)\n");
+    additionalFlags = [
+      "--compilation_mode=opt",
+      "--copt=-g",
+      "--strip=never",
+      "--apple_generate_dsym=true", // Generate dSYM
+    ];
+    terminal.write("   Build mode: Release with Debug Symbols (optimized with symbols + dSYM)\n");
   } else {
     // release mode - no additional flags
     terminal.write("   Build mode: Release (optimized, no symbols)\n");

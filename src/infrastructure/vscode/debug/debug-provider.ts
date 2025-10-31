@@ -367,6 +367,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
       debugPort,
       targetName: launchContext.targetName,
       buildLabel: launchContext.buildLabel,
+      appPath: launchContext.appPath,
     });
 
     return resolvedConfig;
