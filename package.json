@@ -532,6 +532,11 @@
         "icon": "$(terminal)"
       },
       {
+        "command": "swiftbazel.system.troubleshootBreakpoints",
+        "title": "swiftbazel: Troubleshoot Breakpoints",
+        "icon": "$(debug-breakpoint-unverified)"
+      },
+      {
         "command": "swiftbazel.debugger.getAppPath",
         "title": "swiftbazel: Get app path for debugging",
         "icon": "$(file-code)"

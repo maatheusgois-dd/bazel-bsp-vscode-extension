@@ -522,6 +522,14 @@ export async function selectBazelTargetCommand(
 
   context.buildManager.setSelectedBazelTarget(bazelItem);
 
+  // Restart LSP to refresh breakpoints and indexing for new target
+  context.updateProgressStatus("Restarting Swift LSP for new target");
+  try {
+    await vscode.commands.executeCommand("swift.restartLSPServer");
+  } catch (_error) {
+    // Swift extension might not be available, that's OK
+  }
+
   vscode.window.showInformationMessage(`✅ Selected Bazel target: ${bazelItem.target.name} (${bazelItem.target.type})`);
 }
 
