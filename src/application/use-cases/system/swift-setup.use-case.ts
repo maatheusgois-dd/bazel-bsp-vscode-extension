@@ -12,22 +12,14 @@ export async function setupSwiftExtensionCommand(context: ExtensionContext): Pro
   context.updateProgressStatus("Configuring Swift extension");
 
   try {
-    // Get the selected Bazel target to determine the folder
-    const selectedTargetData = context.buildManager.getSelectedBazelTargetData();
-
-    if (!selectedTargetData) {
-      throw new Error(
-        "No Bazel target selected.\n\n" +
-          "Please select a Bazel target first:\n" +
-          "1. Open BAZEL TARGETS view\n" +
-          "2. Click on a target to select it\n" +
-          "3. Run this command again",
-      );
+    // Use workspace root folder for workspace-level settings
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+      throw new Error("No workspace folder found");
     }
 
-    // Use package path (directory containing BUILD file) - same as build/clean commands
-    const targetFolder = selectedTargetData.packagePath;
-    const vscodeDir = path.join(targetFolder, ".vscode");
+    const workspacePath = workspaceFolder.uri.fsPath;
+    const vscodeDir = path.join(workspacePath, ".vscode");
     const settingsPath = path.join(vscodeDir, "settings.json");
 
     // Ensure .vscode directory exists
@@ -47,67 +39,16 @@ export async function setupSwiftExtensionCommand(context: ExtensionContext): Pro
     // Values: "on" | "off" | "auto"
     settings["swift.sourcekit-lsp.backgroundIndexing"] = "on";
 
-    commonLogger.log("Enabled Swift background indexing for target folder", {
-      folder: targetFolder,
+    commonLogger.log("Enabled Swift background indexing for workspace", {
+      workspace: workspacePath,
     });
-
-    // Ask if user wants to set custom sourcekit-lsp path
-    const useCustomLSP = await vscode.window.showQuickPick(
-      [
-        {
-          label: "Use Xcode's SourceKit-LSP",
-          description: "Default - Works but may have performance issues",
-          value: false,
-        },
-        {
-          label: "Use Custom SourceKit-LSP",
-          description: "Recommended - Better performance with latest features",
-          value: true,
-        },
-      ],
-      {
-        title: "SourceKit-LSP Configuration",
-        placeHolder: "Choose SourceKit-LSP version to use",
-      },
-    );
-
-    if (!useCustomLSP) {
-      vscode.window.showInformationMessage("✅ Swift extension configured for Bazel development");
-      return;
-    }
-
-    if (useCustomLSP.value) {
-      // Prompt for custom sourcekit-lsp path
-      const customPath = await vscode.window.showInputBox({
-        title: "Custom SourceKit-LSP Binary Path",
-        prompt: "Enter absolute path to sourcekit-lsp binary (leave empty to skip)",
-        placeHolder: "/usr/local/bin/sourcekit-lsp",
-        validateInput: (value) => {
-          if (!value) return null; // Empty is OK
-          if (!value.startsWith("/")) {
-            return "Path must be absolute (start with /)";
-          }
-          if (!value.includes("sourcekit-lsp")) {
-            return "Path should point to sourcekit-lsp binary";
-          }
-          return null;
-        },
-      });
-
-      if (customPath) {
-        settings["swift.sourcekit-lsp.serverPath"] = customPath;
-        commonLogger.log("Set custom SourceKit-LSP path", { path: customPath });
-      }
-    }
 
     // Write settings.json
     await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), "utf8");
 
-    const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "", settingsPath);
-
     vscode.window
       .showInformationMessage(
-        `✅ Swift extension configured!\n\nFolder: ${selectedTargetData.packageName}\nBackground Indexing: Enabled\nSettings: ${relativePath}`,
+        `✅ Swift extension configured for BSP!\n\nWorkspace: ${workspaceFolder.name}\nBackground Indexing: ON\nSettings: .vscode/settings.json\n\n💡 Reload window to apply changes`,
         "Reload Window",
         "Open Settings",
       )
