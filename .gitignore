@@ -3,6 +3,7 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+coverage
 
 
 # Ensure .vscode is not ignored in this project
