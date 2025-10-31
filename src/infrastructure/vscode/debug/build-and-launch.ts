@@ -449,7 +449,7 @@ async function attachDebuggerToApp(
     const debugConfig: vscode.DebugConfiguration = {
       type: "swiftbazel-bazel-lldb",
       request: "attach",
-      name: isDevice ? "swiftbazel: Bazel Debug (Device)" : "swiftbazel: Bazel Debug",
+      name: isDevice ? "SwiftBazel: Bazel Debug (Device)" : "SwiftBazel: Bazel Debug",
       debuggerRoot: workspaceFolder?.uri.fsPath || "${workspaceFolder}",
       debugPort: debugPort,
       program: launchResult.appPath,

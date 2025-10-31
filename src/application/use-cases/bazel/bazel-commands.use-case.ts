@@ -578,7 +578,7 @@ export async function diagnoseBuildSetupCommand(context: ExtensionContext): Prom
       const _write = (text: string) => terminal.write(text);
       const _writeQuote = (text: string) => terminal.write(`> ${text}\n`);
 
-      _write("swiftbazel: Diagnose Build Setup\n");
+      _write("SwiftBazel: Diagnose Build Setup\n");
       _write("=================================\n\n");
 
       // Check for Bazel

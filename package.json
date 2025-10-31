@@ -1,7 +1,7 @@
 {
   "name": "swiftbazel-doordash",
   "type": "commonjs",
-  "displayName": "swiftbazel-Doordash (iOS/Swift development)",
+  "displayName": "SwiftBazel - DoorDash (iOS/Swift Development)",
   "description": "Develop Swift/iOS projects in VS Code",
   "version": "0.1.35",
   "publisher": "doordash",
@@ -216,11 +216,11 @@
         ],
         "configurationSnippets": [
           {
-            "label": "swiftbazel: Build and Run (Wait for debugger)",
+            "label": "SwiftBazel: Build and Run (Wait for debugger)",
             "body": {
               "type": "swiftbazel-lldb",
               "request": "attach",
-              "name": "swiftbazel: Build and Run (Wait for debugger)",
+              "name": "SwiftBazel: Build and Run (Wait for debugger)",
               "preLaunchTask": "swiftbazel: debugging-launch"
             }
           }
@@ -321,234 +321,234 @@
     "commands": [
       {
         "command": "swiftbazel.build.launch",
-        "title": "swiftbazel: Build & Run (Launch)",
+        "title": "SwiftBazel: Build & Run (Launch)",
         "icon": "$(swiftbazel-player-play)"
       },
       {
         "command": "swiftbazel.build.debugLaunch",
-        "title": "swiftbazel: Build & Debug",
+        "title": "SwiftBazel: Build & Debug",
         "icon": "$(debug-alt)",
         "description": "Build and launch with debugger"
       },
       {
         "command": "swiftbazel.build.run",
-        "title": "swiftbazel: Run (without Build)",
+        "title": "SwiftBazel: Run (without Build)",
         "icon": "$(play)"
       },
       {
         "command": "swiftbazel.build.build",
-        "title": "swiftbazel: Build (without Run)",
+        "title": "SwiftBazel: Build (without Run)",
         "icon": "$(swiftbazel-tool)"
       },
       {
         "command": "swiftbazel.build.clean",
-        "title": "swiftbazel: Clean",
+        "title": "SwiftBazel: Clean",
         "icon": "$(clear-all)"
       },
       {
         "command": "swiftbazel.build.test",
-        "title": "swiftbazel: Test",
+        "title": "SwiftBazel: Test",
         "icon": "$(beaker)"
       },
       {
         "command": "swiftbazel.build.testWithSwiftTesting",
-        "title": "swiftbazel: Test with Swift Testing",
+        "title": "SwiftBazel: Test with Swift Testing",
         "icon": "$(beaker)",
         "description": "Run tests using Swift Testing framework"
       },
       {
         "command": "swiftbazel.build.resolveDependencies",
-        "title": "swiftbazel: Resolve dependencies",
+        "title": "SwiftBazel: Resolve dependencies",
         "icon": "$(sync)"
       },
       {
         "command": "swiftbazel.build.removeBundleDir",
-        "title": "swiftbazel: Remove bundle directory",
+        "title": "SwiftBazel: Remove bundle directory",
         "icon": "$(swiftbazel-trash-x)"
       },
       {
         "command": "swiftbazel.build.generateBuildServerConfig",
-        "title": "swiftbazel: Generate Build Server Config (buildServer.json)",
+        "title": "SwiftBazel: Generate Build Server Config (buildServer.json)",
         "icon": "$(file-code)"
       },
       {
         "command": "swiftbazel.build.selectXcodeWorkspace",
-        "title": "swiftbazel: Select",
+        "title": "SwiftBazel: Select",
         "icon": "$(file-directory)"
       },
       {
         "command": "swiftbazel.build.setDefaultScheme",
-        "title": "swiftbazel: Set scheme",
+        "title": "SwiftBazel: Set scheme",
         "icon": "$(target)"
       },
       {
         "command": "swiftbazel.build.diagnoseSetup",
-        "title": "swiftbazel: Diagnose build setup",
+        "title": "SwiftBazel: Diagnose build setup",
         "icon": "$(bug)"
       },
       {
         "command": "swiftbazel.bazel.build",
-        "title": "swiftbazel: Bazel Build",
+        "title": "SwiftBazel: Bazel Build",
         "icon": "$(swiftbazel-tool)",
         "description": "Build Bazel target"
       },
       {
         "command": "swiftbazel.bazel.test",
-        "title": "swiftbazel: Bazel Test",
+        "title": "SwiftBazel: Bazel Test",
         "icon": "$(beaker)",
         "description": "Test Bazel target"
       },
       {
         "command": "swiftbazel.bazel.selectTarget",
-        "title": "swiftbazel: Select Bazel Target",
+        "title": "SwiftBazel: Select Bazel Target",
         "icon": "$(target)",
         "description": "Select Bazel target for build/test commands"
       },
       {
         "command": "swiftbazel.bazel.selectBuildMode",
-        "title": "swiftbazel: Select Build Mode",
+        "title": "SwiftBazel: Select Build Mode",
         "icon": "$(settings-gear)",
         "description": "Select build mode (Debug or Release)"
       },
       {
         "command": "swiftbazel.bazel.clean",
-        "title": "swiftbazel: Bazel Clean",
+        "title": "SwiftBazel: Bazel Clean",
         "icon": "$(trash)",
         "description": "Clean Bazel build cache"
       },
       {
         "command": "swiftbazel.bazel.cleanExpunge",
-        "title": "swiftbazel: Bazel Clean (Expunge)",
+        "title": "SwiftBazel: Bazel Clean (Expunge)",
         "icon": "$(trash-x)",
         "description": "Clean Bazel build cache with expunge (complete cleanup)"
       },
       {
         "command": "swiftbazel.bazel.buildSelected",
-        "title": "swiftbazel: Build Selected Bazel Target",
+        "title": "SwiftBazel: Build Selected Bazel Target",
         "icon": "$(swiftbazel-tool)",
         "description": "Build currently selected Bazel target"
       },
       {
         "command": "swiftbazel.bazel.testSelected",
-        "title": "swiftbazel: Test Selected Bazel Target",
+        "title": "SwiftBazel: Test Selected Bazel Target",
         "icon": "$(beaker)",
         "description": "Test currently selected Bazel target"
       },
       {
         "command": "swiftbazel.bazel.run",
-        "title": "swiftbazel: Bazel Run",
+        "title": "SwiftBazel: Bazel Run",
         "icon": "$(run)",
         "description": "Run Bazel target on iOS simulator"
       },
       {
         "command": "swiftbazel.bazel.debug",
-        "title": "swiftbazel: Bazel Debug",
+        "title": "SwiftBazel: Bazel Debug",
         "icon": "$(debug-alt)",
         "description": "Debug Bazel target on iOS simulator or device"
       },
       {
         "command": "swiftbazel.bazel.stop",
-        "title": "swiftbazel: Stop/Cancel",
+        "title": "SwiftBazel: Stop/Cancel",
         "icon": "$(debug-stop)",
         "description": "Stop debugging or cancel running build/test"
       },
       {
         "command": "swiftbazel.bazel.runSelected",
-        "title": "swiftbazel: Run Selected Bazel Target",
+        "title": "SwiftBazel: Run Selected Bazel Target",
         "icon": "$(run)",
         "description": "Run currently selected Bazel target on iOS simulator"
       },
       {
         "command": "swiftbazel.bazelQuery.refresh",
-        "title": "swiftbazel: Refresh Bazel Targets",
+        "title": "SwiftBazel: Refresh Bazel Targets",
         "icon": "$(refresh)",
         "description": "Refresh bazel query results"
       },
       {
         "command": "swiftbazel.bazelQuery.clearRecents",
-        "title": "swiftbazel: Clear Recent Targets",
+        "title": "SwiftBazel: Clear Recent Targets",
         "icon": "$(clear-all)",
         "description": "Clear recent targets list"
       },
       {
         "command": "swiftbazel.build.refreshView",
-        "title": "swiftbazel: Refresh view",
+        "title": "SwiftBazel: Refresh view",
         "icon": "$(swiftbazel-refresh)"
       },
       {
         "command": "swiftbazel.simulators.refresh",
-        "title": "swiftbazel: Refresh simulators list",
+        "title": "SwiftBazel: Refresh simulators list",
         "icon": "$(swiftbazel-refresh)"
       },
       {
         "command": "swiftbazel.simulators.openSimulator",
-        "title": "swiftbazel: Open simulator",
+        "title": "SwiftBazel: Open simulator",
         "icon": "$(swiftbazel-device-mobile-heart)"
       },
       {
         "command": "swiftbazel.simulators.removeCache",
-        "title": "swiftbazel: Remove simulator cache",
+        "title": "SwiftBazel: Remove simulator cache",
         "icon": "$(swiftbazel-trash-x)"
       },
       {
         "command": "swiftbazel.simulators.start",
-        "title": "swiftbazel: Start simulator",
+        "title": "SwiftBazel: Start simulator",
         "icon": "$(debug-start)"
       },
       {
         "command": "swiftbazel.simulators.stop",
-        "title": "swiftbazel: Stop simulator",
+        "title": "SwiftBazel: Stop simulator",
         "icon": "$(debug-stop)"
       },
       {
         "command": "swiftbazel.devices.refresh",
-        "title": "swiftbazel: Refresh devices list",
+        "title": "SwiftBazel: Refresh devices list",
         "icon": "$(swiftbazel-refresh)"
       },
       {
         "command": "swiftbazel.tools.install",
-        "title": "swiftbazel: Install tool",
+        "title": "SwiftBazel: Install tool",
         "icon": "$(swiftbazel-terminal-2)"
       },
       {
         "command": "swiftbazel.tools.documentation",
-        "title": "swiftbazel: Open tool documentation",
+        "title": "SwiftBazel: Open tool documentation",
         "icon": "$(swiftbazel-book)"
       },
       {
         "command": "swiftbazel.tools.refresh",
-        "title": "swiftbazel: Refresh tools list",
+        "title": "SwiftBazel: Refresh tools list",
         "icon": "$(swiftbazel-refresh)",
         "enablement": "view == swiftbazel.tools.view"
       },
       {
         "command": "swiftbazel.system.resetswiftbazelCache",
-        "title": "swiftbazel: Reset Extension Cache",
+        "title": "SwiftBazel: Reset Extension Cache",
         "icon": "$(clear-all)"
       },
       {
         "command": "swiftbazel.system.testErrorReporting",
-        "title": "swiftbazel: Test Error Reporting",
+        "title": "SwiftBazel: Test Error Reporting",
         "icon": "$(bug)"
       },
       {
         "command": "swiftbazel.system.openTerminalPanel",
-        "title": "swiftbazel: Open Terminal Panel",
+        "title": "SwiftBazel: Open Terminal Panel",
         "icon": "$(terminal)"
       },
       {
         "command": "swiftbazel.debugger.getAppPath",
-        "title": "swiftbazel: Get app path for debugging",
+        "title": "SwiftBazel: Get app path for debugging",
         "icon": "$(file-code)"
       },
       {
         "command": "swiftbazel.destinations.select",
-        "title": "swiftbazel: Select destination",
+        "title": "SwiftBazel: Select destination",
         "icon": "$(swiftbazel-pin)"
       },
       {
         "command": "swiftbazel.destinations.removeRecent",
-        "title": "swiftbazel: Remove recent destination",
+        "title": "SwiftBazel: Remove recent destination",
         "icon": "$(swiftbazel-trash-x)"
       },
       {
@@ -558,7 +558,7 @@
       },
       {
         "command": "swiftbazel.simulators.screenshot",
-        "title": "swiftbazel: Take Simulator Screenshot",
+        "title": "SwiftBazel: Take Simulator Screenshot",
         "icon": "$(camera)"
       }
     ],

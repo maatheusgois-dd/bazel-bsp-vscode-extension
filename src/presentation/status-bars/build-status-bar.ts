@@ -10,7 +10,7 @@ export class BazelTargetStatusBar {
 
     const itemId = "swiftbazel.bazel.statusBar";
     this.item = vscode.window.createStatusBarItem(itemId, vscode.StatusBarAlignment.Left, -1);
-    this.item.name = "swiftbazel: Selected Bazel Target";
+    this.item.name = "SwiftBazel: Selected Bazel Target";
     this.item.tooltip = "Currently selected Bazel target";
 
     this.update();

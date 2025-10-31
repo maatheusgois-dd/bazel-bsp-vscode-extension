@@ -9,7 +9,7 @@ export class DestinationStatusBar {
     this.context = options.context;
     const itemId = "swiftbazel.destinations.statusBar";
     this.item = vscode.window.createStatusBarItem(itemId, vscode.StatusBarAlignment.Left, 0);
-    this.item.name = "swiftbazel: Current Destination";
+    this.item.name = "SwiftBazel: Current Destination";
     this.item.command = "swiftbazel.destinations.select";
     this.item.tooltip = "Select destination for debugging";
     void this.update();

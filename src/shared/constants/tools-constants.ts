@@ -79,3 +79,5 @@ export const TOOLS: Tool[] = [
     documentation: "https://github.com/realm/SwiftLint",
   },
 ];
+
+export const EXTENSION_DISPLAY_NAME = "SwiftBazel";

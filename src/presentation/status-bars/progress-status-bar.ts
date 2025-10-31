@@ -27,7 +27,7 @@ export class ProgressStatusBar {
     const statusBarId = "swiftbazel.system.progressStatusBar";
     this.statusBar = vscode.window.createStatusBarItem(statusBarId, vscode.StatusBarAlignment.Left, 0);
     this.statusBar.command = "swiftbazel.system.openTerminalPanel";
-    this.statusBar.name = "swiftbazel: Command Status";
+    this.statusBar.name = "SwiftBazel: Command Status";
 
     // Create cancel button (shown to the left of progress status)
     const cancelButtonId = "swiftbazel.system.progressCancelButton";
@@ -35,7 +35,7 @@ export class ProgressStatusBar {
     this.cancelButton.text = "$(x) Cancel";
     this.cancelButton.tooltip = "Cancel current operation";
     this.cancelButton.command = "swiftbazel.system.cancelCurrentOperation";
-    this.cancelButton.name = "swiftbazel: Cancel Operation";
+    this.cancelButton.name = "SwiftBazel: Cancel Operation";
   }
 
   dispose() {

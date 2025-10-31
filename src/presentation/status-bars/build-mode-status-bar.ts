@@ -11,7 +11,7 @@ export class BuildModeStatusBar {
 
     const itemId = "swiftbazel.bazel.buildMode.statusBar";
     this.item = vscode.window.createStatusBarItem(itemId, vscode.StatusBarAlignment.Left, -2);
-    this.item.name = "swiftbazel: Build Mode";
+    this.item.name = "SwiftBazel: Build Mode";
     this.item.tooltip = "Click to change build mode";
     this.item.command = "swiftbazel.bazel.selectBuildMode";
 

@@ -14,7 +14,7 @@ import { extractDeviceAppPath, waitForProcessToLaunch } from "./debug-utils";
 const ATTACH_CONFIG: vscode.DebugConfiguration = {
   type: "swiftbazel-lldb",
   request: "attach",
-  name: "swiftbazel: Build and Run (Wait for debugger)",
+  name: "SwiftBazel: Build and Run (Wait for debugger)",
   preLaunchTask: "swiftbazel: debuging-launch",
 };
 
@@ -355,7 +355,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     const resolvedConfig = {
       type: "lldb-dap",
       request: "attach",
-      name: config.name || "swiftbazel: Bazel Debug (Simulator)",
+      name: config.name || "SwiftBazel: Bazel Debug (Simulator)",
       debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
       attachCommands: [`process connect connect://localhost:${debugPort}`],
       internalConsoleOptions: "openOnSessionStart",
@@ -404,7 +404,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     const resolvedConfig = {
       type: "lldb-dap",
       request: "attach",
-      name: config.name || "swiftbazel: Bazel Debug (Device)",
+      name: config.name || "SwiftBazel: Bazel Debug (Device)",
       debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
       program: appPath,
       preRunCommands: ["platform select remote-ios"],
