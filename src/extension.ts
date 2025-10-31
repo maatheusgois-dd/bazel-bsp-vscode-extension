@@ -170,7 +170,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Simulators
     d(
-      command("swiftbazel.simulators.refresh", async () => {
+      command("swiftbazel.simulators.refresh", async (context) => {
+        context.updateProgressStatus("Refreshing simulators");
         await destinationsManager.refreshSimulators();
         destinationsTreeProvider.refresh();
       }),
@@ -183,7 +184,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // // Devices
     d(
-      command("swiftbazel.devices.refresh", async () => {
+      command("swiftbazel.devices.refresh", async (context) => {
+        context.updateProgressStatus("Refreshing devices");
         await destinationsManager.refreshDevices();
         destinationsTreeProvider.refresh();
       }),
@@ -197,7 +199,8 @@ export async function activate(context: vscode.ExtensionContext) {
     d(command("swiftbazel.destinations.select", selectDestinationForBuildCommand));
     d(command("swiftbazel.destinations.removeRecent", removeRecentDestinationCommand));
     d(
-      command("swiftbazel.destinations.refresh", async () => {
+      command("swiftbazel.destinations.refresh", async (context) => {
+        context.updateProgressStatus("Refreshing destinations");
         await destinationsManager.refresh();
         destinationsTreeProvider.refresh();
       }),
@@ -207,7 +210,12 @@ export async function activate(context: vscode.ExtensionContext) {
     // Tools
     d(tree("swiftbazel.tools.view", toolsTreeProvider));
     d(command("swiftbazel.tools.install", installToolCommand));
-    d(command("swiftbazel.tools.refresh", async () => toolsManager.refresh()));
+    d(
+      command("swiftbazel.tools.refresh", async (context) => {
+        context.updateProgressStatus("Checking tool installations");
+        await toolsManager.refresh();
+      }),
+    );
     d(command("swiftbazel.tools.documentation", openDocumentationCommand));
 
     // System
