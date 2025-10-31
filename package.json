@@ -3,7 +3,7 @@
   "type": "commonjs",
   "displayName": "SwiftBazel - DoorDash (iOS/Swift Development)",
   "description": "Develop Swift/iOS projects in VS Code",
-  "version": "0.1.36",
+  "version": "0.1.37",
   "publisher": "doordash",
   "icon": "images/logo.png",
   "license": "MIT",
@@ -521,33 +521,33 @@
         "icon": "$(swiftbazel-refresh)",
         "enablement": "view == swiftbazel.tools.view"
       },
-        {
-          "command": "swiftbazel.system.resetswiftbazelCache",
-          "title": "SwiftBazel: Reset Extension Cache",
-          "icon": "$(clear-all)"
-        },
-        {
-          "command": "swiftbazel.system.testErrorReporting",
-          "title": "SwiftBazel: Test Error Reporting",
-          "icon": "$(bug)"
-        },
-        {
-          "command": "swiftbazel.system.openTerminalPanel",
-          "title": "SwiftBazel: Open Terminal Panel",
-          "icon": "$(terminal)"
-        },
-        {
-          "command": "swiftbazel.system.setupSwiftExtension",
-          "title": "SwiftBazel: Setup Swift Extension for BSP",
-          "icon": "$(settings-gear)",
-          "description": "Configure Swift extension settings for selected Bazel target"
-        },
-        {
-          "command": "swiftbazel.system.showSwiftConfigStatus",
-          "title": "SwiftBazel: Show Swift Configuration Status",
-          "icon": "$(info)",
-          "description": "Check Swift extension configuration"
-        },
+      {
+        "command": "swiftbazel.system.resetswiftbazelCache",
+        "title": "SwiftBazel: Reset Extension Cache",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "swiftbazel.system.testErrorReporting",
+        "title": "SwiftBazel: Test Error Reporting",
+        "icon": "$(bug)"
+      },
+      {
+        "command": "swiftbazel.system.openTerminalPanel",
+        "title": "SwiftBazel: Open Terminal Panel",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "swiftbazel.system.setupSwiftExtension",
+        "title": "SwiftBazel: Setup Swift Extension for BSP",
+        "icon": "$(settings-gear)",
+        "description": "Configure Swift extension settings for selected Bazel target"
+      },
+      {
+        "command": "swiftbazel.system.showSwiftConfigStatus",
+        "title": "SwiftBazel: Show Swift Configuration Status",
+        "icon": "$(info)",
+        "description": "Check Swift extension configuration"
+      },
       {
         "command": "swiftbazel.debugger.getAppPath",
         "title": "SwiftBazel: Get app path for debugging",
