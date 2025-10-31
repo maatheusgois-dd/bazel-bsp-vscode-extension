@@ -553,7 +553,7 @@ swift_library rule //:RootLib
   describe("performance considerations", () => {
     it("should handle large number of targets efficiently", async () => {
       // Generate 100 targets
-      const lines = [];
+      const lines: string[] = [];
       for (let i = 0; i < 100; i++) {
         lines.push(`swift_library rule //Libs/Lib${i}:Lib${i}`);
       }
