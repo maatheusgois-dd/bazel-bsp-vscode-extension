@@ -169,7 +169,12 @@ export async function activate(context: vscode.ExtensionContext) {
     d(command("swiftbazel.debugger.getAppPath", getAppPathCommand));
 
     // Simulators
-    d(command("swiftbazel.simulators.refresh", async () => await destinationsManager.refreshSimulators()));
+    d(
+      command("swiftbazel.simulators.refresh", async () => {
+        await destinationsManager.refreshSimulators();
+        destinationsTreeProvider.refresh();
+      }),
+    );
     d(command("swiftbazel.simulators.openSimulator", openSimulatorCommand));
     d(command("swiftbazel.simulators.removeCache", removeSimulatorCacheCommand));
     d(command("swiftbazel.simulators.start", startSimulatorCommand));
@@ -177,7 +182,12 @@ export async function activate(context: vscode.ExtensionContext) {
     d(command("swiftbazel.simulators.screenshot", takeSimulatorScreenshotCommand));
 
     // // Devices
-    d(command("swiftbazel.devices.refresh", async () => await destinationsManager.refreshDevices()));
+    d(
+      command("swiftbazel.devices.refresh", async () => {
+        await destinationsManager.refreshDevices();
+        destinationsTreeProvider.refresh();
+      }),
+    );
 
     // Desintations
     const destinationBar = new DestinationStatusBar({
@@ -186,6 +196,12 @@ export async function activate(context: vscode.ExtensionContext) {
     d(destinationBar);
     d(command("swiftbazel.destinations.select", selectDestinationForBuildCommand));
     d(command("swiftbazel.destinations.removeRecent", removeRecentDestinationCommand));
+    d(
+      command("swiftbazel.destinations.refresh", async () => {
+        await destinationsManager.refresh();
+        destinationsTreeProvider.refresh();
+      }),
+    );
     d(tree("swiftbazel.destinations.view", destinationsTreeProvider));
 
     // Tools

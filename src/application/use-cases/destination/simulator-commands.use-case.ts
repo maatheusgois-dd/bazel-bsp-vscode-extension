@@ -35,6 +35,8 @@ export async function startSimulatorCommand(context: ExtensionContext, item?: iO
       });
 
       await context.destinationsManager.refreshSimulators();
+      // Refresh the tree view
+      await vscode.commands.executeCommand("swiftbazel.destinations.refresh");
     },
   });
 }
@@ -68,6 +70,8 @@ export async function stopSimulatorCommand(context: ExtensionContext, item?: iOS
       });
 
       await context.destinationsManager.refreshSimulators();
+      // Refresh the tree view
+      await vscode.commands.executeCommand("swiftbazel.destinations.refresh");
     },
   });
 }
@@ -88,7 +92,7 @@ export async function openSimulatorCommand(context: ExtensionContext) {
         args: ["-a", "Simulator"],
       });
 
-      vscode.commands.executeCommand("swiftbazel.simulators.refresh");
+      await vscode.commands.executeCommand("swiftbazel.simulators.refresh");
     },
   });
 }
@@ -110,7 +114,7 @@ export async function removeSimulatorCacheCommand(context: ExtensionContext) {
         command: "rm",
         args: ["-rf", "~/Library/Developer/CoreSimulator/Caches"],
       });
-      vscode.commands.executeCommand("swiftbazel.simulators.refresh");
+      await vscode.commands.executeCommand("swiftbazel.simulators.refresh");
     },
   });
 }

@@ -173,7 +173,7 @@ export async function ensureDeviceConnected(
     const action = await vscode.window.showErrorMessage(`${title}\n\n${message}`, "Refresh Devices", "Open Settings");
 
     if (action === "Refresh Devices") {
-      await vscode.commands.executeCommand("swiftbazel.devices.refresh");
+      await vscode.commands.executeCommand("swiftbazel.destinations.refresh");
       // After refresh, retry the connection check
       const retryCheck = await isDeviceConnected(context, deviceId);
       if (!retryCheck.connected) {

@@ -811,6 +811,13 @@ export class DestinationsTreeProvider implements vscode.TreeDataProvider<vscode.
     return element;
   }
 
+  /**
+   * Refresh the tree view
+   */
+  refresh(): void {
+    this._onDidChangeTreeData.fire(null);
+  }
+
   async getiOSSimulators(): Promise<DestinationTreeItem[]> {
     const simulators = await this.manager.getiOSSimulators({
       sort: true,
