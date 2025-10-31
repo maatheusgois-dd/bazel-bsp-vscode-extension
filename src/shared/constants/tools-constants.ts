@@ -39,4 +39,43 @@ export const TOOLS: Tool[] = [
     },
     documentation: "https://bazel.build/",
   },
+  {
+    id: "xcbeautify",
+    label: "xcbeautify",
+    check: {
+      command: "xcbeautify",
+      args: ["--version"],
+    },
+    install: {
+      command: "brew",
+      args: ["install", "xcbeautify"],
+    },
+    documentation: "https://github.com/cpisciotta/xcbeautify",
+  },
+  {
+    id: "xcode-build-server",
+    label: "xcode-build-server",
+    check: {
+      command: "xcode-build-server",
+      args: ["--help"],
+    },
+    install: {
+      command: "brew",
+      args: ["install", "xcode-build-server"],
+    },
+    documentation: "https://github.com/SolaWing/xcode-build-server",
+  },
+  {
+    id: "swiftlint",
+    label: "SwiftLint",
+    check: {
+      command: "swiftlint",
+      args: ["--version"],
+    },
+    install: {
+      command: "brew",
+      args: ["install", "swiftlint"],
+    },
+    documentation: "https://github.com/realm/SwiftLint",
+  },
 ];
