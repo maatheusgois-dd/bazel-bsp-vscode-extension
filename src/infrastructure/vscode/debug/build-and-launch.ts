@@ -452,6 +452,7 @@ async function attachDebuggerToApp(
       name: isDevice ? "swiftbazel: Bazel Debug (Device)" : "swiftbazel: Bazel Debug",
       debuggerRoot: workspaceFolder?.uri.fsPath || "${workspaceFolder}",
       debugPort: debugPort,
+      program: launchResult.appPath,
       internalConsoleOptions: "openOnSessionStart",
       timeout: 100000,
     };
