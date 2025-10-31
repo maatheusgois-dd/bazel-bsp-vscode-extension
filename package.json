@@ -542,12 +542,18 @@
         "icon": "$(settings-gear)",
         "description": "Configure Swift extension settings for selected Bazel target"
       },
-      {
-        "command": "swiftbazel.system.showSwiftConfigStatus",
-        "title": "SwiftBazel: Show Swift Configuration Status",
-        "icon": "$(info)",
-        "description": "Check Swift extension configuration"
-      },
+        {
+          "command": "swiftbazel.system.showSwiftConfigStatus",
+          "title": "SwiftBazel: Show Swift Configuration Status",
+          "icon": "$(info)",
+          "description": "Check Swift extension configuration"
+        },
+        {
+          "command": "swiftbazel.system.setupBSPConfig",
+          "title": "SwiftBazel: Setup BSP Config for Selected Target",
+          "icon": "$(server-process)",
+          "description": "Generate .bsp/skbsp.json configuration for Build Server Protocol"
+        },
       {
         "command": "swiftbazel.debugger.getAppPath",
         "title": "SwiftBazel: Get app path for debugging",
