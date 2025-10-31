@@ -1,9 +1,9 @@
+import * as vscode from "vscode";
 import {
   getWorkspaceConfig,
   isWorkspaceConfigIsDefined,
   updateWorkspaceConfig,
 } from "../../../../src/shared/utils/config";
-import * as vscode from "vscode";
 
 // Mock vscode
 jest.mock("vscode", () => ({

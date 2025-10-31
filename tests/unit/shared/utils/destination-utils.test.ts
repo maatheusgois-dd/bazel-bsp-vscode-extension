@@ -1,6 +1,6 @@
 import os from "node:os";
-import { getMacOSArchitecture, splitSupportedDestinatinos } from "../../../../src/shared/utils/destination-utils";
 import type { Destination } from "../../../../src/domain/entities/destination/types";
+import { getMacOSArchitecture, splitSupportedDestinatinos } from "../../../../src/shared/utils/destination-utils";
 
 // Mock os module
 jest.mock("node:os");

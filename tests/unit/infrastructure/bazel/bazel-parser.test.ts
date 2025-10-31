@@ -1,6 +1,6 @@
 import { BazelParser } from "../../../../src/infrastructure/bazel/bazel-parser";
-import { exec } from "../../../../src/shared/utils/exec";
 import { commonLogger } from "../../../../src/shared/logger/logger";
+import { exec } from "../../../../src/shared/utils/exec";
 
 // Mock dependencies
 jest.mock("../../../../src/shared/utils/exec");
@@ -82,7 +82,7 @@ ios_unit_test rule //Apps/MyApp/Tests:Tests
 
       try {
         await BazelParser.queryAllTargets();
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 

@@ -1,6 +1,6 @@
-import { ErrorManager, createErrorManager } from "../../../../src/shared/utils/error-manager";
 import type { ExtensionContext } from "../../../../src/infrastructure/vscode/extension-context";
 import { commonLogger } from "../../../../src/shared/logger/logger";
+import { ErrorManager, createErrorManager } from "../../../../src/shared/utils/error-manager";
 
 // Mock commonLogger
 jest.mock("../../../../src/shared/logger/logger", () => ({
@@ -40,7 +40,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.throw("Error message");
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -53,7 +53,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.throw("Build failed", errorContext);
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -65,7 +65,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.throw("Error with context");
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -77,7 +77,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.throw("Error without context");
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -100,7 +100,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.handleNoTargetSelected();
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -115,7 +115,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.handleNoTargetSelected();
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -137,7 +137,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.handleNotTestTarget("MyLibrary");
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -162,7 +162,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.handleNotRunnableTarget("TestTarget");
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -191,7 +191,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.handleValidationError("Invalid value", details);
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -203,7 +203,7 @@ describe("ErrorManager", () => {
 
       try {
         manager.handleValidationError("Simple validation error");
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
@@ -290,13 +290,13 @@ describe("ErrorManager", () => {
 
       try {
         manager.handleNoTargetSelected();
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 
       try {
         manager.handleNotTestTarget("Test");
-      } catch (e) {
+      } catch (_e) {
         // Expected
       }
 

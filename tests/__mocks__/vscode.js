@@ -26,7 +26,7 @@ const vscode = {
     showInformationMessage: jest.fn(),
     showWarningMessage: jest.fn(),
     showErrorMessage: jest.fn(),
-    withProgress: jest.fn((options, task) => task({ report: jest.fn() }, { onCancellationRequested: jest.fn() })),
+    withProgress: jest.fn((_options, task) => task({ report: jest.fn() }, { onCancellationRequested: jest.fn() })),
     createStatusBarItem: jest.fn(() => ({
       text: "",
       tooltip: "",

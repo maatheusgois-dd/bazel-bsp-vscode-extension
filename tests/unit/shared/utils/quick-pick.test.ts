@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { showQuickPick, showInputBox, QuickPickCancelledError } from "../../../../src/shared/utils/quick-pick";
+import { QuickPickCancelledError, showInputBox, showQuickPick } from "../../../../src/shared/utils/quick-pick";
 
 // Mock vscode
 jest.mock("vscode");

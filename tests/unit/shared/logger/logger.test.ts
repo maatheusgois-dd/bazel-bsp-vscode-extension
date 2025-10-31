@@ -1,6 +1,6 @@
-import { Logger } from "../../../../src/shared/logger/logger";
 import * as vscode from "vscode";
 import { ExtensionError } from "../../../../src/shared/errors/errors";
+import { Logger } from "../../../../src/shared/logger/logger";
 
 // Mock vscode
 jest.mock("vscode");

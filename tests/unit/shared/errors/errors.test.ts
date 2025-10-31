@@ -1,4 +1,4 @@
-import { ExtensionError, TaskError, ExecBaseError, ExecError } from "../../../../src/shared/errors/errors";
+import { ExecBaseError, ExecError, ExtensionError, TaskError } from "../../../../src/shared/errors/errors";
 
 describe("Error Classes", () => {
   describe("ExtensionError", () => {
