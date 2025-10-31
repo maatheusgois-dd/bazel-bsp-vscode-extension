@@ -18,7 +18,6 @@ import {
   runSelectedBazelTargetCommand,
   selectBazelBuildModeCommand,
   selectBazelTargetCommand,
-  selectBazelWorkspaceCommand,
   testSelectedBazelTargetCommand,
 } from "./application/use-cases/bazel/bazel-commands.use-case.js";
 import { getAppPathCommand } from "./application/use-cases/bazel/debug-commands.use-case.js";
@@ -138,7 +137,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
     d(tree("swiftbazel.view.bazelQuery", bazelQueryTreeProvider));
     d(command("swiftbazel.build.refreshView", async () => buildManager.refresh()));
-    d(command("swiftbazel.build.selectBazelWorkspace", selectBazelWorkspaceCommand));
     d(command("swiftbazel.build.diagnoseSetup", diagnoseBuildSetupCommand));
     d(command("swiftbazel.bazel.build", bazelBuildCommand));
     d(command("swiftbazel.bazel.test", bazelTestCommand));

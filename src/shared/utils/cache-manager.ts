@@ -199,14 +199,6 @@ class CacheManager {
       allConfigurations,
     });
   }
-
-  /**
-   * Get cached Bazel packages for a workspace
-   */
-  getBazelPackages(workspacePath: string): BazelPackageInfo[] {
-    const workspace = this.data.bazelWorkspaces[workspacePath];
-    return workspace?.packages || [];
-  }
 }
 
 // Export singleton instance

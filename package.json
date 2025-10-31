@@ -297,7 +297,7 @@
     "viewsWelcome": [
       {
         "view": "swiftbazel.build.view",
-        "contents": "No Bazel targets found. Select the Bazel project to use swiftbazel.\n[Select Project](command:swiftbazel.build.selectBazelWorkspace)\nAlso you can run diagnose to try to detect the root of the problem\n[Run diagnose](command:swiftbazel.build.diagnoseSetup)",
+        "contents": "No Bazel targets found.\n\nMake sure your workspace contains BUILD or BUILD.bazel files.\n\n[Refresh Targets](command:swiftbazel.bazelQuery.refresh)\n[Run Diagnose](command:swiftbazel.build.diagnoseSetup)",
         "when": "swiftbazel.build.noSchemes"
       },
       {

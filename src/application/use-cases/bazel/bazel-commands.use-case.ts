@@ -1,9 +1,7 @@
-import path from "node:path";
 import * as vscode from "vscode";
 import type { BazelTreeItem } from "../../../presentation/tree-providers/export.provider.js";
 
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
-import { commonLogger } from "../../../shared/logger/logger.js";
 import { getWorkspaceConfig } from "../../../shared/utils/config.js";
 import { ErrorManager } from "../../../shared/utils/error-manager.js";
 import { exec } from "../../../shared/utils/exec.js";
@@ -14,7 +12,6 @@ import { DEFAULT_BUILD_PROBLEM_MATCHERS } from "../../../shared/constants/build-
 import {
   askDestinationToRunOn,
   detectBazelWorkspacesPaths,
-  selectBazelWorkspace,
 } from "../../../shared/utils/bazel-utils.js";
 import { type TaskTerminal, runTask } from "../../../shared/utils/tasks.js";
 
@@ -533,43 +530,6 @@ export async function testSelectedBazelTargetCommand(
   await bazelTestCommand(context, bazelItem);
 }
 
-/**
- * Select Bazel project and save it to the workspace state
- * @deprecated Legacy function for old workspace tree
- */
-export async function selectBazelWorkspaceCommand(context: ExtensionContext, item?: any) {
-  context.updateProgressStatus("Searching for workspace");
-
-  if (item) {
-    // Set loading state on this specific item only
-    if (item.setLoading) {
-      item.setLoading(true);
-    }
-
-    try {
-      context.buildManager.setCurrentWorkspacePath(item.workspacePath);
-      vscode.window.showInformationMessage(`✅ Selected Bazel workspace: ${path.basename(item.workspacePath)}`);
-    } catch (error) {
-      commonLogger.error("Failed to select workspace", { error });
-      vscode.window.showErrorMessage(`Failed to select workspace: ${error}`);
-    } finally {
-      if (item.setLoading) {
-        item.setLoading(false);
-      }
-    }
-    return;
-  }
-
-  // Manual selection via quick pick
-  vscode.window.showInformationMessage("Selecting Bazel project...");
-  const workspace = await selectBazelWorkspace({
-    autoselect: false,
-  });
-
-  if (workspace) {
-    context.buildManager.setCurrentWorkspacePath(workspace);
-  }
-}
 
 /**
  * Diagnose build setup

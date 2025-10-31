@@ -168,22 +168,6 @@ export async function getDestinationById(
 }
 
 /**
- * Ask user to select scheme to build
- */
-/** @deprecated Bazel uses targets, not schemes */
-export async function askSchemeForBuild(
-  _context: ExtensionContext,
-  _options: {
-    title?: string;
-    xcworkspace: string;
-    ignoreCache?: boolean;
-  },
-): Promise<string> {
-  // Return a default scheme name for compatibility
-  return "bazel";
-}
-
-/**
  * Get the path of the current workspace
  * @throws {ExtensionError} If no workspace is open
  */
@@ -273,32 +257,7 @@ export function getCurrentBazelWorkspacePath(context: ExtensionContext): string 
 }
 
 /**
- * Get the path of the currently selected Xcode workspace or ask user to select one
- */
-export async function askBazelWorkspacePath(context: ExtensionContext, specificPath?: string): Promise<string> {
-  context.updateProgressStatus("Searching for workspace");
-
-  // If a specific path is provided, use it directly
-  if (specificPath) {
-    return specificPath;
-  }
-
-  const xcworkspace = getCurrentBazelWorkspacePath(context);
-  if (xcworkspace) {
-    return xcworkspace;
-  }
-
-  const selectedPath = await selectBazelWorkspace({
-    autoselect: true,
-  });
-
-  context.updateWorkspaceState("build.xcodeWorkspacePath", selectedPath);
-  context.buildManager.refresh();
-  return selectedPath;
-}
-
-/**
- * Detect xcode workspace in the given directory
+ * Detect Bazel workspace paths in the given directory
  */
 export async function detectBazelWorkspacesPaths(): Promise<string[]> {
   const workspace = getWorkspacePath();
@@ -316,60 +275,6 @@ export async function detectBazelWorkspacesPaths(): Promise<string[]> {
   return bazelBuildPaths;
 }
 
-/**
- * Find Bazel workspace in the given directory and ask user to select it
- */
-export async function selectBazelWorkspace(options: { autoselect: boolean }): Promise<string> {
-  const workspacePath = getWorkspacePath();
-
-  // Get all BUILD.bazel and BUILD files
-  const paths = await detectBazelWorkspacesPaths();
-
-  // No files, nothing to do
-  if (paths.length === 0) {
-    throw new ExtensionError("No Bazel projects found", {
-      context: {
-        cwd: workspacePath,
-      },
-    });
-  }
-
-  // One file, use it and save it to the cache
-  if (paths.length === 1 && options.autoselect) {
-    const path = paths[0];
-    commonLogger.log("Bazel project was detected", {
-      workspace: workspacePath,
-      path: path,
-    });
-    return path;
-  }
-
-  // More then one, ask user to select
-  const selected = await showQuickPick({
-    title: "Select Bazel project",
-    items: paths
-      .sort((a, b) => {
-        // Sort by depth to show less nested paths first
-        const aDepth = a.split(path.sep).length;
-        const bDepth = b.split(path.sep).length;
-        return aDepth - bDepth;
-      })
-      .map((bazelPath) => {
-        // show only relative path, to make it more readable
-        const relativePath = path.relative(workspacePath, bazelPath);
-
-        return {
-          label: relativePath,
-          detail: "Bazel",
-          context: {
-            path: bazelPath,
-          },
-        };
-      }),
-  });
-  return selected.context.path;
-}
-
 export async function restartSwiftLSP() {
   // Restart SourceKit Language Server
   try {
@@ -379,38 +284,6 @@ export async function restartSwiftLSP() {
       error: error,
     });
   }
-}
-
-/**
- * Find the Bazel workspace root by looking for WORKSPACE files
- */
-export function findBazelWorkspaceRoot(startPath: string): string {
-  let currentPath = path.dirname(startPath);
-  const fs = require("node:fs");
-
-  // Walk up the directory tree looking for Bazel workspace indicators
-  while (currentPath !== path.dirname(currentPath)) {
-    // Stop at filesystem root
-    // Check for Bazel workspace files
-    const workspaceFiles = ["WORKSPACE", "WORKSPACE.bazel", "MODULE.bazel"];
-
-    for (const workspaceFile of workspaceFiles) {
-      const workspaceFilePath = path.join(currentPath, workspaceFile);
-      try {
-        if (fs.existsSync(workspaceFilePath)) {
-          return currentPath;
-        }
-      } catch (_error) {
-        // Ignore permission errors and continue
-      }
-    }
-
-    // Move up one directory
-    currentPath = path.dirname(currentPath);
-  }
-
-  // If no WORKSPACE file found, use the directory of the BUILD.bazel file itself
-  return path.dirname(startPath);
 }
 
 // Legacy Bazel BUILD file parsing removed - use bazel query instead
@@ -432,23 +305,3 @@ export interface BazelPackage {
   targets: BazelTarget[];
 }
 
-/**
- * Parse a BUILD.bazel file using the new comprehensive Bazel parser
- * (Maintains backwards compatibility with legacy interface)
- */
-export async function parseBazelBuildFile(_buildFilePath: string): Promise<BazelPackage | null> {
-  // Deprecated: BUILD file parsing removed, use BazelParser.queryAllTargets() instead
-  return null;
-}
-
-/**
- * Get all Bazel packages and their targets from the workspace
- * @deprecated Use BazelParser.queryAllTargets() instead for query-based approach
- */
-export async function getBazelPackages(
-  _targetWorkspace?: string,
-  _options?: { refresh?: boolean },
-): Promise<BazelPackage[]> {
-  // Deprecated: BUILD file parsing removed, use BazelParser.queryAllTargets() instead
-  return [];
-}
