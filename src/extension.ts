@@ -14,6 +14,7 @@ import {
   buildSelectedBazelTargetCommand,
   diagnoseBuildSetupCommand,
   runSelectedBazelTargetCommand,
+  selectBazelBuildModeCommand,
   selectBazelTargetCommand,
   selectBazelWorkspaceCommand,
   testSelectedBazelTargetCommand,
@@ -42,6 +43,7 @@ import { BazelBuildTaskProvider } from "./infrastructure/vscode/task-provider.js
 
 // Presentation Layer
 import { BazelTargetStatusBar } from "./presentation/status-bars/build-status-bar.js";
+import { BuildModeStatusBar } from "./presentation/status-bars/build-mode-status-bar.js";
 import { DestinationStatusBar } from "./presentation/status-bars/destination-status-bar.js";
 import { ProgressStatusBar } from "./presentation/status-bars/progress-status-bar.js";
 import { BazelTreeProvider } from "./presentation/tree-providers/bazel-tree.provider.js";
@@ -123,6 +125,15 @@ export async function activate(context: vscode.ExtensionContext) {
       bazelTargetStatusBar.update();
     });
 
+    // Build mode status bar
+    const buildModeStatusBar = new BuildModeStatusBar({
+      context: _context,
+    });
+    d(buildModeStatusBar);
+    
+    // Internal command to update build mode status bar
+    d(command("swiftbazel.internal.updateBuildModeStatusBar", async () => buildModeStatusBar.update()));
+
     d(tree("swiftbazel.view.bazelQuery", bazelQueryTreeProvider));
     d(command("swiftbazel.build.refreshView", async () => buildManager.refresh()));
     d(command("swiftbazel.build.selectBazelWorkspace", selectBazelWorkspaceCommand));
@@ -131,6 +142,7 @@ export async function activate(context: vscode.ExtensionContext) {
     d(command("swiftbazel.bazel.test", bazelTestCommand));
     d(command("swiftbazel.bazel.run", bazelRunCommand));
     d(command("swiftbazel.bazel.debug", bazelDebugCommand));
+    d(command("swiftbazel.bazel.selectBuildMode", selectBazelBuildModeCommand));
     d(
       command("swiftbazel.bazel.selectTarget", (context, targetInfo) =>
         selectBazelTargetCommand(context, targetInfo, bazelQueryTreeProvider),

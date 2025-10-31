@@ -67,9 +67,10 @@ const BUILD_AND_LAUNCH_DEBUG_STEPS = [
 ] as const;
 
 /**
- * Build a Bazel target with appropriate compilation flags
+ * Build step wrapper for build-and-launch workflow
+ * Uses unified build logic from bazel-build module
  */
-async function buildBazelTarget(
+async function buildStep(
   context: ExtensionContext,
   terminal: TaskTerminal,
   progress: ProgressManager,
@@ -86,63 +87,20 @@ async function buildBazelTarget(
   if (attachDebugger) {
     terminal.write(`🔨 Step 1/6: Building ${bazelItem.target.name} with debug symbols...\n`);
     terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
-    terminal.write(`   Platform: ${destination.type === "iOSSimulator" ? "iOS Simulator" : "iOS Device"}\n`);
   } else {
     terminal.write(`🔨 Step 1/4: Building ${bazelItem.target.name}...\n`);
     terminal.write(`   Target: ${bazelItem.target.buildLabel}\n`);
   }
 
-  // Build flags based on destination type
-  let platformFlag: string;
-  let additionalFlags: string[] = [];
-
-  if (destination.type === "iOSSimulator") {
-    platformFlag = "--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64";
-  } else if (destination.type === "iOSDevice") {
-    platformFlag = "--ios_multi_cpus=arm64";
-
-    // Check if device is locked before starting build
-    try {
-      const { ensureDeviceUnlocked } = await import("../../apple-platforms/devicectl.adapter.js");
-      
-      terminal.write("   Checking device lock state...\n");
-      await ensureDeviceUnlocked(context, {
-        deviceId: destination.udid,
-        deviceName: destination.name,
-        onWaiting: (elapsed) => {
-          progress.updateStep(`Awaiting device unlock (${elapsed}s)`);
-          terminal.write(`\r   ⏸️  Waiting for device unlock... ${elapsed}s`);
-        },
-      });
-      terminal.write("\n   ✅ Device ready\n");
-    } catch (lockCheckError) {
-      // If lock check fails, log but continue - don't block the build
-      commonLogger.warn("Lock check failed, continuing anyway", { lockCheckError });
-    }
-  } else {
-    throw new Error(
-      `Unsupported destination type for build.\n` +
-      `Type: ${destination.type}\n\n` +
-      `Currently supported:\n` +
-      `- iOSSimulator\n` +
-      `- iOSDevice\n\n` +
-      `Please select an iOS simulator or device from the DESTINATIONS view.`
-    );
-  }
-
-  // Add debug symbols if debugging
-  if (attachDebugger) {
-    additionalFlags = ["--compilation_mode=dbg", "--copt=-g", "--strip=never"];
-  }
-
-  const buildCommand = `cd "${bazelItem.package.path}" && bazel build ${bazelItem.target.buildLabel} ${platformFlag} ${additionalFlags.join(" ")}`;
-
-  await terminal.execute({
-    command: "sh",
-    args: ["-c", buildCommand],
+  // Use unified build logic
+  const { buildBazelTarget } = await import("../../bazel/bazel-build.js");
+  await buildBazelTarget({
+    bazelItem,
+    destination,
+    buildMode: attachDebugger ? "debug" : "release",
+    terminal,
+    context,
   });
-
-  terminal.write("   ✅ Build completed\n");
 }
 
 /**
@@ -580,7 +538,7 @@ export async function buildAndLaunchBazelApp(
   }
 
   // Step 1: Build
-  await buildBazelTarget(context, terminal, progress, { bazelItem, destination, attachDebugger });
+  await buildStep(context, terminal, progress, { bazelItem, destination, attachDebugger });
 
   // Step 2: Locate app bundle
   const appPath = await locateAppBundle(terminal, progress, { bazelItem, destination, attachDebugger });

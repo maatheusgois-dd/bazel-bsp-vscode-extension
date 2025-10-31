@@ -82,6 +82,64 @@ async function resolveTargetItem(
 }
 
 /**
+ * Get build mode from config/cache or ask user
+ */
+async function getBuildMode(context: ExtensionContext, forceAsk: boolean = false): Promise<"debug" | "release" | "release-with-symbols" | undefined> {
+  // Check config first
+  const configMode = getWorkspaceConfig("bazel.buildMode");
+  
+  if (!forceAsk && configMode && configMode !== "ask") {
+    // Config has explicit preference
+    return configMode;
+  }
+
+  // Check workspace state (last used mode)
+  const savedMode = context.getWorkspaceState("bazel.buildMode");
+  
+  if (!forceAsk && savedMode) {
+    // Use last saved mode
+    return savedMode;
+  }
+
+  // Ask user
+  const buildMode = await vscode.window.showQuickPick(
+    [
+      {
+        label: "$(archive) Release",
+        description: "Optimized, no debug symbols (smallest, fastest)",
+        value: "release" as const,
+        picked: savedMode === "release" || !savedMode,
+      },
+      {
+        label: "$(package) Release with Symbols",
+        description: "Optimized with debug symbols (for crash reports)",
+        value: "release-with-symbols" as const,
+        picked: savedMode === "release-with-symbols",
+      },
+      {
+        label: "$(bug) Debug",
+        description: "Unoptimized with debug symbols (for debugging)",
+        value: "debug" as const,
+        picked: savedMode === "debug",
+      },
+    ],
+    {
+      title: "Select Build Mode",
+      placeHolder: "Choose build mode (saved for future builds)",
+    },
+  );
+
+  if (!buildMode) {
+    return undefined; // User cancelled
+  }
+
+  // Save selection for next time
+  context.updateWorkspaceState("bazel.buildMode", buildMode.value);
+
+  return buildMode.value;
+}
+
+/**
  * Build a Bazel target
  */
 export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: BazelTreeItem): Promise<void> {
@@ -89,8 +147,14 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
   const targetItem = await resolveTargetItem(context, bazelItem, errorManager);
 
   // Get destination to determine build platform
-  context.updateProgressStatus("Searching for destination");
   const destination = await askDestinationToRunOn(context);
+
+  // Get build mode from config/cache
+  const buildMode = await getBuildMode(context);
+  
+  if (buildMode === undefined) {
+    return; // User cancelled
+  }
 
   const timer = new Timer();
   const progress = new ProgressManager({
@@ -105,7 +169,9 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
-      terminal.write(`Building Bazel target: ${targetItem?.target.buildLabel}\n\n`);
+      const modeLabel = buildMode === "debug" ? "Debug" : buildMode === "release-with-symbols" ? "Release with Symbols" : "Release";
+      terminal.write(`Building Bazel target: ${targetItem?.target.buildLabel}\n`);
+      terminal.write(`Build mode: ${modeLabel}\n\n`);
 
       progress.nextStep("Resolving dependencies");
       terminal.write("📦 Resolving dependencies...\n");
@@ -113,25 +179,14 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
       progress.nextStep("Compiling sources");
       terminal.write("🔨 Compiling sources...\n");
 
-      // Build flags based on destination type
-      let platformFlag: string;
-      if (destination.type === "iOSSimulator") {
-        platformFlag = "--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64";
-        terminal.write("   Building for iOS Simulator...\n");
-      } else if (destination.type === "iOSDevice") {
-        platformFlag = "--ios_multi_cpus=arm64";
-        terminal.write(`   Building for iOS Device (${destination.name})...\n`);
-      } else {
-        platformFlag = "--platforms=@build_bazel_apple_support//platforms:ios_sim_arm64";
-        terminal.write(`   Building for ${destination.type}...\n`);
-      }
-
-      await terminal.execute({
-        command: "sh",
-        args: [
-          "-c",
-          `cd "${targetItem?.package.path}" && bazel build ${targetItem?.target.buildLabel} ${platformFlag}`,
-        ],
+      // Use unified build logic
+      const { buildBazelTarget } = await import("../../../infrastructure/bazel/bazel-build.js");
+      await buildBazelTarget({
+        bazelItem: targetItem,
+        destination: destination as any,
+        buildMode,
+        terminal,
+        context,
       });
 
       progress.nextStep("Linking binaries");
@@ -143,6 +198,30 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
       writeTimingResults(terminal, timer, "bazel", "build");
     },
   });
+}
+
+/**
+ * Select Bazel build mode (debug or release)
+ */
+export async function selectBazelBuildModeCommand(context: ExtensionContext): Promise<void> {
+  const buildMode = await getBuildMode(context, true);
+  
+  if (buildMode === undefined) {
+    return; // User cancelled
+  }
+
+  const modeLabels = {
+    debug: "Debug (unoptimized with symbols)",
+    "release-with-symbols": "Release with Symbols (optimized with symbols)",
+    release: "Release (optimized, no symbols)",
+  };
+  
+  // Emit event to update status bar
+  vscode.commands.executeCommand("swiftbazel.internal.updateBuildModeStatusBar");
+  
+  vscode.window.showInformationMessage(
+    `✅ Build mode set to: ${modeLabels[buildMode]}`
+  );
 }
 
 /**
@@ -211,7 +290,6 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
   }
 
   // Get destination
-  context.updateProgressStatus("Searching for destination");
   const destination = await askDestinationToRunOn(context);
 
   // Get launch configuration
@@ -259,7 +337,6 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
   }
 
   // Get destination
-  context.updateProgressStatus("Searching for destination");
   const destination = await askDestinationToRunOn(context);
 
   // Get launch configuration

@@ -69,6 +69,7 @@ type WorkspaceTypes = {
   "build.lastLaunchedApp": LastLaunchedAppContext;
   "build.xcodeBuildServerAutogenreateInfoShown": boolean;
   "build.selectedBazelTarget": any; // Bazel target selection
+  "bazel.buildMode": "debug" | "release" | "release-with-symbols"; // Bazel build mode selection
   "testing.xcodeTarget": string;
   "testing.xcodeConfiguration": string;
   "testing.xcodeDestination": SelectedDestination;

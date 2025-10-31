@@ -15,6 +15,7 @@ type Config = {
   "build.env": Record<string, string | null>;
   "build.launchArgs": string[];
   "build.launchEnv": { [key: string]: string };
+  "bazel.buildMode": "debug" | "release" | "release-with-symbols" | "ask";
   "system.taskExecutor": "v1" | "v2";
   "system.logLevel": "debug" | "info" | "warn" | "error";
   "system.autoRevealTerminal": boolean;

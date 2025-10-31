@@ -9,7 +9,6 @@ export async function selectDestinationForBuildCommand(context: ExtensionContext
     return;
   }
 
-  context.updateProgressStatus("Searching for destination");
   const destinations = await context.destinationsManager.getDestinations({
     mostUsedSort: true,
   });

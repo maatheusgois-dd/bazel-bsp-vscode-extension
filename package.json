@@ -370,11 +370,6 @@
         "icon": "$(file-directory)"
       },
       {
-        "command": "swiftbazel.build.selectConfiguration",
-        "title": "swiftbazel: Select build configuration",
-        "icon": "$(file-directory)"
-      },
-      {
         "command": "swiftbazel.build.setDefaultScheme",
         "title": "swiftbazel: Set scheme",
         "icon": "$(target)"
@@ -401,6 +396,12 @@
         "title": "swiftbazel: Select Bazel Target",
         "icon": "$(target)",
         "description": "Select Bazel target for build/test commands"
+      },
+      {
+        "command": "swiftbazel.bazel.selectBuildMode",
+        "title": "swiftbazel: Select Build Mode",
+        "icon": "$(settings-gear)",
+        "description": "Select build mode (Debug or Release)"
       },
       {
         "command": "swiftbazel.bazel.buildSelected",
@@ -863,6 +864,23 @@
             }
           ],
           "description": "Environment variables to pass to the app on launch"
+        },
+        "swiftbazel.bazel.buildMode": {
+          "type": "string",
+          "default": "ask",
+          "enum": [
+            "debug",
+            "release",
+            "release-with-symbols",
+            "ask"
+          ],
+          "enumDescriptions": [
+            "Always build debug: unoptimized with symbols (--compilation_mode=dbg --copt=-g --strip=never)",
+            "Always build release: optimized without symbols (default Bazel settings)",
+            "Always build release with symbols: optimized with symbols for crash reports (--compilation_mode=opt --copt=-g --strip=never)",
+            "Ask every time (default) - remembers last selection"
+          ],
+          "description": "Default build mode for Bazel Build command. Options: 'debug' (unoptimized+symbols), 'release' (optimized), 'release-with-symbols' (optimized+symbols for crash reports), or 'ask' (prompts each time, remembers choice)."
         },
         "swiftbazel.system.taskExecutor": {
           "type": "string",
