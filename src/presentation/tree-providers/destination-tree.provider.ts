@@ -155,6 +155,13 @@ export class iOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem imp
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): iOSSimulatorDestination {
@@ -203,6 +210,13 @@ export class watchOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): watchOSSimulatorDestination {
@@ -248,6 +262,13 @@ export class visionOSSimulatorDestinationTreeItem extends BaseDestinationTreeIte
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): visionOSSimulatorDestination {
@@ -293,6 +314,13 @@ class tvOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem implement
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): tvOSSimulatorDestination {
@@ -335,6 +363,13 @@ export class iOSDeviceDestinationTreeItem extends BaseDestinationTreeItem implem
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): iOSDeviceDestination {
@@ -369,6 +404,13 @@ export class macOSDestinationTreeItem extends BaseDestinationTreeItem implements
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): macOSDestination {
@@ -410,6 +452,13 @@ export class watchOSDeviceDestinationTreeItem extends BaseDestinationTreeItem im
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): watchOSDeviceDestination {
@@ -450,6 +499,13 @@ export class tvOSDeviceDestinationTreeItem extends BaseDestinationTreeItem imple
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): tvOSDeviceDestination {
@@ -489,6 +545,13 @@ export class visionOSDeviceDestinationTreeItem extends BaseDestinationTreeItem i
       this.setContextState("recent", "true");
     }
     this.refreshContextValue();
+
+    // Add command to select destination on click
+    this.command = {
+      command: "swiftbazel.destinations.select",
+      title: "Select Destination",
+      arguments: [this],
+    };
   }
 
   get destination(): visionOSDeviceDestination {
