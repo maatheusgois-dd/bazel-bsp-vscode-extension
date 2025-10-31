@@ -131,7 +131,7 @@
     "problemMatchers": [
       {
         "name": "swiftbazel-watch",
-        "label": "swiftbazel (watch)",
+        "label": "SwiftBazel (watch)",
         "owner": "swiftbazel",
         "fileLocation": [
           "relative",
@@ -158,7 +158,7 @@
       {
         "name": "swiftbazel-xcodebuild-default",
         "owner": "swiftbazel",
-        "label": "swiftbazel xcodebuild (default)",
+        "label": "SwiftBazel xcodebuild (default)",
         "fileLocation": [
           "absolute"
         ],
@@ -176,7 +176,7 @@
       {
         "name": "swiftbazel-xcbeautify-errors",
         "owner": "swiftbazel",
-        "label": "swiftbazel xcbeautify (errors)",
+        "label": "SwiftBazel xcbeautify (errors)",
         "fileLocation": [
           "absolute"
         ],
@@ -208,7 +208,7 @@
     "debuggers": [
       {
         "type": "swiftbazel-lldb",
-        "label": "swiftbazel (LLDB)",
+        "label": "SwiftBazel (LLDB)",
         "languages": [
           "swift",
           "objective-c",
