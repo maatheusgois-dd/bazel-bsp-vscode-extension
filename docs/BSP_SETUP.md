@@ -136,30 +136,67 @@ After reload, open any Swift file and check:
    - Type in a Swift file
    - Should see autocomplete suggestions
 
-## Option 2: Manual Integration (Alternative)
+## Option 2: Using SwiftBazel Extension Commands
 
-Use SwiftBazel commands instead of Bazel rules.
+The SwiftBazel extension can help automate BSP setup.
 
 ### Step 1: Create BSP Test Targets
 
 Same as Bzlmod - add `*_ios_skbsp` targets to your BUILD.bazel files.
 
-### Step 2: Generate Config with SwiftBazel
+### Step 2: (Optional) Define setup_sourcekit_bsp Rule
+
+If you define a `setup_sourcekit_bsp` rule in your root BUILD file, the extension will automatically use it:
+
+```python
+# Root BUILD or BUILD.bazel
+load("@sourcekit_bazel_bsp//rules:setup_sourcekit_bsp.bzl", "setup_sourcekit_bsp")
+
+setup_sourcekit_bsp(
+    name = "setup_sourcekit_bsp",
+    targets = [
+        "//Apps/MyApp:MyApp_ios_skbsp",
+    ],
+)
+```
+
+### Step 3: Generate Config with SwiftBazel
+
+**Option A: Automatic (Recommended)**
+
+Select a target in the BAZEL TARGETS view, and you'll be prompted:
 
 ```
-1. Select a Bazel target in BAZEL TARGETS view
-2. Cmd+Shift+P → SwiftBazel: Setup BSP Config for Selected Target
-3. Downloads binary if needed
-4. Generates .bsp/skbsp.json and wrapper script
+✅ Selected: MyApp
+
+Update BSP configuration for this target?
+[Update BSP] [Skip] [Don't Ask Again]
 ```
 
-### Step 3: Enable Background Indexing
+**Option B: Manual**
+
+```
+Cmd+Shift+P → SwiftBazel: Setup BSP Config for Selected Target
+```
+
+**What it does:**
+
+- If `setup_sourcekit_bsp` rule exists → Runs `bazelisk run //Package:setup_sourcekit_bsp` ✅
+- Otherwise → Generates minimal config manually
+- Downloads binary if needed
+- Creates .bsp/skbsp.json and wrapper script
+
+**Configuration:**
+
+- Auto-prompt can be disabled in settings: `swiftbazel.bsp.autoUpdateOnTargetChange`
+
+### Step 4: Enable Background Indexing
 
 ```
 Cmd+Shift+P → SwiftBazel: Setup Swift Extension for BSP
 ```
 
-### Step 4: Reload Window
+### Step 5: Reload Window
 
 ```
 Cmd+Shift+P → Developer: Reload Window
@@ -227,6 +264,32 @@ BSP indexing can be **slow on first run** (10-30 minutes for large projects):
 - ✅ Normal - SourceKit-LSP is building index
 - ✅ Check bottom status bar for progress
 - ✅ Wait for "SourceKit-LSP: Indexing" to complete
+
+**💡 Pro Tip: Speed Up First Index**
+
+Enable indexing in debug builds (enabled by default):
+
+```json
+{
+  "swiftbazel.build.enableIndexingInDebug": true
+}
+```
+
+**How it works:**
+
+1. Build/Run/Debug via extension → Uses `--config=skbsp` (generates index)
+2. Open Swift file → BSP reuses existing index (instant!)
+3. No more waiting 10-15 minutes for first index
+
+**Trade-off:**
+
+- Debug builds: +30 seconds (includes indexing)
+- BSP first index: Instant! (saves 10-15 minutes)
+
+**When to disable:**
+
+- If you never use BSP
+- If you prefer release builds (stay fast)
 
 ## Updating Configuration
 
@@ -302,11 +365,27 @@ ios_build_test(
 )
 ```
 
+## Advanced Topics
+
+### Configuration Strategy: `index_build` vs `skbsp`
+
+For detailed information about choosing the right Bazel configuration strategy for your project, see:
+
+📖 [BSP Configuration Comparison Guide](./BSP_CONFIG_COMPARISON.md)
+
+**TL;DR:**
+
+- Small projects (< 50 files): Use `config=index_build` (simpler)
+- Large projects/monorepos: Use `config=skbsp` (faster, more scalable)
+
+---
+
 ## References
 
 - [sourcekit-bazel-bsp GitHub](https://github.com/spotify/sourcekit-bazel-bsp)
 - [BSP Specification](https://build-server-protocol.github.io/)
 - [SourceKit-LSP Documentation](https://github.com/apple/sourcekit-lsp)
+- [BSP Config Comparison](./BSP_CONFIG_COMPARISON.md)
 
 ## Need Help?
 

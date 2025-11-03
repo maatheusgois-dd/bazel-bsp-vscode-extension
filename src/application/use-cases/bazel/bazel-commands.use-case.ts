@@ -522,7 +522,32 @@ export async function selectBazelTargetCommand(
 
   context.buildManager.setSelectedBazelTarget(bazelItem);
 
-  vscode.window.showInformationMessage(`✅ Selected Bazel target: ${bazelItem.target.name} (${bazelItem.target.type})`);
+  // Check if BSP setup should be updated
+  const shouldPromptBSP = getWorkspaceConfig("bsp.autoUpdateOnTargetChange") !== false; // Default to true
+
+  if (shouldPromptBSP) {
+    const action = await vscode.window.showInformationMessage(
+      `✅ Selected: ${bazelItem.target.name}\n\nUpdate BSP configuration for this target?`,
+      "Update BSP",
+      "Skip",
+      "Don't Ask Again",
+    );
+
+    if (action === "Update BSP") {
+      await vscode.commands.executeCommand("swiftbazel.system.setupBSPConfig");
+    } else if (action === "Don't Ask Again") {
+      await vscode.workspace
+        .getConfiguration("swiftbazel")
+        .update("bsp.autoUpdateOnTargetChange", false, vscode.ConfigurationTarget.Workspace);
+      vscode.window.showInformationMessage(
+        "BSP auto-update disabled. Enable in settings: swiftbazel.bsp.autoUpdateOnTargetChange",
+      );
+    }
+  } else {
+    vscode.window.showInformationMessage(
+      `✅ Selected Bazel target: ${bazelItem.target.name} (${bazelItem.target.type})`,
+    );
+  }
 }
 
 /**
