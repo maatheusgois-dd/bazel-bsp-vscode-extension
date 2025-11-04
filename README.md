@@ -15,7 +15,6 @@ Built for DoorDash's iOS development workflow, this extension eliminates the nee
 ### Click to watch the full demo
 [![Demo](https://github.com/user-attachments/assets/053dccc5-c7af-4235-9184-64f1f1204502)](https://vimeo.com/1133527373)
 
-
 ---
 
 ## Features Summary
@@ -61,6 +60,8 @@ Built for DoorDash's iOS development workflow, this extension eliminates the nee
 - Terminal output with xcbeautify formatting
 - Build cache management
 - MCP Server for AI assistant integration
+
+<img width="1200" alt="image" src="https://github.com/user-attachments/assets/1ba9df4a-ba57-4d41-ac4f-a74d32ad1187" />
 
 ---
 
@@ -431,7 +432,7 @@ Errors and warnings from builds appear in:
 
 ### 🤖 MCP Server (AI Integration)
 
-<img width="600" alt="image" src="https://github.com/user-attachments/assets/86f2ddd4-1225-4cfe-b24c-ebd622ac85ab" />
+<img width="1200" alt="image" src="https://github.com/user-attachments/assets/86f2ddd4-1225-4cfe-b24c-ebd622ac85ab" />
 
 **What is MCP?**
 
