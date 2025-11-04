@@ -187,8 +187,6 @@ Frequently used targets appear at the top for quick access. Clear recents with t
 
 ### 🐛 Integrated Debugging
 
-<img src="images/placeholder-debugging.png" alt="Debugging Session" width="600">
-
 **One-Click Debug**
 
 1. Select a binary target (e.g., `//HelloWorld:HelloWorldApp`)
@@ -432,6 +430,8 @@ Errors and warnings from builds appear in:
 ---
 
 ### 🤖 MCP Server (AI Integration)
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/86f2ddd4-1225-4cfe-b24c-ebd622ac85ab" />
 
 **What is MCP?**
 
