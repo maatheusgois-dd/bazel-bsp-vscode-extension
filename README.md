@@ -12,6 +12,10 @@ SwiftBazel is a comprehensive VSCode extension that brings first-class Swift and
 
 Built for DoorDash's iOS development workflow, this extension eliminates the need to switch between VSCode and Xcode while maintaining full compatibility with Bazel's powerful build system.
 
+### Click to watch the full demo
+[![Demo](https://github.com/user-attachments/assets/053dccc5-c7af-4235-9184-64f1f1204502)](https://vimeo.com/1133527373)
+
+
 ---
 
 ## Features Summary
