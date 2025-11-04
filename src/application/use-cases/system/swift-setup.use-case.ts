@@ -319,6 +319,7 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
     const wrapperPath = path.join(bspDir, "bazel-wrapper.sh");
 
     // Generate BSP config
+    const targetName = selectedTargetData.targetName;
     const bspConfig = {
       name: "sourcekit-bazel-bsp",
       version: "0.2.0",
@@ -328,13 +329,19 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
         ".bsp/sourcekit-bazel-bsp",
         "serve",
         "--target",
-        `${selectedTargetData.buildLabel}_ios_skbsp`,
+        selectedTargetData.buildLabel,
         "--bazel-wrapper",
-        ".bsp/bazel-wrapper.sh",
+        "bazelisk",
         "--build-test-suffix",
         "_(PLAT)_skbsp",
         "--build-test-platform-placeholder",
         "(PLAT)",
+        "--index-build-batch-size",
+        "10",
+        "--index-flag",
+        "config=skbsp",
+        "--files-to-watch",
+        `${targetName}/**/*.swift,${targetName}/**/*.h,${targetName}/**/*.m`,
       ],
     };
 
