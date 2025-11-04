@@ -290,8 +290,7 @@ BSP enables the Swift extension to understand your code structure, providing:
 3. Extension generates `.bsp/skbsp.json`:
 ```json
 {
-  "target": "//HelloWorld:HelloWorldApp",
-  "bazelOpts": ["--config=skbsp"]
+  "target": "//HelloWorld:HelloWorldApp"
 }
 ```
 4. Reload VSCode
@@ -300,7 +299,6 @@ BSP enables the Swift extension to understand your code structure, providing:
 **Index Reuse (Fast Indexing)**
 
 Enable `swiftbazel.build.enableIndexingInDebug` (default: true) to:
-- Add `--config=skbsp` to debug builds
 - Generate index files during build
 - BSP reuses this index instantly
 - Trade-off: ~30s longer debug builds vs 5-10min initial BSP indexing

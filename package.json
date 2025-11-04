@@ -857,7 +857,7 @@
         "swiftbazel.build.enableIndexingInDebug": {
           "type": "boolean",
           "default": true,
-          "description": "Enable Swift indexing in debug builds using --config=skbsp. This allows BSP to reuse the index from extension builds, making code completion instant. Adds ~30 seconds to debug builds but eliminates 5-10 minute wait for BSP first indexing."
+          "description": "Enable Swift indexing in debug builds using. This allows BSP to reuse the index from extension builds, making code completion instant. Adds ~30 seconds to debug builds but eliminates 5-10 minute wait for BSP first indexing."
         },
         "swiftbazel.build.xcodeWorkspacePath": {
           "type": "string",
