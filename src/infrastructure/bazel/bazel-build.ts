@@ -77,14 +77,30 @@ export async function buildBazelTarget(options: BazelBuildOptions): Promise<void
 
   // Set build flags based on mode
   if (buildMode === BuildMode.Debug) {
-    additionalFlags = [
-      "--compilation_mode=dbg",
-      "--copt=-g",
-      "--strip=never",
-      "--apple_generate_dsym=true", // Generate dSYM for debugging
-      "--objc_generate_linkmap=true", // Generate linkmap for debugging
-    ];
-    terminal.write("   Build mode: Debug (unoptimized with symbols + dSYM)\n");
+    // Check if we should enable BSP indexing in debug builds
+    const { getWorkspaceConfig } = await import("../../shared/utils/config.js");
+    const enableIndexingInDebug = getWorkspaceConfig("build.enableIndexingInDebug") !== false; // Default: true
+
+    if (enableIndexingInDebug) {
+      // Use skbsp config which includes indexing + debug flags
+      additionalFlags = [
+        "--config=skbsp", // Includes: index_while_building, batch_mode, -g, skip_codesign, bes_backend=
+        "--apple_generate_dsym=true", // Generate dSYM for debugging
+        "--objc_generate_linkmap=true", // Generate linkmap for debugging
+      ];
+      terminal.write("   Build mode: Debug with Indexing (enables BSP index reuse)\n");
+      terminal.write("   💡 BSP will reuse this index for instant code completion\n");
+    } else {
+      // Legacy behavior - no indexing
+      additionalFlags = [
+        "--compilation_mode=dbg",
+        "--copt=-g",
+        "--strip=never",
+        "--apple_generate_dsym=true", // Generate dSYM for debugging
+        "--objc_generate_linkmap=true", // Generate linkmap for debugging
+      ];
+      terminal.write("   Build mode: Debug (unoptimized with symbols + dSYM)\n");
+    }
   } else if (buildMode === BuildMode.ReleaseWithSymbols) {
     additionalFlags = [
       "--compilation_mode=opt",
