@@ -5,6 +5,7 @@ type Config = {
   "format.args": string[] | null;
   "format.selectionArgs": string[] | null;
   "build.xcbeautifyEnabled": boolean;
+  "build.enableIndexingInDebug": boolean;
   "build.xcodeWorkspacePath": string;
   "build.derivedDataPath": string;
   "build.configuration": string;
@@ -16,6 +17,7 @@ type Config = {
   "build.launchArgs": string[];
   "build.launchEnv": { [key: string]: string };
   "bazel.buildMode": "debug" | "release" | "release-with-symbols" | "ask";
+  "bsp.autoUpdateOnTargetChange": boolean;
   "system.taskExecutor": "v1" | "v2";
   "system.logLevel": "debug" | "info" | "warn" | "error";
   "system.autoRevealTerminal": boolean;
