@@ -84,7 +84,6 @@ export async function buildBazelTarget(options: BazelBuildOptions): Promise<void
     if (enableIndexingInDebug) {
       // Use skbsp config which includes indexing + debug flags
       additionalFlags = [
-        "--config=skbsp", // Includes: index_while_building, batch_mode, -g, skip_codesign, bes_backend=
         "--apple_generate_dsym=true", // Generate dSYM for debugging
         "--objc_generate_linkmap=true", // Generate linkmap for debugging
       ];
