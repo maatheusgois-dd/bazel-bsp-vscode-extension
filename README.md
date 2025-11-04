@@ -1,4 +1,4 @@
-# SwiftBazel - DoorDash
+# SwiftBazel
 
 > **Develop Swift/iOS projects in VSCode** with full Bazel integration, debugging support, and intelligent code completion.
 
@@ -146,7 +146,7 @@ swiftbazel/
 
 ### 🎯 Bazel Target Management
 
-<img src="images/placeholder-bazel-targets.png" alt="Bazel Targets View" width="600">
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/98125c8a-db3c-455e-a5a4-923a523e0df7" />
 
 **Query and Build Any Target**
 
@@ -162,6 +162,8 @@ Click the pin icon next to any target to make it the active target. The selected
 - Bazel Targets tree view (highlighted)
 - All build/run commands use this target
 
+<img height="108" alt="image" src="https://github.com/user-attachments/assets/5c62ef39-45a6-443d-ba5f-56d99f3f862e" />
+
 **Build Modes**
 
 Choose from three build modes via the status bar or command palette:
@@ -169,9 +171,13 @@ Choose from three build modes via the status bar or command palette:
 - **Release**: Optimized without symbols (default Bazel)
 - **Release with Symbols**: Optimized with symbols for crash reports (`--compilation_mode=opt --copt=-g`)
 
+<img height="157" alt="image" src="https://github.com/user-attachments/assets/091ff834-0c3d-4dda-a3fe-2a8deaa9ae47" />
+
 **Recent Targets**
 
 Frequently used targets appear at the top for quick access. Clear recents with the trash icon.
+
+<img width="530" height="41" alt="image" src="https://github.com/user-attachments/assets/19b571bf-28c5-483d-98e3-3e92bd22fe3e" />
 
 ---
 
@@ -232,7 +238,7 @@ Add custom LLDB initialization commands via `codelldbAttributes`:
 
 ### 📱 Device & Simulator Management
 
-<img src="images/placeholder-devices.png" alt="Destinations View" width="600">
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/8b2b727d-6ac0-4a96-90c9-9f72b5cf6719" />
 
 **Destinations View**
 
@@ -270,9 +276,7 @@ Recently used destinations appear at the top. Remove with the trash icon.
 
 ---
 
-### 🔧 Build Server Protocol (BSP)
-
-<img src="images/placeholder-bsp.png" alt="BSP Configuration" width="600">
+### 🔧 [Build Server Protocol (BSP)](https://github.com/spotify/sourcekit-bazel-bsp)
 
 **What is BSP?**
 
@@ -297,7 +301,10 @@ BSP enables the Swift extension to understand your code structure, providing:
 4. Reload VSCode
 5. Swift extension will start indexing
 
-**Index Reuse (Fast Indexing)**
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/15da2514-b1f2-48c8-ad4c-59d6e45f1b3e" />
+
+
+**Index Reuse (Fast Indexing)** (This isn't woking yet :/)
 
 Enable `swiftbazel.build.enableIndexingInDebug` (default: true) to:
 - Add `--config=skbsp` to debug builds
@@ -312,6 +319,9 @@ Debug BSP issues with live log streaming:
 Command: SwiftBazel: Monitor BSP Logs
 ```
 
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/ce76b6d3-b2e9-4d60-917a-38c37dfecd4b" />
+
+
 This streams `sourcekit-bazel-bsp` logs in real-time to the terminal.
 
 **Auto-Update Prompt**
@@ -322,13 +332,21 @@ BSP is configured for a different target. Update?
 [Yes] [No] [Don't ask again]
 ```
 
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/75c6da3f-e9a5-4a14-911b-b265bb74c40b" />
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/15f5b0a0-f4d0-4655-88d7-57dd7d1eb0af" />
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/98a46701-e886-45bc-9eea-7171a89c8e18" />
+
+
 Disable via `swiftbazel.bsp.autoUpdateOnTargetChange: false`
 
 ---
 
 ### 🛠️ Developer Tools Integration
 
-<img src="images/placeholder-tools.png" alt="Tools View" width="600">
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/0560c027-38f8-408e-a782-f7c85bfcc8fd" />
+
 
 **Tools View**
 
@@ -711,14 +729,13 @@ MIT License - see [LICENSE.md](LICENSE.md) for details
 
 ## Credits
 
-Developed by **DoorDash** for internal iOS development workflow.
-
 Built with:
 - [VSCode Extension API](https://code.visualstudio.com/api)
 - [Bazel](https://bazel.build/)
 - [CodeLLDB](https://github.com/vadimcn/codelldb)
 - [Swift Extension](https://github.com/swift-server/vscode-swift)
 - [sourcekit-bazel-bsp](https://github.com/swiftlang/sourcekit-lsp)
+- [Sweetpad](https://github.com/sweetpad-dev/sweetpad)
 
 ---
 
