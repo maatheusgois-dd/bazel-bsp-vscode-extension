@@ -3,7 +3,7 @@
   "type": "commonjs",
   "displayName": "SwiftBazel - DoorDash (iOS/Swift Development)",
   "description": "Develop Swift/iOS projects in VS Code",
-  "version": "0.1.41",
+  "version": "0.1.42",
   "publisher": "doordash",
   "icon": "images/logo.png",
   "license": "MIT",
