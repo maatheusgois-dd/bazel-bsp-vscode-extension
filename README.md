@@ -15,7 +15,6 @@ Built for DoorDash's iOS development workflow, this extension eliminates the nee
 ### Click to watch the full demo
 [![Demo](https://github.com/user-attachments/assets/053dccc5-c7af-4235-9184-64f1f1204502)](https://vimeo.com/1133527373)
 
-
 ---
 
 ## Installation
@@ -89,6 +88,8 @@ Open a Bazel workspace and look for the SwiftBazel icon (🔧) in the Activity B
 - Terminal output with xcbeautify formatting
 - Build cache management
 - MCP Server for AI assistant integration
+
+<img width="1200" alt="image" src="https://github.com/user-attachments/assets/1ba9df4a-ba57-4d41-ac4f-a74d32ad1187" />
 
 ---
 
@@ -214,8 +215,6 @@ Frequently used targets appear at the top for quick access. Clear recents with t
 ---
 
 ### 🐛 Integrated Debugging
-
-<img src="images/placeholder-debugging.png" alt="Debugging Session" width="600">
 
 **One-Click Debug**
 
@@ -460,6 +459,8 @@ Errors and warnings from builds appear in:
 ---
 
 ### 🤖 MCP Server (AI Integration)
+
+<img width="1200" alt="image" src="https://github.com/user-attachments/assets/86f2ddd4-1225-4cfe-b24c-ebd622ac85ab" />
 
 **What is MCP?**
 
