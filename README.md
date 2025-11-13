@@ -18,6 +18,34 @@ Built for DoorDash's iOS development workflow, this extension eliminates the nee
 
 ---
 
+## Installation
+
+### Quick Install (One-Liner)
+
+```bash
+curl -s https://api.github.com/repos/maatheusgois-dd/swiftbazel/releases/latest | grep "browser_download_url.*vsix" | cut -d '"' -f 4 | xargs -I {} sh -c 'curl -L -o /tmp/swiftbazel.vsix {} && code --install-extension /tmp/swiftbazel.vsix && rm /tmp/swiftbazel.vsix'
+```
+
+Or use the install script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/maatheusgois-dd/swiftbazel/main/scripts/install-latest.sh | bash
+```
+
+### Manual Install
+
+1. Download the latest `.vsix` from [Releases](https://github.com/maatheusgois-dd/swiftbazel/releases/latest)
+2. Install via VS Code:
+   - Open Extensions (`Cmd+Shift+X`)
+   - Click `...` menu → "Install from VSIX..."
+   - Select the downloaded file
+
+### Verify Installation
+
+Open a Bazel workspace and look for the SwiftBazel icon (🔧) in the Activity Bar.
+
+---
+
 ## Features Summary
 
 ### 🎯 **Bazel Target Management**
