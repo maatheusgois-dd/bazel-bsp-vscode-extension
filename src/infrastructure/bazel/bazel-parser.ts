@@ -6,6 +6,7 @@ import type {
 } from "../../domain/entities/bazel/types.js";
 import { commonLogger } from "../../shared/logger/logger.js";
 import { exec } from "../../shared/utils/exec.js";
+import { getWorkspaceConfig } from "../../shared/utils/config.js";
 
 /**
  * Bazel Target Parser
@@ -50,12 +51,22 @@ export class BazelParser {
    * Run bazel query and parse all targets
    */
   static async queryAllTargets(cwd?: string): Promise<BazelQueryResult> {
-    commonLogger.log("Running bazel query //... to discover targets");
+    // Build query expression with exclusions if configured
+    const excludePaths = getWorkspaceConfig("bazel.queryExcludePaths") || [];
+
+    let queryExpression = "//...";
+    if (excludePaths.length > 0) {
+      const exclusionsExpr = excludePaths.join(" + ");
+      queryExpression = `//... except (${exclusionsExpr})`;
+      commonLogger.log(`Running bazel query with exclusions: ${queryExpression}`);
+    } else {
+      commonLogger.log("Running bazel query //... to discover targets");
+    }
 
     try {
       const output = await exec({
         command: "bazel",
-        args: ["query", "//...", "--output=label_kind"],
+        args: ["query", queryExpression, "--output=label_kind"],
         cwd,
         cancellable: true,
         progressTitle: "Discovering Bazel targets",
