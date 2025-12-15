@@ -551,9 +551,23 @@ All settings are under `swiftbazel.*` in VSCode settings:
 ```json
 {
   // Default build mode: "debug", "release", "release-with-symbols", or "ask"
-  "swiftbazel.bazel.buildMode": "ask"
+  "swiftbazel.bazel.buildMode": "ask",
+  
+  // Exclude specific paths from bazel query (useful for large monorepos)
+  "swiftbazel.bazel.queryExcludePaths": [
+    "//Apps/App/...",
+    "//Apps/App2/..."
+  ]
 }
 ```
+
+**Query Exclusions:**
+Use `queryExcludePaths` to exclude large or irrelevant parts of your workspace from target discovery. This is useful in monorepos where:
+- Some apps are not actively developed
+- Certain paths cause query performance issues
+- You want to focus on specific areas of the codebase
+
+The extension will transform this into: `bazel query '//... except (//Apps/App/... + //Apps/App2/...)' --output=label_kind`
 
 #### System Settings
 
@@ -636,6 +650,27 @@ All commands are available via Command Palette (`Cmd+Shift+P`):
 2. Run `bazel query //...` in terminal to check targets manually
 3. Check `.bazelignore` isn't excluding your targets
 4. Click refresh icon in Bazel Targets view
+
+### Slow Target Discovery / Query Timeout
+
+**Symptoms**: "Discovering Bazel targets" takes too long or times out in large monorepos
+
+**Solutions**:
+1. Exclude irrelevant paths using `swiftbazel.bazel.queryExcludePaths`:
+
+```json
+{
+  "swiftbazel.bazel.queryExcludePaths": [
+    "//Apps/ThirdPartyApp/...",
+    "//Legacy/OldCode/...",
+    "//Tools/Scripts/..."
+  ]
+}
+```
+
+2. Use `.bazelignore` file to permanently exclude directories
+3. Run query manually to test: `bazel query '//... except (//Apps/ThirdParty/...)' --output=label_kind`
+4. Check Bazel cache is working properly
 
 ### Debugging Not Working
 

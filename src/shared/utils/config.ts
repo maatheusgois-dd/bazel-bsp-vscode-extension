@@ -17,6 +17,7 @@ type Config = {
   "build.launchArgs": string[];
   "build.launchEnv": { [key: string]: string };
   "bazel.buildMode": "debug" | "release" | "release-with-symbols" | "ask";
+  "bazel.queryExcludePaths": string[];
   "bsp.autoUpdateOnTargetChange": boolean;
   "system.taskExecutor": "v1" | "v2";
   "system.logLevel": "debug" | "info" | "warn" | "error";
