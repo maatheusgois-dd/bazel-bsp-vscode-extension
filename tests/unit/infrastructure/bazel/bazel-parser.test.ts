@@ -1,6 +1,7 @@
 import { BazelParser } from "../../../../src/infrastructure/bazel/bazel-parser";
 import { commonLogger } from "../../../../src/shared/logger/logger";
 import { exec } from "../../../../src/shared/utils/exec";
+import * as config from "../../../../src/shared/utils/config";
 
 // Mock dependencies
 jest.mock("../../../../src/shared/utils/exec");
@@ -12,6 +13,7 @@ jest.mock("../../../../src/shared/logger/logger", () => ({
     debug: jest.fn(),
   },
 }));
+jest.mock("../../../../src/shared/utils/config");
 
 describe("BazelParser", () => {
   beforeEach(() => {
@@ -579,6 +581,126 @@ swift_library rule //A/B/C/D/E/F/G/H/I/J:Target
 
       const targets = BazelParser.getTargetsAtPath(result.tree, ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]);
       expect(targets?.buildable).toContain("Target");
+    });
+  });
+
+  describe("query exclusions", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should query without exclusions when config is empty", async () => {
+      (config.getWorkspaceConfig as jest.Mock).mockReturnValue([]);
+      (exec as jest.Mock).mockResolvedValue("");
+
+      await BazelParser.queryAllTargets();
+
+      expect(exec).toHaveBeenCalledWith({
+        command: "bazel",
+        args: ["query", "//...", "--output=label_kind"],
+        cwd: undefined,
+        cancellable: true,
+        progressTitle: "Discovering Bazel targets",
+      });
+    });
+
+    it("should query without exclusions when config is undefined", async () => {
+      (config.getWorkspaceConfig as jest.Mock).mockReturnValue(undefined);
+      (exec as jest.Mock).mockResolvedValue("");
+
+      await BazelParser.queryAllTargets();
+
+      expect(exec).toHaveBeenCalledWith({
+        command: "bazel",
+        args: ["query", "//...", "--output=label_kind"],
+        cwd: undefined,
+        cancellable: true,
+        progressTitle: "Discovering Bazel targets",
+      });
+    });
+
+    it("should build query with single exclusion", async () => {
+      (config.getWorkspaceConfig as jest.Mock).mockReturnValue(["//Apps/RooConsumer/..."]);
+      (exec as jest.Mock).mockResolvedValue("");
+
+      await BazelParser.queryAllTargets();
+
+      expect(exec).toHaveBeenCalledWith({
+        command: "bazel",
+        args: ["query", "//... except (//Apps/RooConsumer/...)", "--output=label_kind"],
+        cwd: undefined,
+        cancellable: true,
+        progressTitle: "Discovering Bazel targets",
+      });
+    });
+
+    it("should build query with multiple exclusions", async () => {
+      (config.getWorkspaceConfig as jest.Mock).mockReturnValue([
+        "//Apps/RooConsumer/...",
+        "//Apps/WoltConsumer/...",
+        "//Legacy/...",
+      ]);
+      (exec as jest.Mock).mockResolvedValue("");
+
+      await BazelParser.queryAllTargets();
+
+      expect(exec).toHaveBeenCalledWith({
+        command: "bazel",
+        args: [
+          "query",
+          "//... except (//Apps/RooConsumer/... + //Apps/WoltConsumer/... + //Legacy/...)",
+          "--output=label_kind",
+        ],
+        cwd: undefined,
+        cancellable: true,
+        progressTitle: "Discovering Bazel targets",
+      });
+    });
+
+    it("should log exclusion query expression", async () => {
+      (config.getWorkspaceConfig as jest.Mock).mockReturnValue(["//Apps/ThirdParty/..."]);
+      (exec as jest.Mock).mockResolvedValue("");
+
+      await BazelParser.queryAllTargets();
+
+      expect(commonLogger.log).toHaveBeenCalledWith(
+        "Running bazel query with exclusions: //... except (//Apps/ThirdParty/...)",
+      );
+    });
+
+    it("should handle exclusions and parse results correctly", async () => {
+      (config.getWorkspaceConfig as jest.Mock).mockReturnValue(["//Apps/Excluded/..."]);
+
+      const mockOutput = `
+ios_application rule //Apps/Included:App
+swift_library rule //Libs/Core:Core
+ios_unit_test rule //Tests:Tests
+`.trim();
+
+      (exec as jest.Mock).mockResolvedValue(mockOutput);
+
+      const result = await BazelParser.queryAllTargets();
+
+      expect(result.statistics.runnable).toBe(1);
+      expect(result.statistics.test).toBe(1);
+      expect(result.statistics.buildable).toBe(1);
+      expect(result.tree.Apps).toBeDefined();
+      expect((result.tree.Apps as any).Included).toBeDefined();
+      expect((result.tree.Apps as any).Excluded).toBeUndefined();
+    });
+
+    it("should respect custom cwd with exclusions", async () => {
+      (config.getWorkspaceConfig as jest.Mock).mockReturnValue(["//Apps/Skip/..."]);
+      (exec as jest.Mock).mockResolvedValue("");
+
+      await BazelParser.queryAllTargets("/custom/path");
+
+      expect(exec).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cwd: "/custom/path",
+          args: ["query", "//... except (//Apps/Skip/...)", "--output=label_kind"],
+        }),
+      );
     });
   });
 });

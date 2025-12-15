@@ -999,6 +999,20 @@
           "type": "boolean",
           "default": false,
           "description": "Watch if default scheme is changed and regenerate the build server config"
+        },
+        "swiftbazel.bazel.queryExcludePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "examples": [
+            [
+              "//Apps/RooConsumer/...",
+              "//Apps/WoltConsumer/..."
+            ]
+          ],
+          "description": "Bazel paths to exclude from query results. Use '...' for recursive exclusion (e.g., '//Apps/MyApp/...')."
         }
       }
     },
