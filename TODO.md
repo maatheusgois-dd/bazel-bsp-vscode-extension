@@ -3,8 +3,10 @@
 ## High Priority (from feedback)
 
 ### Swift Extension Installation
-- [ ] Fix installing both deprecated and new Swift extension simultaneously
-- [ ] Only install the correct/latest Swift extension
+- [x] Fixed: Replaced deprecated `sswg.swift-lang` with official `swiftlang.swift-vscode`
+- [x] Extension now only installs the correct/latest Swift extension
+- [x] Added comprehensive package validation tests
+- [x] PR #7: https://github.com/maatheusgois-dd/bazel-bsp-vscode-extension/pull/7
 
 ### BSP Generation
 - [ ] Make BSP config generation customizable/configurable
