@@ -944,6 +944,26 @@
           "default": true,
           "description": "Automatically prompt to update BSP configuration when selecting a new Bazel target. Set to false to disable the prompt."
         },
+        "bazelbsp.bsp.setupCommand": {
+          "type": "string",
+          "default": null,
+          "description": "Custom command to generate BSP config. Use placeholders: ${target} for selected target, ${workspace} for workspace path. Example: 'python scripts/generate_bsp.py ${target}'"
+        },
+        "bazelbsp.bsp.setupRuleName": {
+          "type": "string",
+          "default": "setup_sourcekit_bsp",
+          "description": "Name of the Bazel rule to run for BSP setup. Default: 'setup_sourcekit_bsp'"
+        },
+        "bazelbsp.bsp.configFileName": {
+          "type": "string",
+          "default": "skbsp.json",
+          "description": "Name of the BSP config file to generate in .bsp/ directory. Default: 'skbsp.json'"
+        },
+        "bazelbsp.bsp.configTemplate": {
+          "type": "object",
+          "default": null,
+          "description": "Custom BSP config JSON template. Use placeholders: ${target} for selected target label. Leave null to use default sourcekit-bazel-bsp template."
+        },
         "bazelbsp.bazel.buildMode": {
           "type": "string",
           "default": "ask",
