@@ -8,9 +8,12 @@
 - [x] Added comprehensive package validation tests
 
 ### BSP Generation
-- [ ] Make BSP config generation customizable/configurable
-- [ ] Support different project formats and abstractions
-- [ ] Don't assume specific BSP config format
+- [x] Made BSP config generation fully customizable
+- [x] Added 4 configuration options: setupCommand, setupRuleName, configFileName, configTemplate
+- [x] Support for different project formats and custom scripts
+- [x] No longer assumes specific BSP config format
+- [x] Comprehensive documentation with examples
+- [x] PR #8: https://github.com/maatheusgois-dd/bazel-bsp-vscode-extension/pull/8
 
 ### Target Discovery
 - [ ] Replace `bazel query` with BSP graph report JSON parsing
