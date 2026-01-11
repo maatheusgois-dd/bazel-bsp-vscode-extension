@@ -44,7 +44,7 @@ export async function bazelCleanImplementation(
   });
 
   try {
-    vscode.commands.executeCommand("swiftbazel.bazel.clean", args.expunge).then(
+    vscode.commands.executeCommand("bazelbsp.bazel.clean", args.expunge).then(
       () => {},
       (initError) => commonLogger.error("Error returned from bazel clean command", { initError }),
     );

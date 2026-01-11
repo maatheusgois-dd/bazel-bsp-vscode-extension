@@ -173,7 +173,7 @@ export async function ensureDeviceConnected(
     const action = await vscode.window.showErrorMessage(`${title}\n\n${message}`, "Refresh Devices", "Open Settings");
 
     if (action === "Refresh Devices") {
-      await vscode.commands.executeCommand("swiftbazel.destinations.refresh");
+      await vscode.commands.executeCommand("bazelbsp.destinations.refresh");
       // After refresh, retry the connection check
       const retryCheck = await isDeviceConnected(context, deviceId);
       if (!retryCheck.connected) {
@@ -183,7 +183,7 @@ export async function ensureDeviceConnected(
     }
 
     if (action === "Open Settings") {
-      await vscode.commands.executeCommand("workbench.action.openSettings", "swiftbazel");
+      await vscode.commands.executeCommand("workbench.action.openSettings", "bazelbsp");
     }
 
     throw new Error(

@@ -127,7 +127,7 @@ export class BazelTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
         errorItem.iconPath = new vscode.ThemeIcon("error");
         errorItem.contextValue = "bazelQueryError";
         errorItem.command = {
-          command: "swiftbazel.bazelQuery.refresh",
+          command: "bazelbsp.bazelQuery.refresh",
           title: "Retry",
         };
         return [errorItem];

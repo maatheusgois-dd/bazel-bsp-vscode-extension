@@ -37,7 +37,7 @@ describe("Config Utils", () => {
 
       const result = getWorkspaceConfig("build.xcodeWorkspacePath");
 
-      expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("swiftbazel");
+      expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("bazelbsp");
       expect(mockConfig.get).toHaveBeenCalledWith("build.xcodeWorkspacePath");
       expect(result).toBe("/path/to/workspace");
     });
@@ -147,7 +147,7 @@ describe("Config Utils", () => {
     it("should update configuration value", async () => {
       await updateWorkspaceConfig("build.xcodeWorkspacePath", "/new/path");
 
-      expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("swiftbazel");
+      expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("bazelbsp");
       expect(mockConfig.update).toHaveBeenCalledWith(
         "build.xcodeWorkspacePath",
         "/new/path",

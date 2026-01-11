@@ -38,7 +38,7 @@ type Config = {
 type ConfigKey = keyof Config;
 
 export function getWorkspaceConfig<K extends ConfigKey>(key: K): Config[K] | undefined {
-  const config = vscode.workspace.getConfiguration("swiftbazel");
+  const config = vscode.workspace.getConfiguration("bazelbsp");
   return config.get(key);
 }
 
@@ -47,6 +47,6 @@ export function isWorkspaceConfigIsDefined<K extends ConfigKey>(key: K): boolean
 }
 
 export async function updateWorkspaceConfig<K extends ConfigKey>(key: K, value: Config[K]): Promise<void> {
-  const config = vscode.workspace.getConfiguration("swiftbazel");
+  const config = vscode.workspace.getConfiguration("bazelbsp");
   return await config.update(key, value, vscode.ConfigurationTarget.Workspace);
 }

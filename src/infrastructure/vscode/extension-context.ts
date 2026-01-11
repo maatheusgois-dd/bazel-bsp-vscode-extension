@@ -122,7 +122,7 @@ export class ExtensionContext {
     this.progressStatusBar = options.progressStatusBar;
 
     vscode.workspace.onDidChangeConfiguration((event) => {
-      const affected = event.affectsConfiguration("swiftbazel");
+      const affected = event.affectsConfiguration("bazelbsp");
       if (affected) {
         this.emitter.emit("workspaceConfigChanged");
       }
@@ -220,7 +220,7 @@ export class ExtensionContext {
               return; // do nothing
             }
 
-            await this.showCommandErrorMessage(`swiftbazel: ${error.message}`, {
+            await this.showCommandErrorMessage(`bazelbsp: ${error.message}`, {
               actions: error.options?.actions,
             });
 
@@ -236,7 +236,7 @@ export class ExtensionContext {
             command: commandName,
             error: error,
           });
-          await this.showCommandErrorMessage(`swiftbazel: ${errorMessage}`);
+          await this.showCommandErrorMessage(`bazelbsp: ${errorMessage}`);
 
           // Fire completion event for MCP (in case ErrorManager already fired it, this is idempotent)
           this.simpleTaskCompletionEmitter.fire();
@@ -295,19 +295,19 @@ export class ExtensionContext {
   }
 
   updateWorkspaceState<T extends WorkspaceStateKey>(key: T, value: WorkspaceTypes[T] | undefined) {
-    this._context.workspaceState.update(`swiftbazel.${key}`, value);
+    this._context.workspaceState.update(`bazelbsp.${key}`, value);
   }
 
   getWorkspaceState<T extends WorkspaceStateKey>(key: T): WorkspaceTypes[T] | undefined {
-    return this._context.workspaceState.get(`swiftbazel.${key}`);
+    return this._context.workspaceState.get(`bazelbsp.${key}`);
   }
 
   /**
-   * Remove all swiftbazel.* keys from workspace state
+   * Remove all bazelbsp.* keys from workspace state
    */
   resetWorkspaceState() {
     for (const key of this._context.workspaceState.keys()) {
-      if (key?.startsWith("swiftbazel.")) {
+      if (key?.startsWith("bazelbsp.")) {
         this._context.workspaceState.update(key, undefined);
       }
     }

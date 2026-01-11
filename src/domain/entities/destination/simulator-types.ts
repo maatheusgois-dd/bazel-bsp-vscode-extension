@@ -67,9 +67,9 @@ export class iOSSimulatorDestination implements IDestination {
 
   get icon(): string {
     if (this.isBooted) {
-      return "swiftbazel-device-mobile";
+      return "bazelbsp-device-mobile";
     }
-    return "swiftbazel-device-mobile-pause";
+    return "bazelbsp-device-mobile-pause";
   }
 }
 
@@ -131,9 +131,9 @@ export class watchOSSimulatorDestination implements IDestination {
 
   get icon(): string {
     if (this.isBooted) {
-      return "swiftbazel-device-watch";
+      return "bazelbsp-device-watch";
     }
-    return "swiftbazel-device-watch-pause";
+    return "bazelbsp-device-watch-pause";
   }
 }
 
@@ -194,7 +194,7 @@ export class tvOSSimulatorDestination implements IDestination {
   }
 
   get icon(): string {
-    return "swiftbazel-device-tv-old";
+    return "bazelbsp-device-tv-old";
   }
 }
 
@@ -255,7 +255,7 @@ export class visionOSSimulatorDestination implements IDestination {
   }
 
   get icon(): string {
-    return "swiftbazel-cardboards";
+    return "bazelbsp-cardboards";
   }
 }
 

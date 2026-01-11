@@ -39,7 +39,7 @@ import {
   showSwiftConfigStatusCommand,
   monitorBSPLogsCommand,
 } from "./application/use-cases/system/swift-setup.use-case.js";
-import { openTerminalPanel, resetswiftbazelCache } from "./application/use-cases/system/system-commands.use-case.js";
+import { openTerminalPanel, resetbazelbspCache } from "./application/use-cases/system/system-commands.use-case.js";
 import { installToolCommand, openDocumentationCommand } from "./application/use-cases/tools/tools-commands.use-case.js";
 
 import { createMcpServer } from "./infrastructure/mcp/mcp-server.js";
@@ -140,57 +140,53 @@ export async function activate(context: vscode.ExtensionContext) {
     d(buildModeStatusBar);
 
     // Internal command to update build mode status bar
-    d(command("swiftbazel.internal.updateBuildModeStatusBar", async () => buildModeStatusBar.update()));
+    d(command("bazelbsp.internal.updateBuildModeStatusBar", async () => buildModeStatusBar.update()));
 
-    d(tree("swiftbazel.view.bazelQuery", bazelQueryTreeProvider));
-    d(command("swiftbazel.build.refreshView", async () => buildManager.refresh()));
-    d(command("swiftbazel.build.diagnoseSetup", diagnoseBuildSetupCommand));
-    d(command("swiftbazel.bazel.build", bazelBuildCommand));
-    d(command("swiftbazel.bazel.test", bazelTestCommand));
-    d(command("swiftbazel.bazel.run", bazelRunCommand));
-    d(command("swiftbazel.bazel.debug", bazelDebugCommand));
-    d(command("swiftbazel.bazel.stop", bazelStopCommand));
-    d(command("swiftbazel.bazel.clean", bazelCleanCommand));
-    d(command("swiftbazel.bazel.cleanExpunge", bazelCleanExpungeCommand));
-    d(command("swiftbazel.bazel.selectBuildMode", selectBazelBuildModeCommand));
+    d(tree("bazelbsp.view.bazelQuery", bazelQueryTreeProvider));
+    d(command("bazelbsp.build.refreshView", async () => buildManager.refresh()));
+    d(command("bazelbsp.build.diagnoseSetup", diagnoseBuildSetupCommand));
+    d(command("bazelbsp.bazel.build", bazelBuildCommand));
+    d(command("bazelbsp.bazel.test", bazelTestCommand));
+    d(command("bazelbsp.bazel.run", bazelRunCommand));
+    d(command("bazelbsp.bazel.debug", bazelDebugCommand));
+    d(command("bazelbsp.bazel.stop", bazelStopCommand));
+    d(command("bazelbsp.bazel.clean", bazelCleanCommand));
+    d(command("bazelbsp.bazel.cleanExpunge", bazelCleanExpungeCommand));
+    d(command("bazelbsp.bazel.selectBuildMode", selectBazelBuildModeCommand));
     d(
-      command("swiftbazel.bazel.selectTarget", (context, targetInfo) =>
+      command("bazelbsp.bazel.selectTarget", (context, targetInfo) =>
         selectBazelTargetCommand(context, targetInfo, bazelQueryTreeProvider),
       ),
     );
-    d(
-      command("swiftbazel.bazel.buildSelected", () =>
-        buildSelectedBazelTargetCommand(_context, bazelQueryTreeProvider),
-      ),
-    );
-    d(command("swiftbazel.bazel.testSelected", () => testSelectedBazelTargetCommand(_context, bazelQueryTreeProvider)));
-    d(command("swiftbazel.bazel.runSelected", () => runSelectedBazelTargetCommand(_context, bazelQueryTreeProvider)));
+    d(command("bazelbsp.bazel.buildSelected", () => buildSelectedBazelTargetCommand(_context, bazelQueryTreeProvider)));
+    d(command("bazelbsp.bazel.testSelected", () => testSelectedBazelTargetCommand(_context, bazelQueryTreeProvider)));
+    d(command("bazelbsp.bazel.runSelected", () => runSelectedBazelTargetCommand(_context, bazelQueryTreeProvider)));
 
     // Bazel query tree commands
-    d(command("swiftbazel.bazelQuery.refresh", async () => bazelQueryTreeProvider.refresh()));
-    d(command("swiftbazel.bazelQuery.clearRecents", async () => bazelQueryTreeProvider.clearRecents()));
+    d(command("bazelbsp.bazelQuery.refresh", async () => bazelQueryTreeProvider.refresh()));
+    d(command("bazelbsp.bazelQuery.clearRecents", async () => bazelQueryTreeProvider.clearRecents()));
 
     // Debugging
     d(registerDebugConfigurationProvider(_context));
-    d(command("swiftbazel.debugger.getAppPath", getAppPathCommand));
+    d(command("bazelbsp.debugger.getAppPath", getAppPathCommand));
 
     // Simulators
     d(
-      command("swiftbazel.simulators.refresh", async (context) => {
+      command("bazelbsp.simulators.refresh", async (context) => {
         context.updateProgressStatus("Refreshing simulators");
         await destinationsManager.refreshSimulators();
         destinationsTreeProvider.refresh();
       }),
     );
-    d(command("swiftbazel.simulators.openSimulator", openSimulatorCommand));
-    d(command("swiftbazel.simulators.removeCache", removeSimulatorCacheCommand));
-    d(command("swiftbazel.simulators.start", startSimulatorCommand));
-    d(command("swiftbazel.simulators.stop", stopSimulatorCommand));
-    d(command("swiftbazel.simulators.screenshot", takeSimulatorScreenshotCommand));
+    d(command("bazelbsp.simulators.openSimulator", openSimulatorCommand));
+    d(command("bazelbsp.simulators.removeCache", removeSimulatorCacheCommand));
+    d(command("bazelbsp.simulators.start", startSimulatorCommand));
+    d(command("bazelbsp.simulators.stop", stopSimulatorCommand));
+    d(command("bazelbsp.simulators.screenshot", takeSimulatorScreenshotCommand));
 
     // // Devices
     d(
-      command("swiftbazel.devices.refresh", async (context) => {
+      command("bazelbsp.devices.refresh", async (context) => {
         context.updateProgressStatus("Refreshing devices");
         await destinationsManager.refreshDevices();
         destinationsTreeProvider.refresh();
@@ -202,37 +198,37 @@ export async function activate(context: vscode.ExtensionContext) {
       context: _context,
     });
     d(destinationBar);
-    d(command("swiftbazel.destinations.select", selectDestinationForBuildCommand));
-    d(command("swiftbazel.destinations.removeRecent", removeRecentDestinationCommand));
+    d(command("bazelbsp.destinations.select", selectDestinationForBuildCommand));
+    d(command("bazelbsp.destinations.removeRecent", removeRecentDestinationCommand));
     d(
-      command("swiftbazel.destinations.refresh", async (context) => {
+      command("bazelbsp.destinations.refresh", async (context) => {
         context.updateProgressStatus("Refreshing destinations");
         await destinationsManager.refresh();
         destinationsTreeProvider.refresh();
       }),
     );
-    d(tree("swiftbazel.destinations.view", destinationsTreeProvider));
+    d(tree("bazelbsp.destinations.view", destinationsTreeProvider));
 
     // Tools
-    d(tree("swiftbazel.tools.view", toolsTreeProvider));
-    d(command("swiftbazel.tools.install", installToolCommand));
+    d(tree("bazelbsp.tools.view", toolsTreeProvider));
+    d(command("bazelbsp.tools.install", installToolCommand));
     d(
-      command("swiftbazel.tools.refresh", async (context) => {
+      command("bazelbsp.tools.refresh", async (context) => {
         context.updateProgressStatus("Checking tool installations");
         await toolsManager.refresh();
       }),
     );
-    d(command("swiftbazel.tools.documentation", openDocumentationCommand));
+    d(command("bazelbsp.tools.documentation", openDocumentationCommand));
 
     // System
-    d(command("swiftbazel.system.resetswiftbazelCache", resetswiftbazelCache));
-    d(command("swiftbazel.system.openTerminalPanel", openTerminalPanel));
-    d(command("swiftbazel.system.setupSwiftExtension", setupSwiftExtensionCommand));
-    d(command("swiftbazel.system.showSwiftConfigStatus", showSwiftConfigStatusCommand));
-    d(command("swiftbazel.system.setupBSPConfig", setupBSPConfigCommand));
-    d(command("swiftbazel.system.monitorBSPLogs", monitorBSPLogsCommand));
+    d(command("bazelbsp.system.resetbazelbspCache", resetbazelbspCache));
+    d(command("bazelbsp.system.openTerminalPanel", openTerminalPanel));
+    d(command("bazelbsp.system.setupSwiftExtension", setupSwiftExtensionCommand));
+    d(command("bazelbsp.system.showSwiftConfigStatus", showSwiftConfigStatusCommand));
+    d(command("bazelbsp.system.setupBSPConfig", setupBSPConfigCommand));
+    d(command("bazelbsp.system.monitorBSPLogs", monitorBSPLogsCommand));
     d(
-      command("swiftbazel.system.cancelCurrentOperation", async (_context) => {
+      command("bazelbsp.system.cancelCurrentOperation", async (_context) => {
         progressStatusBar.cancelCurrentOperation();
       }),
     );
@@ -242,7 +238,7 @@ export async function activate(context: vscode.ExtensionContext) {
     try {
       mcpInstance = createMcpServer(
         {
-          name: "swiftbazelCommandRunner",
+          name: "bazelbspCommandRunner",
           version: context.extension.packageJSON.version,
           port: 61333,
         },
@@ -275,11 +271,11 @@ export async function activate(context: vscode.ExtensionContext) {
   } catch (error: unknown) {
     commonLogger.error("Failed to activate extension", { error });
     const errorMessage = error instanceof Error ? error.message : String(error);
-    vscode.window.showErrorMessage(`swiftbazel activation failed: ${errorMessage}`);
+    vscode.window.showErrorMessage(`bazelbsp activation failed: ${errorMessage}`);
   }
 }
 
 export function deactivate() {
-  commonLogger.log("swiftbazel deactivating...");
+  commonLogger.log("bazelbsp deactivating...");
   // Cleanup is handled by the disposable
 }

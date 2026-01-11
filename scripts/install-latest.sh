@@ -8,7 +8,7 @@ set -e
 echo "🔍 Fetching latest SwiftBazel release..."
 
 # Get the latest release download URL
-DOWNLOAD_URL=$(curl -s https://api.github.com/repos/maatheusgois-dd/swiftbazel/releases/latest | grep "browser_download_url.*vsix" | cut -d '"' -f 4)
+DOWNLOAD_URL=$(curl -s https://api.github.com/repos/maatheusgois-dd/bazel-bsp-vscode-extension/releases/latest | grep "browser_download_url.*vsix" | cut -d '"' -f 4)
 
 if [ -z "$DOWNLOAD_URL" ]; then
     echo "❌ Failed to find latest release"
@@ -16,13 +16,13 @@ if [ -z "$DOWNLOAD_URL" ]; then
 fi
 
 echo "📦 Downloading SwiftBazel..."
-curl -L -o /tmp/swiftbazel.vsix "$DOWNLOAD_URL"
+curl -L -o /tmp/bazel-bsp-vscode-extension.vsix "$DOWNLOAD_URL"
 
 echo "🔧 Installing extension..."
-code --install-extension /tmp/swiftbazel.vsix
+code --install-extension /tmp/bazel-bsp-vscode-extension.vsix
 
 echo "🧹 Cleaning up..."
-rm /tmp/swiftbazel.vsix
+rm /tmp/bazel-bsp-vscode-extension.vsix
 
 echo "✅ SwiftBazel installed successfully!"
 echo "💡 Restart VS Code and open a Bazel workspace to get started"

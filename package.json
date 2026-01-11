@@ -1,15 +1,15 @@
 {
-  "name": "swiftbazel-doordash",
+  "name": "bazel-bsp-vscode-extension",
   "type": "commonjs",
-  "displayName": "SwiftBazel - DoorDash (iOS/Swift Development)",
-  "description": "Develop Swift/iOS projects in VS Code",
+  "displayName": "Bazel BSP",
+  "description": "VSCode extension for Bazel-based development with BSP integration",
   "version": "0.1.45",
   "publisher": "doordash",
   "icon": "images/logo.png",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KayodeOgundimu-DoorDashSWE/swiftbazel.git"
+    "url": "https://github.com/KayodeOgundimu-DoorDashSWE/bazelbsp.git"
   },
   "engines": {
     "vscode": "^1.85.0"
@@ -37,7 +37,7 @@
   "contributes": {
     "taskDefinitions": [
       {
-        "type": "swiftbazel",
+        "type": "bazelbsp",
         "required": [
           "action"
         ],
@@ -130,9 +130,9 @@
     ],
     "problemMatchers": [
       {
-        "name": "swiftbazel-watch",
-        "label": "SwiftBazel (watch)",
-        "owner": "swiftbazel",
+        "name": "bazelbsp-watch",
+        "label": "Bazel BSP (watch)",
+        "owner": "bazelbsp",
         "fileLocation": [
           "relative",
           "${workspaceRoot}"
@@ -156,9 +156,9 @@
         }
       },
       {
-        "name": "swiftbazel-xcodebuild-default",
-        "owner": "swiftbazel",
-        "label": "SwiftBazel xcodebuild (default)",
+        "name": "bazelbsp-xcodebuild-default",
+        "owner": "bazelbsp",
+        "label": "Bazel BSP xcodebuild (default)",
         "fileLocation": [
           "absolute"
         ],
@@ -174,9 +174,9 @@
         ]
       },
       {
-        "name": "swiftbazel-xcbeautify-errors",
-        "owner": "swiftbazel",
-        "label": "SwiftBazel xcbeautify (errors)",
+        "name": "bazelbsp-xcbeautify-errors",
+        "owner": "bazelbsp",
+        "label": "Bazel BSP xcbeautify (errors)",
         "fileLocation": [
           "absolute"
         ],
@@ -190,8 +190,8 @@
         "severity": "error"
       },
       {
-        "name": "swiftbazel-xcbeautify-warnings",
-        "owner": "swiftbazel",
+        "name": "bazelbsp-xcbeautify-warnings",
+        "owner": "bazelbsp",
         "fileLocation": [
           "absolute"
         ],
@@ -207,8 +207,8 @@
     ],
     "debuggers": [
       {
-        "type": "swiftbazel-lldb",
-        "label": "SwiftBazel (LLDB)",
+        "type": "bazelbsp-lldb",
+        "label": "Bazel BSP (LLDB)",
         "languages": [
           "swift",
           "objective-c",
@@ -216,12 +216,12 @@
         ],
         "configurationSnippets": [
           {
-            "label": "SwiftBazel: Build and Run (Wait for debugger)",
+            "label": "Bazel BSP: Build and Run (Wait for debugger)",
             "body": {
-              "type": "swiftbazel-lldb",
+              "type": "bazelbsp-lldb",
               "request": "attach",
-              "name": "SwiftBazel: Build and Run (Wait for debugger)",
-              "preLaunchTask": "swiftbazel: debugging-launch"
+              "name": "Bazel BSP: Build and Run (Wait for debugger)",
+              "preLaunchTask": "bazelbsp: debugging-launch"
             }
           }
         ],
@@ -238,7 +238,7 @@
                 "examples": [
                   {
                     "initCommands": [
-                      "script print('Hello, swiftbazel!')"
+                      "script print('Hello, bazelbsp!')"
                     ]
                   }
                 ]
@@ -262,7 +262,7 @@
                 "examples": [
                   {
                     "initCommands": [
-                      "script print('Hello, swiftbazel!')"
+                      "script print('Hello, bazelbsp!')"
                     ]
                   }
                 ]
@@ -275,27 +275,27 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "swiftbazel-view",
-          "title": "Swift Bazel",
+          "id": "bazelbsp-view",
+          "title": "Bazel BSP",
           "icon": "images/logo-panel.png",
-          "when": "swiftbazel.enabled"
+          "when": "bazelbsp.enabled"
         }
       ]
     },
     "views": {
-      "swiftbazel-view": [
+      "bazelbsp-view": [
         {
-          "id": "swiftbazel.view.bazelQuery",
+          "id": "bazelbsp.view.bazelQuery",
           "name": "BAZEL TARGETS",
           "visibility": "visible"
         },
         {
-          "id": "swiftbazel.destinations.view",
+          "id": "bazelbsp.destinations.view",
           "name": "DESTINATIONS",
           "visibility": "collapsed"
         },
         {
-          "id": "swiftbazel.tools.view",
+          "id": "bazelbsp.tools.view",
           "name": "TOOLS",
           "visibility": "collapsed"
         }
@@ -303,312 +303,312 @@
     },
     "viewsWelcome": [
       {
-        "view": "swiftbazel.build.view",
-        "contents": "No Bazel targets found.\n\nMake sure your workspace contains BUILD or BUILD.bazel files.\n\n[Refresh Targets](command:swiftbazel.bazelQuery.refresh)\n[Run Diagnose](command:swiftbazel.build.diagnoseSetup)",
-        "when": "swiftbazel.build.noSchemes"
+        "view": "bazelbsp.build.view",
+        "contents": "No Bazel targets found.\n\nMake sure your workspace contains BUILD or BUILD.bazel files.\n\n[Refresh Targets](command:bazelbsp.bazelQuery.refresh)\n[Run Diagnose](command:bazelbsp.build.diagnoseSetup)",
+        "when": "bazelbsp.build.noSchemes"
       },
       {
-        "view": "swiftbazel.devices.view",
+        "view": "bazelbsp.devices.view",
         "contents": "No devicectl found. Install the latest version of Xcode to manage device.",
-        "when": "swiftbazel.devices.noDevicectl"
+        "when": "bazelbsp.devices.noDevicectl"
       },
       {
-        "view": "swiftbazel.devices.view",
+        "view": "bazelbsp.devices.view",
         "contents": "No devices found. Connect an iOS device via USB or Wi-Fi to get started.",
-        "when": "swiftbazel.devices.noDevices"
+        "when": "bazelbsp.devices.noDevices"
       }
     ],
     "commands": [
       {
-        "command": "swiftbazel.build.launch",
-        "title": "SwiftBazel: Build & Run (Launch)",
-        "icon": "$(swiftbazel-player-play)"
+        "command": "bazelbsp.build.launch",
+        "title": "Bazel BSP: Build & Run (Launch)",
+        "icon": "$(bazelbsp-player-play)"
       },
       {
-        "command": "swiftbazel.build.debugLaunch",
-        "title": "SwiftBazel: Build & Debug",
+        "command": "bazelbsp.build.debugLaunch",
+        "title": "Bazel BSP: Build & Debug",
         "icon": "$(debug-alt)",
         "description": "Build and launch with debugger"
       },
       {
-        "command": "swiftbazel.build.run",
-        "title": "SwiftBazel: Run (without Build)",
+        "command": "bazelbsp.build.run",
+        "title": "Bazel BSP: Run (without Build)",
         "icon": "$(play)"
       },
       {
-        "command": "swiftbazel.build.build",
-        "title": "SwiftBazel: Build (without Run)",
-        "icon": "$(swiftbazel-tool)"
+        "command": "bazelbsp.build.build",
+        "title": "Bazel BSP: Build (without Run)",
+        "icon": "$(bazelbsp-tool)"
       },
       {
-        "command": "swiftbazel.build.clean",
-        "title": "SwiftBazel: Clean",
+        "command": "bazelbsp.build.clean",
+        "title": "Bazel BSP: Clean",
         "icon": "$(clear-all)"
       },
       {
-        "command": "swiftbazel.build.test",
-        "title": "SwiftBazel: Test",
+        "command": "bazelbsp.build.test",
+        "title": "Bazel BSP: Test",
         "icon": "$(beaker)"
       },
       {
-        "command": "swiftbazel.build.testWithSwiftTesting",
-        "title": "SwiftBazel: Test with Swift Testing",
+        "command": "bazelbsp.build.testWithSwiftTesting",
+        "title": "Bazel BSP: Test with Swift Testing",
         "icon": "$(beaker)",
         "description": "Run tests using Swift Testing framework"
       },
       {
-        "command": "swiftbazel.build.resolveDependencies",
-        "title": "SwiftBazel: Resolve dependencies",
+        "command": "bazelbsp.build.resolveDependencies",
+        "title": "Bazel BSP: Resolve dependencies",
         "icon": "$(sync)"
       },
       {
-        "command": "swiftbazel.build.removeBundleDir",
-        "title": "SwiftBazel: Remove bundle directory",
-        "icon": "$(swiftbazel-trash-x)"
+        "command": "bazelbsp.build.removeBundleDir",
+        "title": "Bazel BSP: Remove bundle directory",
+        "icon": "$(bazelbsp-trash-x)"
       },
       {
-        "command": "swiftbazel.build.generateBuildServerConfig",
-        "title": "SwiftBazel: Generate Build Server Config (buildServer.json)",
+        "command": "bazelbsp.build.generateBuildServerConfig",
+        "title": "Bazel BSP: Generate Build Server Config (buildServer.json)",
         "icon": "$(file-code)"
       },
       {
-        "command": "swiftbazel.build.selectXcodeWorkspace",
-        "title": "SwiftBazel: Select",
+        "command": "bazelbsp.build.selectXcodeWorkspace",
+        "title": "Bazel BSP: Select",
         "icon": "$(file-directory)"
       },
       {
-        "command": "swiftbazel.build.setDefaultScheme",
-        "title": "SwiftBazel: Set scheme",
+        "command": "bazelbsp.build.setDefaultScheme",
+        "title": "Bazel BSP: Set scheme",
         "icon": "$(target)"
       },
       {
-        "command": "swiftbazel.build.diagnoseSetup",
-        "title": "SwiftBazel: Diagnose build setup",
+        "command": "bazelbsp.build.diagnoseSetup",
+        "title": "Bazel BSP: Diagnose build setup",
         "icon": "$(bug)"
       },
       {
-        "command": "swiftbazel.bazel.build",
-        "title": "SwiftBazel: Bazel Build",
-        "icon": "$(swiftbazel-tool)",
+        "command": "bazelbsp.bazel.build",
+        "title": "Bazel BSP: Bazel Build",
+        "icon": "$(bazelbsp-tool)",
         "description": "Build Bazel target"
       },
       {
-        "command": "swiftbazel.bazel.test",
-        "title": "SwiftBazel: Bazel Test",
+        "command": "bazelbsp.bazel.test",
+        "title": "Bazel BSP: Bazel Test",
         "icon": "$(beaker)",
         "description": "Test Bazel target"
       },
       {
-        "command": "swiftbazel.bazel.selectTarget",
-        "title": "SwiftBazel: Select Bazel Target",
+        "command": "bazelbsp.bazel.selectTarget",
+        "title": "Bazel BSP: Select Bazel Target",
         "icon": "$(target)",
         "description": "Select Bazel target for build/test commands"
       },
       {
-        "command": "swiftbazel.bazel.selectBuildMode",
-        "title": "SwiftBazel: Select Build Mode",
+        "command": "bazelbsp.bazel.selectBuildMode",
+        "title": "Bazel BSP: Select Build Mode",
         "icon": "$(settings-gear)",
         "description": "Select build mode (Debug or Release)"
       },
       {
-        "command": "swiftbazel.bazel.clean",
-        "title": "SwiftBazel: Bazel Clean",
+        "command": "bazelbsp.bazel.clean",
+        "title": "Bazel BSP: Bazel Clean",
         "icon": "$(trash)",
         "description": "Clean Bazel build cache"
       },
       {
-        "command": "swiftbazel.bazel.cleanExpunge",
-        "title": "SwiftBazel: Bazel Clean (Expunge)",
+        "command": "bazelbsp.bazel.cleanExpunge",
+        "title": "Bazel BSP: Bazel Clean (Expunge)",
         "icon": "$(trash-x)",
         "description": "Clean Bazel build cache with expunge (complete cleanup)"
       },
       {
-        "command": "swiftbazel.bazel.buildSelected",
-        "title": "SwiftBazel: Build Selected Bazel Target",
-        "icon": "$(swiftbazel-tool)",
+        "command": "bazelbsp.bazel.buildSelected",
+        "title": "Bazel BSP: Build Selected Bazel Target",
+        "icon": "$(bazelbsp-tool)",
         "description": "Build currently selected Bazel target"
       },
       {
-        "command": "swiftbazel.bazel.testSelected",
-        "title": "SwiftBazel: Test Selected Bazel Target",
+        "command": "bazelbsp.bazel.testSelected",
+        "title": "Bazel BSP: Test Selected Bazel Target",
         "icon": "$(beaker)",
         "description": "Test currently selected Bazel target"
       },
       {
-        "command": "swiftbazel.bazel.run",
-        "title": "SwiftBazel: Bazel Run",
+        "command": "bazelbsp.bazel.run",
+        "title": "Bazel BSP: Bazel Run",
         "icon": "$(run)",
         "description": "Run Bazel target on iOS simulator"
       },
       {
-        "command": "swiftbazel.bazel.debug",
-        "title": "SwiftBazel: Bazel Debug",
+        "command": "bazelbsp.bazel.debug",
+        "title": "Bazel BSP: Bazel Debug",
         "icon": "$(debug-alt)",
         "description": "Debug Bazel target on iOS simulator or device"
       },
       {
-        "command": "swiftbazel.bazel.stop",
-        "title": "SwiftBazel: Stop/Cancel",
+        "command": "bazelbsp.bazel.stop",
+        "title": "Bazel BSP: Stop/Cancel",
         "icon": "$(debug-stop)",
         "description": "Stop debugging or cancel running build/test"
       },
       {
-        "command": "swiftbazel.bazel.runSelected",
-        "title": "SwiftBazel: Run Selected Bazel Target",
+        "command": "bazelbsp.bazel.runSelected",
+        "title": "Bazel BSP: Run Selected Bazel Target",
         "icon": "$(run)",
         "description": "Run currently selected Bazel target on iOS simulator"
       },
       {
-        "command": "swiftbazel.bazelQuery.refresh",
-        "title": "SwiftBazel: Refresh Bazel Targets",
+        "command": "bazelbsp.bazelQuery.refresh",
+        "title": "Bazel BSP: Refresh Bazel Targets",
         "icon": "$(refresh)",
         "description": "Refresh bazel query results"
       },
       {
-        "command": "swiftbazel.bazelQuery.clearRecents",
-        "title": "SwiftBazel: Clear Recent Targets",
+        "command": "bazelbsp.bazelQuery.clearRecents",
+        "title": "Bazel BSP: Clear Recent Targets",
         "icon": "$(clear-all)",
         "description": "Clear recent targets list"
       },
       {
-        "command": "swiftbazel.build.refreshView",
-        "title": "SwiftBazel: Refresh view",
-        "icon": "$(swiftbazel-refresh)"
+        "command": "bazelbsp.build.refreshView",
+        "title": "Bazel BSP: Refresh view",
+        "icon": "$(bazelbsp-refresh)"
       },
       {
-        "command": "swiftbazel.simulators.refresh",
-        "title": "SwiftBazel: Refresh simulators list",
-        "icon": "$(swiftbazel-refresh)"
+        "command": "bazelbsp.simulators.refresh",
+        "title": "Bazel BSP: Refresh simulators list",
+        "icon": "$(bazelbsp-refresh)"
       },
       {
-        "command": "swiftbazel.simulators.openSimulator",
-        "title": "SwiftBazel: Open simulator",
-        "icon": "$(swiftbazel-device-mobile-heart)"
+        "command": "bazelbsp.simulators.openSimulator",
+        "title": "Bazel BSP: Open simulator",
+        "icon": "$(bazelbsp-device-mobile-heart)"
       },
       {
-        "command": "swiftbazel.simulators.removeCache",
-        "title": "SwiftBazel: Remove simulator cache",
-        "icon": "$(swiftbazel-trash-x)"
+        "command": "bazelbsp.simulators.removeCache",
+        "title": "Bazel BSP: Remove simulator cache",
+        "icon": "$(bazelbsp-trash-x)"
       },
       {
-        "command": "swiftbazel.simulators.start",
-        "title": "SwiftBazel: Start simulator",
+        "command": "bazelbsp.simulators.start",
+        "title": "Bazel BSP: Start simulator",
         "icon": "$(debug-start)"
       },
       {
-        "command": "swiftbazel.simulators.stop",
-        "title": "SwiftBazel: Stop simulator",
+        "command": "bazelbsp.simulators.stop",
+        "title": "Bazel BSP: Stop simulator",
         "icon": "$(debug-stop)"
       },
       {
-        "command": "swiftbazel.devices.refresh",
-        "title": "SwiftBazel: Refresh devices list",
-        "icon": "$(swiftbazel-refresh)"
+        "command": "bazelbsp.devices.refresh",
+        "title": "Bazel BSP: Refresh devices list",
+        "icon": "$(bazelbsp-refresh)"
       },
       {
-        "command": "swiftbazel.tools.install",
-        "title": "SwiftBazel: Install tool",
-        "icon": "$(swiftbazel-terminal-2)"
+        "command": "bazelbsp.tools.install",
+        "title": "Bazel BSP: Install tool",
+        "icon": "$(bazelbsp-terminal-2)"
       },
       {
-        "command": "swiftbazel.tools.documentation",
-        "title": "SwiftBazel: Open tool documentation",
-        "icon": "$(swiftbazel-book)"
+        "command": "bazelbsp.tools.documentation",
+        "title": "Bazel BSP: Open tool documentation",
+        "icon": "$(bazelbsp-book)"
       },
       {
-        "command": "swiftbazel.tools.refresh",
-        "title": "SwiftBazel: Refresh tools list",
-        "icon": "$(swiftbazel-refresh)",
-        "enablement": "view == swiftbazel.tools.view"
+        "command": "bazelbsp.tools.refresh",
+        "title": "Bazel BSP: Refresh tools list",
+        "icon": "$(bazelbsp-refresh)",
+        "enablement": "view == bazelbsp.tools.view"
       },
       {
-        "command": "swiftbazel.system.resetswiftbazelCache",
-        "title": "SwiftBazel: Reset Extension Cache",
+        "command": "bazelbsp.system.resetbazelbspCache",
+        "title": "Bazel BSP: Reset Extension Cache",
         "icon": "$(clear-all)"
       },
       {
-        "command": "swiftbazel.system.testErrorReporting",
-        "title": "SwiftBazel: Test Error Reporting",
+        "command": "bazelbsp.system.testErrorReporting",
+        "title": "Bazel BSP: Test Error Reporting",
         "icon": "$(bug)"
       },
       {
-        "command": "swiftbazel.system.openTerminalPanel",
-        "title": "SwiftBazel: Open Terminal Panel",
+        "command": "bazelbsp.system.openTerminalPanel",
+        "title": "Bazel BSP: Open Terminal Panel",
         "icon": "$(terminal)"
       },
       {
-        "command": "swiftbazel.system.setupSwiftExtension",
-        "title": "SwiftBazel: Setup Swift Extension for BSP",
+        "command": "bazelbsp.system.setupSwiftExtension",
+        "title": "Bazel BSP: Setup Swift Extension for BSP",
         "icon": "$(settings-gear)",
         "description": "Configure Swift extension settings for selected Bazel target"
       },
       {
-        "command": "swiftbazel.system.showSwiftConfigStatus",
-        "title": "SwiftBazel: Show Swift Configuration Status",
+        "command": "bazelbsp.system.showSwiftConfigStatus",
+        "title": "Bazel BSP: Show Swift Configuration Status",
         "icon": "$(info)",
         "description": "Check Swift extension configuration"
       },
       {
-        "command": "swiftbazel.system.setupBSPConfig",
-        "title": "SwiftBazel: Setup BSP Config for Selected Target",
+        "command": "bazelbsp.system.setupBSPConfig",
+        "title": "Bazel BSP: Setup BSP Config for Selected Target",
         "icon": "$(server-process)",
         "description": "Generate .bsp/skbsp.json configuration for Build Server Protocol"
       },
       {
-        "command": "swiftbazel.system.monitorBSPLogs",
-        "title": "SwiftBazel: Monitor BSP Logs",
+        "command": "bazelbsp.system.monitorBSPLogs",
+        "title": "Bazel BSP: Monitor BSP Logs",
         "icon": "$(debug-console)",
         "description": "Stream sourcekit-bazel-bsp logs in real-time for debugging"
       },
       {
-        "command": "swiftbazel.debugger.getAppPath",
-        "title": "SwiftBazel: Get app path for debugging",
+        "command": "bazelbsp.debugger.getAppPath",
+        "title": "Bazel BSP: Get app path for debugging",
         "icon": "$(file-code)"
       },
       {
-        "command": "swiftbazel.destinations.select",
-        "title": "SwiftBazel: Select destination",
-        "icon": "$(swiftbazel-pin)"
+        "command": "bazelbsp.destinations.select",
+        "title": "Bazel BSP: Select destination",
+        "icon": "$(bazelbsp-pin)"
       },
       {
-        "command": "swiftbazel.destinations.removeRecent",
-        "title": "SwiftBazel: Remove recent destination",
-        "icon": "$(swiftbazel-trash-x)"
+        "command": "bazelbsp.destinations.removeRecent",
+        "title": "Bazel BSP: Remove recent destination",
+        "icon": "$(bazelbsp-trash-x)"
       },
       {
-        "command": "swiftbazel.destinations.selectForTesting",
-        "title": "swiftbazel.Testing: Select destination for testing",
+        "command": "bazelbsp.destinations.selectForTesting",
+        "title": "bazelbsp.Testing: Select destination for testing",
         "icon": "$(file-code)"
       },
       {
-        "command": "swiftbazel.simulators.screenshot",
-        "title": "SwiftBazel: Take Simulator Screenshot",
+        "command": "bazelbsp.simulators.screenshot",
+        "title": "Bazel BSP: Take Simulator Screenshot",
         "icon": "$(camera)"
       }
     ],
     "keybindings": [
       {
-        "command": "swiftbazel.bazel.runSelected",
+        "command": "bazelbsp.bazel.runSelected",
         "key": "cmd+r",
         "mac": "cmd+r"
       },
       {
-        "command": "swiftbazel.bazel.buildSelected",
+        "command": "bazelbsp.bazel.buildSelected",
         "key": "cmd+b",
         "mac": "cmd+b"
       },
       {
-        "command": "swiftbazel.bazel.testSelected",
+        "command": "bazelbsp.bazel.testSelected",
         "key": "cmd+u",
         "mac": "cmd+u"
       },
       {
-        "command": "swiftbazel.bazel.clean",
+        "command": "bazelbsp.bazel.clean",
         "key": "cmd+k",
         "mac": "cmd+k"
       },
       {
-        "command": "swiftbazel.bazel.cleanExpunge",
+        "command": "bazelbsp.bazel.cleanExpunge",
         "key": "cmd+shift+k",
         "mac": "cmd+shift+k"
       }
@@ -617,229 +617,229 @@
       "commandPalette": [],
       "view/title": [
         {
-          "command": "swiftbazel.bazelQuery.refresh",
-          "when": "view == swiftbazel.view.bazelQuery",
+          "command": "bazelbsp.bazelQuery.refresh",
+          "when": "view == bazelbsp.view.bazelQuery",
           "group": "navigation@1"
         },
         {
-          "command": "swiftbazel.build.removeBundleDir",
-          "when": "view == swiftbazel.build.view",
+          "command": "bazelbsp.build.removeBundleDir",
+          "when": "view == bazelbsp.build.view",
           "group": "navigation@1"
         },
         {
-          "command": "swiftbazel.tools.refresh",
-          "when": "view == swiftbazel.tools.view",
+          "command": "bazelbsp.tools.refresh",
+          "when": "view == bazelbsp.tools.view",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "swiftbazel.simulators.openSimulator",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-group-simulator-.*/",
+          "command": "bazelbsp.simulators.openSimulator",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-group-simulator-.*/",
           "group": "inline@3"
         },
         {
-          "command": "swiftbazel.simulators.refresh",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-group-simulator-.*/",
+          "command": "bazelbsp.simulators.refresh",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-group-simulator-.*/",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.simulators.removeCache",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-group-simulator-.*/",
+          "command": "bazelbsp.simulators.removeCache",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-group-simulator-.*/",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.devices.refresh",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-group-device-.*/",
+          "command": "bazelbsp.devices.refresh",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-group-device-.*/",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.simulators.start",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-item-simulator.*&status=shutdown.*/",
+          "command": "bazelbsp.simulators.start",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-item-simulator.*&status=shutdown.*/",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.simulators.stop",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-item-simulator.*&status=booted.*/",
+          "command": "bazelbsp.simulators.stop",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-item-simulator.*&status=booted.*/",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.simulators.screenshot",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-item-simulator.*&status=booted.*/",
+          "command": "bazelbsp.simulators.screenshot",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-item-simulator.*&status=booted.*/",
           "group": "context@1"
         },
         {
-          "command": "swiftbazel.destinations.select",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-item-.*/",
+          "command": "bazelbsp.destinations.select",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-item-.*/",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.destinations.select",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-item-.*/",
+          "command": "bazelbsp.destinations.select",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-item-.*/",
           "group": "context@1"
         },
         {
-          "command": "swiftbazel.destinations.removeRecent",
-          "when": "view == swiftbazel.destinations.view && viewItem =~ /destination-item-.*/ && viewItem =~ /.*recent=true.*/",
+          "command": "bazelbsp.destinations.removeRecent",
+          "when": "view == bazelbsp.destinations.view && viewItem =~ /destination-item-.*/ && viewItem =~ /.*recent=true.*/",
           "group": "context@2"
         },
         {
-          "command": "swiftbazel.tools.documentation",
-          "when": "view == swiftbazel.tools.view",
+          "command": "bazelbsp.tools.documentation",
+          "when": "view == bazelbsp.tools.view",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.tools.install",
-          "when": "view == swiftbazel.tools.view && viewItem == notInstalled",
+          "command": "bazelbsp.tools.install",
+          "when": "view == bazelbsp.tools.view && viewItem == notInstalled",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.build.launch",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.launch",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "inline@3"
         },
         {
-          "command": "swiftbazel.build.debugLaunch",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.debugLaunch",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "inline@4"
         },
         {
-          "command": "swiftbazel.build.build",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.build",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.build.setDefaultScheme",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.setDefaultScheme",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.build.launch",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.launch",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@1"
         },
         {
-          "command": "swiftbazel.build.build",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.build",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@2"
         },
         {
-          "command": "swiftbazel.build.run",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.run",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@3"
         },
         {
-          "command": "swiftbazel.build.debugLaunch",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.debugLaunch",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@3.5"
         },
         {
-          "command": "swiftbazel.build.test",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.test",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@4"
         },
         {
-          "command": "swiftbazel.build.testWithSwiftTesting",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.testWithSwiftTesting",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@5"
         },
         {
-          "command": "swiftbazel.build.clean",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.clean",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@6"
         },
         {
-          "command": "swiftbazel.build.resolveDependencies",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.resolveDependencies",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@7"
         },
         {
-          "command": "swiftbazel.build.setDefaultScheme",
-          "when": "viewItem == swiftbazel.build.view.item",
+          "command": "bazelbsp.build.setDefaultScheme",
+          "when": "viewItem == bazelbsp.build.view.item",
           "group": "context@8"
         },
         {
-          "command": "swiftbazel.bazel.selectTarget",
-          "when": "viewItem =~ /swiftbazel\\.bazel\\.target/",
+          "command": "bazelbsp.bazel.selectTarget",
+          "when": "viewItem =~ /bazelbsp\\.bazel\\.target/",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.bazel.build",
-          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.(library|binary).*&selected=true.*/",
+          "command": "bazelbsp.bazel.build",
+          "when": "viewItem =~ /^bazelbsp\\.bazel\\.target\\.(library|binary).*&selected=true.*/",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.bazel.test",
-          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.test.*&selected=true.*/",
+          "command": "bazelbsp.bazel.test",
+          "when": "viewItem =~ /^bazelbsp\\.bazel\\.target\\.test.*&selected=true.*/",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.bazel.run",
-          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.binary.*&selected=true.*/",
+          "command": "bazelbsp.bazel.run",
+          "when": "viewItem =~ /^bazelbsp\\.bazel\\.target\\.binary.*&selected=true.*/",
           "group": "inline@3"
         },
         {
-          "command": "swiftbazel.bazel.debug",
-          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.binary.*&selected=true.*/",
+          "command": "bazelbsp.bazel.debug",
+          "when": "viewItem =~ /^bazelbsp\\.bazel\\.target\\.binary.*&selected=true.*/",
           "group": "inline@4"
         },
         {
-          "command": "swiftbazel.bazel.stop",
-          "when": "viewItem =~ /^swiftbazel\\.bazel\\.target\\.binary.*&selected=true.*/",
+          "command": "bazelbsp.bazel.stop",
+          "when": "viewItem =~ /^bazelbsp\\.bazel\\.target\\.binary.*&selected=true.*/",
           "group": "inline@5"
         },
         {
-          "command": "swiftbazel.bazel.selectTarget",
-          "when": "viewItem =~ /swiftbazel\\.bazel\\.target/",
+          "command": "bazelbsp.bazel.selectTarget",
+          "when": "viewItem =~ /bazelbsp\\.bazel\\.target/",
           "group": "context@1"
         },
         {
-          "command": "swiftbazel.bazel.build",
-          "when": "viewItem =~ /swiftbazel\\.bazel\\.target/",
+          "command": "bazelbsp.bazel.build",
+          "when": "viewItem =~ /bazelbsp\\.bazel\\.target/",
           "group": "context@2"
         },
         {
-          "command": "swiftbazel.bazel.test",
-          "when": "viewItem == swiftbazel.bazel.target.test",
+          "command": "bazelbsp.bazel.test",
+          "when": "viewItem == bazelbsp.bazel.target.test",
           "group": "context@3"
         },
         {
-          "command": "swiftbazel.bazel.run",
-          "when": "viewItem == swiftbazel.bazel.target.binary",
+          "command": "bazelbsp.bazel.run",
+          "when": "viewItem == bazelbsp.bazel.target.binary",
           "group": "context@4"
         },
         {
-          "command": "swiftbazel.bazel.debug",
-          "when": "viewItem == swiftbazel.bazel.target.binary",
+          "command": "bazelbsp.bazel.debug",
+          "when": "viewItem == bazelbsp.bazel.target.binary",
           "group": "context@5"
         },
         {
-          "command": "swiftbazel.bazel.build",
+          "command": "bazelbsp.bazel.build",
           "when": "viewItem =~ /^bazelTarget-(buildable|runnable).*&selected=true.*/",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.bazel.test",
+          "command": "bazelbsp.bazel.test",
           "when": "viewItem =~ /^bazelTarget-test.*&selected=true.*/",
           "group": "inline@1"
         },
         {
-          "command": "swiftbazel.bazel.run",
+          "command": "bazelbsp.bazel.run",
           "when": "viewItem =~ /^bazelTarget-runnable.*&selected=true.*/",
           "group": "inline@2"
         },
         {
-          "command": "swiftbazel.bazel.debug",
+          "command": "bazelbsp.bazel.debug",
           "when": "viewItem =~ /^bazelTarget-runnable.*&selected=true.*/",
           "group": "inline@3"
         },
         {
-          "command": "swiftbazel.bazel.stop",
+          "command": "bazelbsp.bazel.stop",
           "when": "viewItem =~ /^bazelTarget-runnable.*&selected=true.*/",
           "group": "inline@4"
         },
         {
-          "command": "swiftbazel.bazelQuery.clearRecents",
+          "command": "bazelbsp.bazelQuery.clearRecents",
           "when": "viewItem == bazelQueryRecents",
           "group": "inline@1"
         }
@@ -847,31 +847,31 @@
     },
     "configuration": {
       "type": "object",
-      "title": "swiftbazel",
+      "title": "bazelbsp",
       "properties": {
-        "swiftbazel.build.xcbeautifyEnabled": {
+        "bazelbsp.build.xcbeautifyEnabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable xcbeautify for build logs."
         },
-        "swiftbazel.build.enableIndexingInDebug": {
+        "bazelbsp.build.enableIndexingInDebug": {
           "type": "boolean",
           "default": true,
           "description": "Enable Swift indexing in debug builds using. This allows BSP to reuse the index from extension builds, making code completion instant. Adds ~30 seconds to debug builds but eliminates 5-10 minute wait for BSP first indexing."
         },
-        "swiftbazel.build.xcodeWorkspacePath": {
+        "bazelbsp.build.xcodeWorkspacePath": {
           "type": "string",
           "default": null,
           "required": false,
           "description": "Path to Xcode workspace. Can be absolute or relative to the workspace root."
         },
-        "swiftbazel.build.derivedDataPath": {
+        "bazelbsp.build.derivedDataPath": {
           "type": "string",
           "default": null,
           "required": false,
           "description": "Path to derived data directory. Can be absolute or relative to the workspace root."
         },
-        "swiftbazel.build.arch": {
+        "bazelbsp.build.arch": {
           "type": "string",
           "enum": [
             "x86_64",
@@ -879,17 +879,17 @@
           ],
           "description": "Architecture to build for. Can be usefull for building x86_64 simulator builds on M1 Macs. Usually, you don't need to change this setting."
         },
-        "swiftbazel.build.configuration": {
+        "bazelbsp.build.configuration": {
           "type": "string",
           "default": null,
           "description": "Configuration to build."
         },
-        "swiftbazel.build.allowProvisioningUpdates": {
+        "bazelbsp.build.allowProvisioningUpdates": {
           "type": "boolean",
           "default": true,
           "description": "Allow Xcode to update provisioning profiles."
         },
-        "swiftbazel.build.args": {
+        "bazelbsp.build.args": {
           "type": "array",
           "items": {
             "type": "string"
@@ -903,7 +903,7 @@
           ],
           "description": "Additional arguments to pass to the build command. You can also override the default arguments"
         },
-        "swiftbazel.build.env": {
+        "bazelbsp.build.env": {
           "type": "object",
           "default": {},
           "examples": [
@@ -914,7 +914,7 @@
           ],
           "description": "Environment variables to pass to the xcodebuild command"
         },
-        "swiftbazel.build.launchArgs": {
+        "bazelbsp.build.launchArgs": {
           "type": "array",
           "items": {
             "type": "string"
@@ -928,7 +928,7 @@
           ],
           "description": "Arguments to pass to the app on launch"
         },
-        "swiftbazel.build.launchEnv": {
+        "bazelbsp.build.launchEnv": {
           "type": "object",
           "default": {},
           "examples": [
@@ -939,12 +939,12 @@
           ],
           "description": "Environment variables to pass to the app on launch"
         },
-        "swiftbazel.bsp.autoUpdateOnTargetChange": {
+        "bazelbsp.bsp.autoUpdateOnTargetChange": {
           "type": "boolean",
           "default": true,
           "description": "Automatically prompt to update BSP configuration when selecting a new Bazel target. Set to false to disable the prompt."
         },
-        "swiftbazel.bazel.buildMode": {
+        "bazelbsp.bazel.buildMode": {
           "type": "string",
           "default": "ask",
           "enum": [
@@ -961,7 +961,7 @@
           ],
           "description": "Default build mode for Bazel Build command. Options: 'debug' (unoptimized+symbols), 'release' (optimized), 'release-with-symbols' (optimized+symbols for crash reports), or 'ask' (prompts each time, remembers choice)."
         },
-        "swiftbazel.system.taskExecutor": {
+        "bazelbsp.system.taskExecutor": {
           "type": "string",
           "default": "v2",
           "enum": [
@@ -974,7 +974,7 @@
           ],
           "description": "Use version task executor for build tasks."
         },
-        "swiftbazel.system.logLevel": {
+        "bazelbsp.system.logLevel": {
           "type": "string",
           "default": "info",
           "enum": [
@@ -983,24 +983,24 @@
             "warn",
             "error"
           ],
-          "description": "Log level for swiftbazel."
+          "description": "Log level for bazelbsp."
         },
-        "swiftbazel.system.autoRevealTerminal": {
+        "bazelbsp.system.autoRevealTerminal": {
           "type": "boolean",
           "default": true,
           "description": "Automatically reveal the terminal when executing a command or task"
         },
-        "swiftbazel.system.showProgressStatusBar": {
+        "bazelbsp.system.showProgressStatusBar": {
           "type": "boolean",
           "default": true,
           "description": "Show progress in the status bar when executing a command or task"
         },
-        "swiftbazel.xcodebuildserver.autogenerate": {
+        "bazelbsp.xcodebuildserver.autogenerate": {
           "type": "boolean",
           "default": false,
           "description": "Watch if default scheme is changed and regenerate the build server config"
         },
-        "swiftbazel.bazel.queryExcludePaths": {
+        "bazelbsp.bazel.queryExcludePaths": {
           "type": "array",
           "items": {
             "type": "string"
@@ -1017,259 +1017,259 @@
       }
     },
     "icons": {
-      "swiftbazel-square-letter-w": {
+      "bazelbsp-square-letter-w": {
         "description": "Square Letter W",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f491"
         }
       },
-      "swiftbazel-square-letter-i": {
+      "bazelbsp-square-letter-i": {
         "description": "Square Letter I",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f484"
         }
       },
-      "swiftbazel-square-letter-m": {
+      "bazelbsp-square-letter-m": {
         "description": "Square Letter M",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f488"
         }
       },
-      "swiftbazel-square-letter-v": {
+      "bazelbsp-square-letter-v": {
         "description": "Square Letter V",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f4bb"
         }
       },
-      "swiftbazel-square-letter-t": {
+      "bazelbsp-square-letter-t": {
         "description": "Square Letter T",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f48f"
         }
       },
-      "swiftbazel-circle-letter-w": {
+      "bazelbsp-circle-letter-w": {
         "description": "Circle Letter W",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f456"
         }
       },
-      "swiftbazel-circle-letter-i": {
+      "bazelbsp-circle-letter-i": {
         "description": "Circle Letter I",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f449"
         }
       },
-      "swiftbazel-circle-letter-m": {
+      "bazelbsp-circle-letter-m": {
         "description": "Circle Letter M",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f44d"
         }
       },
-      "swiftbazel-circle-letter-v": {
+      "bazelbsp-circle-letter-v": {
         "description": "Circle Letter V",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f4ad"
         }
       },
-      "swiftbazel-circle-letter-t": {
+      "bazelbsp-circle-letter-t": {
         "description": "Circle Letter T",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f454"
         }
       },
-      "swiftbazel-square-asterisk": {
+      "bazelbsp-square-asterisk": {
         "description": "Square Asterisk",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f01a"
         }
       },
-      "swiftbazel-device-laptop": {
+      "bazelbsp-device-laptop": {
         "description": "Device Laptop",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\eb64"
         }
       },
-      "swiftbazel-device-mobile": {
+      "bazelbsp-device-mobile": {
         "description": "Device Mobile",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ea8a"
         }
       },
-      "swiftbazel-device-watch": {
+      "bazelbsp-device-watch": {
         "description": "Device Watch",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ebf9"
         }
       },
-      "swiftbazel-device-tv-old": {
+      "bazelbsp-device-tv-old": {
         "description": "Device TV Old",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f1d3"
         }
       },
-      "swiftbazel-device-watch-pause": {
+      "bazelbsp-device-watch-pause": {
         "description": "Device Watch Pause",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f8dd"
         }
       },
-      "swiftbazel-device-mobile-check": {
+      "bazelbsp-device-mobile-check": {
         "description": "Device Mobile Check",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f8af"
         }
       },
-      "swiftbazel-device-mobile-question": {
+      "bazelbsp-device-mobile-question": {
         "description": "Device Mobile Question",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f8ba"
         }
       },
-      "swiftbazel-device-ipad": {
+      "bazelbsp-device-ipad": {
         "description": "Device iPad",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f648"
         }
       },
-      "swiftbazel-device-mobile-pause": {
+      "bazelbsp-device-mobile-pause": {
         "description": "Device Mobile Pause",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f8b7"
         }
       },
-      "swiftbazel-device-mobile-x": {
+      "bazelbsp-device-mobile-x": {
         "description": "Device Mobile X",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f8bf"
         }
       },
-      "swiftbazel-device-ipad-x": {
+      "bazelbsp-device-ipad-x": {
         "description": "Device iPad X",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f8ac"
         }
       },
-      "swiftbazel-cardboards": {
+      "bazelbsp-cardboards": {
         "description": "Cardboards",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ed74"
         }
       },
-      "swiftbazel-tools": {
+      "bazelbsp-tools": {
         "description": "Tools",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ebca"
         }
       },
-      "swiftbazel-tool": {
+      "bazelbsp-tool": {
         "description": "Tool",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\eb40"
         }
       },
-      "swiftbazel-trash-x": {
+      "bazelbsp-trash-x": {
         "description": "Trash X",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ef88"
         }
       },
-      "swiftbazel-refresh": {
+      "bazelbsp-refresh": {
         "description": "Refresh",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\eb13"
         }
       },
-      "swiftbazel-player-play": {
+      "bazelbsp-player-play": {
         "description": "Player Play",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ed46"
         }
       },
-      "swiftbazel-device-mobile-heart": {
+      "bazelbsp-device-mobile-heart": {
         "description": "Device Mobile Heart",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f8b5"
         }
       },
-      "swiftbazel-package": {
+      "bazelbsp-package": {
         "description": "Package",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\eaff"
         }
       },
-      "swiftbazel-check": {
+      "bazelbsp-check": {
         "description": "Check",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ea5e"
         }
       },
-      "swiftbazel-pin": {
+      "bazelbsp-pin": {
         "description": "Select",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ec9c"
         }
       },
-      "swiftbazel-x": {
+      "bazelbsp-x": {
         "description": "X",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\eb55"
         }
       },
-      "swiftbazel-book": {
+      "bazelbsp-book": {
         "description": "Boook",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ea39"
         }
       },
-      "swiftbazel-terminal-2": {
+      "bazelbsp-terminal-2": {
         "description": "Terminal 2",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\ebef"
         }
       },
-      "swiftbazel-help-hexagon": {
+      "bazelbsp-help-hexagon": {
         "description": "Help Hexagon",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
           "fontCharacter": "\\f7a8"
         }
       },
-      "swiftbazel-hexagons": {
+      "bazelbsp-hexagons": {
         "description": "Hexagons",
         "default": {
           "fontPath": "images/icons/tabler-icons.woff",
@@ -1279,7 +1279,7 @@
     },
     "colors": [
       {
-        "id": "swiftbazel.scheme",
+        "id": "bazelbsp.scheme",
         "description": "Scheme",
         "defaults": {
           "dark": "#ff3755",
@@ -1287,7 +1287,7 @@
         }
       },
       {
-        "id": "swiftbazel.simulator.booted",
+        "id": "bazelbsp.simulator.booted",
         "description": "Scheme",
         "defaults": {
           "dark": "#00bb22",
@@ -1295,7 +1295,7 @@
         }
       },
       {
-        "id": "swiftbazel.workspace",
+        "id": "bazelbsp.workspace",
         "description": "Workspace",
         "defaults": {
           "dark": "#ff8c00",

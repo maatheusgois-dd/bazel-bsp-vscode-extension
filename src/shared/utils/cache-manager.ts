@@ -8,7 +8,7 @@ import type { ExtensionContext } from "../../infrastructure/vscode/extension-con
 import { commonLogger } from "../logger/logger.js";
 
 /**
- * Cache Manager for swiftbazel
+ * Cache Manager for bazelbsp
  * Caches Bazel workspace data for fast loading
  */
 
