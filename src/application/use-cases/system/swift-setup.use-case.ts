@@ -190,7 +190,7 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
         try {
           const packageBuildContent = await fs.readFile(packageBuildFile, "utf8");
 
-          // Priority 1: Target-specific setup rule (e.g., setup_doordashred_bsp)
+          // Priority 1: Target-specific setup rule (e.g., setup_maatheusgois-dd_bsp)
           const targetSpecificRuleName = `setup_${targetName.toLowerCase()}_bsp`;
           if (packageBuildContent.includes(`name = "${targetSpecificRuleName}"`)) {
             setupTarget = targetSpecificSetup;
@@ -488,7 +488,7 @@ export async function monitorBSPLogsCommand(_context: ExtensionContext): Promise
 
     // Show success message
     const selection = await vscode.window.showInformationMessage(
-      "✅ BSP log monitoring started!\n\nLogs are being streamed to:\n• Terminal: 'BSP Logs'\n• Output: 'Bazel BSP - DoorDash'",
+      "✅ BSP log monitoring started!\n\nLogs are being streamed to:\n• Terminal: 'BSP Logs'\n• Output: 'Bazel BSP - maatheusgois-dd'",
       "Show Terminal",
       "Show Output",
       "Stop Monitoring",

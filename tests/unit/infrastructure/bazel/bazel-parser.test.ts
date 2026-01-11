@@ -23,7 +23,7 @@ describe("BazelParser", () => {
   describe("queryAllTargets", () => {
     it("should query and parse bazel targets successfully", async () => {
       const mockOutput = `
-ios_application rule //Apps/MyApp:DoorDash
+ios_application rule //Apps/MyApp:App
 swift_library rule //Apps/MyApp/Core:Core
 ios_unit_test rule //Apps/MyApp/Tests:Tests
 `.trim();

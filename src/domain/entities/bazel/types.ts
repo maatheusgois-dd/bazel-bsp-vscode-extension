@@ -10,7 +10,7 @@ export type BuildModeString = "debug" | "release" | "release-with-symbols";
 // Types for Bazel query-based parser output
 export interface BazelQueryTarget {
   type: string; // Rule type (ios_application, swift_library, etc.)
-  target: string; // Full target label (//Apps/Consumer:DoorDash)
+  target: string; // Full target label (//Apps/Consumer:maatheusgois-dd)
 }
 
 export interface BazelTargetCategory {
@@ -56,7 +56,7 @@ export interface BazelTarget {
 
 export interface BazelScheme {
   name: string;
-  type: "doordash_scheme" | "doordash_appclip_scheme" | "xcschemes_scheme" | "custom";
+  type: "maatheusgois-dd_scheme" | "maatheusgois-dd_appclip_scheme" | "xcschemes_scheme" | "custom";
   buildTargets: string[];
   launchTarget?: string;
   testTargets?: string[];
