@@ -47,13 +47,13 @@ class ActionDispatcher {
 
     if (deprecatedActions.includes(action)) {
       throw new ExtensionError(
-        `Task action "${action}" is not supported in Bazel-only mode. Use Bazel commands instead: swiftbazel.bazel.build, swiftbazel.bazel.run, swiftbazel.bazel.test, or swiftbazel.bazel.debug`,
+        `Task action "${action}" is not supported in Bazel-only mode. Use Bazel commands instead: bazelbsp.bazel.build, bazelbsp.bazel.run, bazelbsp.bazel.test, or bazelbsp.bazel.debug`,
       );
     }
 
     // Bazel-specific actions would go here in the future
     if (action === "bazel-build") {
-      terminal.write("Use Command Palette: swiftbazel.bazel.build instead\n");
+      terminal.write("Use Command Palette: bazelbsp.bazel.build instead\n");
       return;
     }
 
@@ -62,7 +62,7 @@ class ActionDispatcher {
 }
 
 export class BazelBuildTaskProvider implements vscode.TaskProvider {
-  public type = "swiftbazel";
+  public type = "bazelbsp";
   context: ExtensionContext;
   dispatcher: ActionDispatcher;
 
@@ -102,7 +102,7 @@ export class BazelBuildTaskProvider implements vscode.TaskProvider {
       options.definition,
       vscode.TaskScope.Workspace,
       options.name,
-      "swiftbazel",
+      "bazelbsp",
       new vscode.CustomExecution(async (definition: vscode.TaskDefinition) => {
         const _definition = definition as TaskDefinition;
         const executorName = getTaskExecutorName();
@@ -110,7 +110,7 @@ export class BazelBuildTaskProvider implements vscode.TaskProvider {
           case "v1": {
             const terminal = new TaskTerminalV1(this.context, {
               name: options.name,
-              source: "swiftbazel",
+              source: "bazelbsp",
             });
             await this.dispatchTask(terminal, _definition);
             return new TaskTerminalV1Parent();

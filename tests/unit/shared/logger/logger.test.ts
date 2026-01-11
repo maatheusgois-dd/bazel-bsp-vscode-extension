@@ -27,7 +27,7 @@ describe("Logger", () => {
 
   describe("constructor", () => {
     it("should create output channel with name", () => {
-      expect(vscode.window.createOutputChannel).toHaveBeenCalledWith("swiftbazel: Test");
+      expect(vscode.window.createOutputChannel).toHaveBeenCalledWith("bazelbsp: Test");
     });
 
     it("should initialize with empty messages", () => {

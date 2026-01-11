@@ -15,7 +15,7 @@ export async function installToolCommand(context: ExtensionContext, item?: ToolT
     name: "Install Tool",
     error: "Error installing tool",
     terminateLocked: false,
-    lock: "swiftbazel.tools.install",
+    lock: "bazelbsp.tools.install",
     callback: async (terminal) => {
       await terminal.execute({
         command: tool.install.command,

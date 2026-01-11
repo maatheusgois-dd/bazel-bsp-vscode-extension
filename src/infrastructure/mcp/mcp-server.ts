@@ -216,7 +216,7 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
   // === BAZEL COMMANDS ===
 
   const bazelTest = createCommandTool(
-    "swiftbazel.bazel.testSelected",
+    "bazelbsp.bazel.testSelected",
     "bazel_test",
     "Run tests for the currently selected Bazel target",
     extensionContext,
@@ -229,7 +229,7 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
   );
 
   const bazelRun = createCommandTool(
-    "swiftbazel.bazel.debug",
+    "bazelbsp.bazel.debug",
     "bazel_run",
     "Build, launch, and attach debugger to the selected Bazel app target",
     extensionContext,
@@ -242,7 +242,7 @@ export function createMcpServer(options: McpServerOptions, extensionContext: Ext
   );
 
   const bazelBuild = createCommandTool(
-    "swiftbazel.bazel.buildSelected",
+    "bazelbsp.bazel.buildSelected",
     "bazel_build",
     "Build the currently selected Bazel target without running",
     extensionContext,

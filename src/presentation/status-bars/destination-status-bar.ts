@@ -7,10 +7,10 @@ export class DestinationStatusBar {
 
   constructor(options: { context: ExtensionContext }) {
     this.context = options.context;
-    const itemId = "swiftbazel.destinations.statusBar";
+    const itemId = "bazelbsp.destinations.statusBar";
     this.item = vscode.window.createStatusBarItem(itemId, vscode.StatusBarAlignment.Left, 0);
-    this.item.name = "SwiftBazel: Current Destination";
-    this.item.command = "swiftbazel.destinations.select";
+    this.item.name = "Bazel BSP: Current Destination";
+    this.item.command = "bazelbsp.destinations.select";
     this.item.tooltip = "Select destination for debugging";
     void this.update();
     this.item.show();
@@ -22,9 +22,9 @@ export class DestinationStatusBar {
   update() {
     const destination = this.context.destinationsManager.getSelectedXcodeDestinationForBuild();
     if (destination) {
-      this.item.text = `$(swiftbazel-device-mobile-check) ${destination.name}`;
+      this.item.text = `$(bazelbsp-device-mobile-check) ${destination.name}`;
     } else {
-      this.item.text = "$(swiftbazel-device-mobile-question) No destination selected";
+      this.item.text = "$(bazelbsp-device-mobile-question) No destination selected";
     }
   }
 

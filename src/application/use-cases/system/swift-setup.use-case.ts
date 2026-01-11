@@ -488,7 +488,7 @@ export async function monitorBSPLogsCommand(_context: ExtensionContext): Promise
 
     // Show success message
     const selection = await vscode.window.showInformationMessage(
-      "✅ BSP log monitoring started!\n\nLogs are being streamed to:\n• Terminal: 'BSP Logs'\n• Output: 'SwiftBazel - DoorDash'",
+      "✅ BSP log monitoring started!\n\nLogs are being streamed to:\n• Terminal: 'BSP Logs'\n• Output: 'Bazel BSP - DoorDash'",
       "Show Terminal",
       "Show Output",
       "Stop Monitoring",

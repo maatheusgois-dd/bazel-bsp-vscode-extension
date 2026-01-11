@@ -34,17 +34,17 @@ export class iOSDeviceDestination implements IDestination {
   get icon(): string {
     if (this.deviceType === "iPad") {
       if (this.isConnected) {
-        return "swiftbazel-device-ipad";
+        return "bazelbsp-device-ipad";
       }
-      return "swiftbazel-device-ipad-x";
+      return "bazelbsp-device-ipad-x";
     }
     if (this.deviceType === "iPhone") {
       if (this.isConnected) {
-        return "swiftbazel-device-mobile";
+        return "bazelbsp-device-mobile";
       }
-      return "swiftbazel-device-mobile-x";
+      return "bazelbsp-device-mobile-x";
     }
-    return "swiftbazel-device-mobile";
+    return "bazelbsp-device-mobile";
   }
 
   get udid() {
@@ -83,9 +83,9 @@ export class watchOSDeviceDestination implements IDestination {
 
   get icon(): string {
     if (this.isConnected) {
-      return "swiftbazel-device-watch";
+      return "bazelbsp-device-watch";
     }
-    return "swiftbazel-device-watch-pause";
+    return "bazelbsp-device-watch-pause";
   }
 
   get udid() {
@@ -134,7 +134,7 @@ export class tvOSDeviceDestination implements IDestination {
   }
 
   get icon(): string {
-    return "swiftbazel-device-tv-old";
+    return "bazelbsp-device-tv-old";
   }
 
   get udid() {
@@ -183,7 +183,7 @@ export class visionOSDeviceDestination implements IDestination {
   }
 
   get icon(): string {
-    return "swiftbazel-cardboards";
+    return "bazelbsp-cardboards";
   }
 
   get udid() {

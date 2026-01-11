@@ -147,7 +147,7 @@ export class iOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem imp
 
     if (this.simulator.isBooted) {
       this.setContextState("status", "booted");
-      color = new vscode.ThemeColor("swiftbazel.simulator.booted");
+      color = new vscode.ThemeColor("bazelbsp.simulator.booted");
     } else {
       this.setContextState("status", "shutdown");
     }
@@ -158,7 +158,7 @@ export class iOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem imp
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -202,7 +202,7 @@ export class watchOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem
 
     if (this.simulator.isBooted) {
       this.setContextState("status", "booted");
-      color = new vscode.ThemeColor("swiftbazel.simulator.booted");
+      color = new vscode.ThemeColor("bazelbsp.simulator.booted");
     } else {
       this.setContextState("status", "shutdown");
     }
@@ -213,7 +213,7 @@ export class watchOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -254,7 +254,7 @@ export class visionOSSimulatorDestinationTreeItem extends BaseDestinationTreeIte
 
     if (this.simulator.isBooted) {
       this.setContextState("status", "booted");
-      color = new vscode.ThemeColor("swiftbazel.simulator.booted");
+      color = new vscode.ThemeColor("bazelbsp.simulator.booted");
     } else {
       this.setContextState("status", "shutdown");
     }
@@ -265,7 +265,7 @@ export class visionOSSimulatorDestinationTreeItem extends BaseDestinationTreeIte
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -306,7 +306,7 @@ class tvOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem implement
 
     if (this.simulator.isBooted) {
       this.setContextState("status", "booted");
-      color = new vscode.ThemeColor("swiftbazel.simulator.booted");
+      color = new vscode.ThemeColor("bazelbsp.simulator.booted");
     } else {
       this.setContextState("status", "shutdown");
     }
@@ -317,7 +317,7 @@ class tvOSSimulatorDestinationTreeItem extends BaseDestinationTreeItem implement
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -366,7 +366,7 @@ export class iOSDeviceDestinationTreeItem extends BaseDestinationTreeItem implem
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -407,7 +407,7 @@ export class macOSDestinationTreeItem extends BaseDestinationTreeItem implements
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -455,7 +455,7 @@ export class watchOSDeviceDestinationTreeItem extends BaseDestinationTreeItem im
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -502,7 +502,7 @@ export class tvOSDeviceDestinationTreeItem extends BaseDestinationTreeItem imple
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -548,7 +548,7 @@ export class visionOSDeviceDestinationTreeItem extends BaseDestinationTreeItem i
 
     // Add command to select destination on click
     this.command = {
-      command: "swiftbazel.destinations.select",
+      command: "bazelbsp.destinations.select",
       title: "Select Destination",
       arguments: [this],
     };
@@ -728,7 +728,7 @@ export class DestinationsTreeProvider implements vscode.TreeDataProvider<vscode.
           type: "Recent",
           contextValue: "destination-group-recent",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-square-asterisk",
+          icon: "bazelbsp-square-asterisk",
         }),
       );
     }
@@ -740,63 +740,63 @@ export class DestinationsTreeProvider implements vscode.TreeDataProvider<vscode.
           type: "iOSSimulator",
           contextValue: "destination-group-simulator-ios",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-square-letter-i",
+          icon: "bazelbsp-square-letter-i",
         }),
         new DestinationGroupTreeItem({
           label: "watchOS Simulators",
           type: "watchOSSimulator",
           contextValue: "destination-group-simulator-watchos",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-square-letter-w",
+          icon: "bazelbsp-square-letter-w",
         }),
         new DestinationGroupTreeItem({
           label: "tvOS Simulators",
           type: "tvOSSimulator",
           contextValue: "destination-group-simulator-tvos",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-square-letter-t",
+          icon: "bazelbsp-square-letter-t",
         }),
         new DestinationGroupTreeItem({
           label: "visionOS Simulators",
           type: "visionOSSimulator",
           contextValue: "destination-group-simulator-visionos",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-square-letter-v",
+          icon: "bazelbsp-square-letter-v",
         }),
         new DestinationGroupTreeItem({
           label: "macOS",
           type: "macOS",
           contextValue: "destination-group-macos",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-circle-letter-m",
+          icon: "bazelbsp-circle-letter-m",
         }),
         new DestinationGroupTreeItem({
           label: "iOS Devices",
           type: "iOSDevice",
           contextValue: "destination-group-device-ios",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-circle-letter-i",
+          icon: "bazelbsp-circle-letter-i",
         }),
         new DestinationGroupTreeItem({
           label: "watchOS Devices",
           type: "watchOSDevice",
           contextValue: "destination-group-device-watchos",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-circle-letter-w",
+          icon: "bazelbsp-circle-letter-w",
         }),
         new DestinationGroupTreeItem({
           label: "tvOS Devices",
           type: "tvOSDevice",
           contextValue: "destination-group-device-tvos",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-circle-letter-t",
+          icon: "bazelbsp-circle-letter-t",
         }),
         new DestinationGroupTreeItem({
           label: "visionOS Devices",
           type: "visionOSDevice",
           contextValue: "destination-group-device-visionos",
           collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-          icon: "swiftbazel-circle-letter-v",
+          icon: "bazelbsp-circle-letter-v",
         }),
       ],
     );

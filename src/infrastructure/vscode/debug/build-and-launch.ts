@@ -447,9 +447,9 @@ async function attachDebuggerToApp(
 
     // The debug provider will handle the actual LLDB commands based on launch context
     const debugConfig: vscode.DebugConfiguration = {
-      type: "swiftbazel-bazel-lldb",
+      type: "bazelbsp-bazel-lldb",
       request: "attach",
-      name: isDevice ? "SwiftBazel: Bazel Debug (Device)" : "SwiftBazel: Bazel Debug",
+      name: isDevice ? "Bazel BSP: Bazel Debug (Device)" : "Bazel BSP: Bazel Debug",
       debuggerRoot: workspaceFolder?.uri.fsPath || "${workspaceFolder}",
       debugPort: debugPort,
       program: launchResult.appPath,

@@ -117,8 +117,8 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
 
     // Use different color for selected vs unselected targets
     const iconColor = isSelected
-      ? new vscode.ThemeColor("swiftbazel.simulator.booted")
-      : new vscode.ThemeColor("swiftbazel.scheme");
+      ? new vscode.ThemeColor("bazelbsp.simulator.booted")
+      : new vscode.ThemeColor("bazelbsp.scheme");
 
     if (isSelected) {
       this.description = "✓";
@@ -148,7 +148,7 @@ export class BazelQueryTargetItem extends vscode.TreeItem {
     // Set command to select the target when clicked
     // Pass serializable data including target and package info
     this.command = {
-      command: "swiftbazel.bazel.selectTarget",
+      command: "bazelbsp.bazel.selectTarget",
       title: "Select Bazel Target",
       arguments: [
         {

@@ -80,10 +80,10 @@ describe("Error Classes", () => {
     it("should include source in context", () => {
       const error = new TaskError("Task error", {
         name: "Test Task",
-        soruce: "swiftbazel",
+        soruce: "bazelbsp",
       });
 
-      expect(error.options?.context?.soruce).toBe("swiftbazel");
+      expect(error.options?.context?.soruce).toBe("bazelbsp");
     });
 
     it("should include command details", () => {
@@ -109,7 +109,7 @@ describe("Error Classes", () => {
     it("should create task error with all optional fields", () => {
       const error = new TaskError("Complete task error", {
         name: "Full Task",
-        soruce: "swiftbazel",
+        soruce: "bazelbsp",
         command: "xcrun",
         args: ["simctl", "list"],
         errorCode: 127,
@@ -117,7 +117,7 @@ describe("Error Classes", () => {
 
       expect(error.options?.context).toEqual({
         name: "Full Task",
-        soruce: "swiftbazel",
+        soruce: "bazelbsp",
         command: "xcrun",
         args: ["simctl", "list"],
         errorCode: 127,
