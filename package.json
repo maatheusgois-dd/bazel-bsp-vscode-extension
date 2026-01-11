@@ -3,7 +3,7 @@
   "type": "commonjs",
   "displayName": "Bazel BSP",
   "description": "VSCode extension for Bazel-based development with BSP integration",
-  "version": "0.1.47",
+  "version": "0.1.48",
   "publisher": "maatheusgois-dd",
   "icon": "images/logo.png",
   "license": "MIT",
