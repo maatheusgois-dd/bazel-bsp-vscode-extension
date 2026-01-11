@@ -35,9 +35,23 @@ All settings are under `bazelbsp.*` in VSCode settings.
 ```json
 {
   // Auto-prompt to update BSP when target changes
-  "bazelbsp.bsp.autoUpdateOnTargetChange": true
+  "bazelbsp.bsp.autoUpdateOnTargetChange": true,
+
+  // Custom command to generate BSP config (supports placeholders: ${target}, ${workspace})
+  "bazelbsp.bsp.setupCommand": null,
+
+  // Name of the Bazel rule for BSP setup
+  "bazelbsp.bsp.setupRuleName": "setup_sourcekit_bsp",
+
+  // BSP config file name in .bsp/ directory
+  "bazelbsp.bsp.configFileName": "skbsp.json",
+
+  // Custom BSP config template (supports placeholders: ${target}, ${targetName}, ${workspace})
+  "bazelbsp.bsp.configTemplate": null
 }
 ```
+
+See [BSP Customization Guide](bsp-customization.md) for detailed examples and use cases.
 
 ## Bazel Settings
 
