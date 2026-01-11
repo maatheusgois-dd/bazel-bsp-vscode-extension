@@ -125,7 +125,6 @@ See [Configuration Guide](docs/configuration.md) for full details.
 
 - BSP config generation assumes specific format (may need customization)
 - Build commands may need project-specific adjustments
-- Swift extension installation may trigger both old and new versions
 - App logging doesn't work when debugger is attached
 - Index reuse during debug builds not fully working
 
@@ -149,7 +148,7 @@ This extension integrates with:
 - [Bazel](https://bazel.build/) - Build system
 - [sourcekit-bazel-bsp](https://github.com/spotify/sourcekit-bazel-bsp) - Build Server Protocol implementation
 - [CodeLLDB](https://github.com/vadimcn/codelldb) - LLDB debugger integration
-- [Swift Extension](https://github.com/swift-server/vscode-swift) - Swift language support
+- [Swift Extension](https://marketplace.visualstudio.com/items?itemName=swiftlang.swift-vscode) - Swift language support
 - [Sweetpad](https://github.com/sweetpad-dev/sweetpad) - Inspiration for iOS development in VSCode
 
 ---
