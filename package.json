@@ -1306,7 +1306,7 @@
   },
   "extensionDependencies": [
     "vadimcn.vscode-lldb",
-    "sswg.swift-lang",
+    "swiftlang.swift-vscode",
     "llvm-vs-code-extensions.lldb-dap"
   ],
   "scripts": {
