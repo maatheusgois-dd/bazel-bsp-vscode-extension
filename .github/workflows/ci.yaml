@@ -176,8 +176,8 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
             <Metadata>
-              <Identity Language="en-US" Id="$NAME" Version="$VERSION" Publisher="doordash" />
-              <DisplayName>swiftbazel-Doordash (iOS/Swift development)</DisplayName>
+              <Identity Language="en-US" Id="$NAME" Version="$VERSION" Publisher="maatheusgois" />
+              <DisplayName>bazel-bsp-vscode-extension (iOS/Swift development)</DisplayName>
               <Description xml:space="preserve">Develop Swift/iOS projects in VS Code</Description>
               <Tags>swift,ios,xcode,development,mobile</Tags>
               <Categories>Formatters,Linters,Extension Packs,Programming Languages,Other</Categories>

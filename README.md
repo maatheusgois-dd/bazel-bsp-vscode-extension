@@ -164,4 +164,3 @@ MIT - see [LICENSE.md](LICENSE.md)
 
 - 📖 [Documentation](docs/)
 - 🐛 [Issue Tracker](https://github.com/maatheusgois-dd/bazelbsp/issues)
-- 💬 DoorDash Slack: `#ios-tooling`

@@ -180,7 +180,7 @@ export class BazelParser {
     // Process each category
     const processTargets = (targetList: BazelQueryTarget[], category: keyof BazelTargetCategory) => {
       for (const item of targetList) {
-        // Parse target: //Apps/Consumer/ConsumerApp:DoorDash
+        // Parse target: //Apps/Consumer/ConsumerApp:App
         const match = item.target.match(/^\/\/(.+):(.+)$/);
         if (!match) {
           commonLogger.warn("Failed to parse target", { target: item.target });
