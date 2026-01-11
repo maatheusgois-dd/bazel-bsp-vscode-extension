@@ -2,7 +2,8 @@ import * as vscode from "vscode";
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
 import { ExtensionError } from "../../../shared/errors/errors.js";
 
-const DEBUG_DOCUMENTATION_URL = "https://github.com/KayodeOgundimu-DoorDashSWE/bazelbsp/blob/main/docs/wiki/debug.md";
+const DEBUG_DOCUMENTATION_URL =
+  "https://github.com/maatheusgois-dd/bazel-bsp-vscode-extension/blob/main/docs/wiki/debug.md";
 
 /**
  * This function is deprecated. Previously we use "lldb" as the debugger type and
