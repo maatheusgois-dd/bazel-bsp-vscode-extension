@@ -79,7 +79,7 @@ export class macOSDestination implements IDestination {
   }
 
   get icon(): string {
-    return "swiftbazel-device-laptop";
+    return "bazelbsp-device-laptop";
   }
 }
 

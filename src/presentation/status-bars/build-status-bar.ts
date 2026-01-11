@@ -8,9 +8,9 @@ export class BazelTargetStatusBar {
   constructor(options: { context: ExtensionContext }) {
     this.context = options.context;
 
-    const itemId = "swiftbazel.bazel.statusBar";
+    const itemId = "bazelbsp.bazel.statusBar";
     this.item = vscode.window.createStatusBarItem(itemId, vscode.StatusBarAlignment.Left, -1);
-    this.item.name = "SwiftBazel: Selected Bazel Target";
+    this.item.name = "Bazel BSP: Selected Bazel Target";
     this.item.tooltip = "Currently selected Bazel target";
 
     this.update();
@@ -38,14 +38,14 @@ export class BazelTargetStatusBar {
       this.item.text = `${icon} ${selectedTargetData.targetName}`;
       this.item.tooltip = `Selected Bazel Target: ${selectedTargetData.targetName} (${targetType})\nPackage: ${selectedTargetData.packageName}\nClick to open Bazel Targets view`;
       this.item.command = {
-        command: "workbench.view.extension.swiftbazel-view",
+        command: "workbench.view.extension.bazelbsp-view",
         title: "Open Bazel Targets",
       };
     } else {
       this.item.text = "$(target) No Bazel target";
       this.item.tooltip = "No Bazel target selected\nClick to open Bazel Targets view";
       this.item.command = {
-        command: "workbench.view.extension.swiftbazel-view",
+        command: "workbench.view.extension.bazelbsp-view",
         title: "Open Bazel Targets",
       };
     }

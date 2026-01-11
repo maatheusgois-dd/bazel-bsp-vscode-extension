@@ -50,8 +50,8 @@ cat > "$VSIX_DIR/extension.vsixmanifest" << EOF
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="swiftbazel" Version="$VERSION" Publisher="swiftbazel" />
-    <DisplayName>swiftbazel (iOS/Swift development)</DisplayName>
+    <Identity Language="en-US" Id="bazel-bsp-vscode-extension" Version="$VERSION" Publisher="bazel-bsp-vscode-extension" />
+    <DisplayName>bazel-bsp-vscode-extension (iOS/Swift development)</DisplayName>
     <Description xml:space="preserve">Develop Swift/iOS projects in VS Code</Description>
     <Tags>swift,ios,xcode,development,mobile</Tags>
     <Categories>Formatters,Linters,Extension Packs,Programming Languages,Other</Categories>
@@ -74,33 +74,33 @@ echo "📦 Creating ZIP archive..."
 
 # Create the VSIX file (which is just a ZIP with .vsix extension)
 cd "$VSIX_DIR"
-zip -r "../swiftbazel-$VERSION.vsix" . > /dev/null
+zip -r "../bazel-bsp-vscode-extension-$VERSION.vsix" . > /dev/null
 cd - > /dev/null
 
 # Move the VSIX file to the project root
-mv "$TEMP_DIR/swiftbazel-$VERSION.vsix" ./
+mv "$TEMP_DIR/bazel-bsp-vscode-extension-$VERSION.vsix" ./
 
 # Clean up
 rm -rf "$TEMP_DIR"
 
-echo "✅ VSIX package created: swiftbazel-$VERSION.vsix"
+echo "✅ VSIX package created: bazel-bsp-vscode-extension-$VERSION.vsix"
 
 # Verify the file exists and show its size
-if [ -f "swiftbazel-$VERSION.vsix" ]; then
-    SIZE=$(ls -lh "swiftbazel-$VERSION.vsix" | awk '{print $5}')
+if [ -f "bazel-bsp-vscode-extension-$VERSION.vsix" ]; then
+    SIZE=$(ls -lh "bazel-bsp-vscode-extension-$VERSION.vsix" | awk '{print $5}')
     echo "📊 Package size: $SIZE"
     echo ""
     echo "🚀 Installation commands:"
-    echo "   code --install-extension swiftbazel-$VERSION.vsix"
+    echo "   code --install-extension bazel-bsp-vscode-extension-$VERSION.vsix"
     echo "   # or"
-    echo "   cursor --install-extension swiftbazel-$VERSION.vsix"
+    echo "   cursor --install-extension bazel-bsp-vscode-extension-$VERSION.vsix"
 else
     echo "❌ Failed to create VSIX package"
     exit 1
 fi 
 
 
-echo "🔄 Installing swiftbazel extension..."
+echo "🔄 Installing bazel-bsp-vscode-extension extension..."
 
 # Detect which editor is available and use the appropriate one
 if command -v cursor >/dev/null 2>&1; then
@@ -118,7 +118,7 @@ fi
 echo "📝 Using $EDITOR_NAME ($EDITOR)"
 
 # Install the extension using the detected editor
-$EDITOR --install-extension "swiftbazel-$VERSION.vsix"
+$EDITOR --install-extension "bazel-bsp-vscode-extension-$VERSION.vsix"
 
 echo "✅ Extension installed successfully in $EDITOR_NAME!"
 echo ""
@@ -130,5 +130,5 @@ $EDITOR --command "workbench.action.reloadWindow" 2>/dev/null || {
 }
 
 echo ""
-echo "🎉 swiftbazel is ready to use in $EDITOR_NAME!"
+echo "🎉 bazel-bsp-vscode-extension is ready to use in $EDITOR_NAME!"
 echo "📱 Try opening an iOS project or SPM package to get started." 

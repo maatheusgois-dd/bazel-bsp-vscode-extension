@@ -40,10 +40,10 @@ For apps that crash on startup:
 
 ```json
 {
-  "type": "swiftbazel-lldb",
+  "type": "bazelbsp-lldb",
   "request": "attach",
   "name": "Debug App",
-  "preLaunchTask": "swiftbazel: debugging-launch"
+  "preLaunchTask": "bazelbsp: debugging-launch"
 }
 ```
 
@@ -51,7 +51,7 @@ For apps that crash on startup:
 
 ```json
 {
-  "type": "swiftbazel-lldb",
+  "type": "bazelbsp-lldb",
   "request": "attach",
   "codelldbAttributes": {
     "initCommands": [
@@ -114,7 +114,7 @@ BSP enables the Swift extension to provide:
 ### Setup
 
 1. Select a Bazel target
-2. Run: `SwiftBazel: Setup BSP Config for Selected Target`
+2. Run: `Bazel BSP: Setup BSP Config for Selected Target`
 3. Extension generates `.bsp/skbsp.json`:
 
 ```json
@@ -133,7 +133,7 @@ BSP enables the Swift extension to provide:
 Debug BSP issues with live log streaming:
 
 ```bash
-Command: SwiftBazel: Monitor BSP Logs
+Command: Bazel BSP: Monitor BSP Logs
 ```
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/ce76b6d3-b2e9-4d60-917a-38c37dfecd4b" />
@@ -213,7 +213,7 @@ Example for Claude Desktop (`~/Library/Application Support/Claude/config.json`):
 ```json
 {
   "mcpServers": {
-    "swiftbazel": {
+    "bazelbsp": {
       "command": "curl",
       "args": ["http://localhost:61333"]
     }

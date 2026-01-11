@@ -1,6 +1,6 @@
 # Architecture
 
-SwiftBazel follows **Clean Architecture** principles with clear layer separation:
+Bazel BSP follows **Clean Architecture** principles with clear layer separation:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -36,7 +36,7 @@ SwiftBazel follows **Clean Architecture** principles with clear layer separation
 ## Project Structure
 
 ```
-swiftbazel/
+bazelbsp/
 ├── src/
 │   ├── application/       # Use cases and business logic
 │   │   ├── services/      # Core services (BuildManager, etc.)

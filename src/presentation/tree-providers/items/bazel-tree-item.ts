@@ -44,7 +44,7 @@ export class BazelTreeItem extends vscode.TreeItem {
     const isSelected = selectedTargetData?.buildLabel === this.target.buildLabel;
 
     // Set icon based on target type and selection state
-    const color = new vscode.ThemeColor("swiftbazel.scheme");
+    const color = new vscode.ThemeColor("bazelbsp.scheme");
 
     if (this.target.type === "test") {
       this.iconPath = new vscode.ThemeIcon("beaker", color);
@@ -55,11 +55,11 @@ export class BazelTreeItem extends vscode.TreeItem {
     // Set context value based on target type for conditional menu items
     let contextValue: string;
     if (this.target.type === "test") {
-      contextValue = "swiftbazel.bazel.target.test";
+      contextValue = "bazelbsp.bazel.target.test";
     } else if (this.target.type === "binary") {
-      contextValue = "swiftbazel.bazel.target.binary";
+      contextValue = "bazelbsp.bazel.target.binary";
     } else {
-      contextValue = "swiftbazel.bazel.target.library";
+      contextValue = "bazelbsp.bazel.target.library";
     }
 
     // Add selection state to context value
@@ -91,7 +91,7 @@ export class BazelTreeItem extends vscode.TreeItem {
 
     // Set command to select the target - pass only serializable data
     this.command = {
-      command: "swiftbazel.bazel.selectTarget",
+      command: "bazelbsp.bazel.selectTarget",
       title: "Select Bazel Target",
       arguments: [
         {

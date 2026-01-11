@@ -5,7 +5,7 @@ import { getWorkspaceConfig } from "../../shared/utils/config.js";
 const DEFAULT_SCOPE_ID = "__DEFAULT_SCOPE_ID";
 
 /**
- * Status bar item for showing what currently swiftbazel is doing
+ * Status bar item for showing what currently bazelbsp is doing
  *
  * Usually, it's enough to call `update` method with the text you want to show
  * and if it in the context of a command, it will be automatically removed when
@@ -24,18 +24,18 @@ export class ProgressStatusBar {
 
   constructor() {
     // Status bar ID allows to separate the different status bar items from the same extension
-    const statusBarId = "swiftbazel.system.progressStatusBar";
+    const statusBarId = "bazelbsp.system.progressStatusBar";
     this.statusBar = vscode.window.createStatusBarItem(statusBarId, vscode.StatusBarAlignment.Left, 0);
-    this.statusBar.command = "swiftbazel.system.openTerminalPanel";
-    this.statusBar.name = "SwiftBazel: Command Status";
+    this.statusBar.command = "bazelbsp.system.openTerminalPanel";
+    this.statusBar.name = "Bazel BSP: Command Status";
 
     // Create cancel button (shown to the left of progress status)
-    const cancelButtonId = "swiftbazel.system.progressCancelButton";
+    const cancelButtonId = "bazelbsp.system.progressCancelButton";
     this.cancelButton = vscode.window.createStatusBarItem(cancelButtonId, vscode.StatusBarAlignment.Left, 1);
     this.cancelButton.text = "$(x) Cancel";
     this.cancelButton.tooltip = "Cancel current operation";
-    this.cancelButton.command = "swiftbazel.system.cancelCurrentOperation";
-    this.cancelButton.name = "SwiftBazel: Cancel Operation";
+    this.cancelButton.command = "bazelbsp.system.cancelCurrentOperation";
+    this.cancelButton.name = "Bazel BSP: Cancel Operation";
   }
 
   dispose() {

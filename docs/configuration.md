@@ -1,30 +1,30 @@
 # Configuration
 
-All settings are under `swiftbazel.*` in VSCode settings.
+All settings are under `bazelbsp.*` in VSCode settings.
 
 ## Build Settings
 
 ```json
 {
   // Enable xcbeautify for prettier build output
-  "swiftbazel.build.xcbeautifyEnabled": true,
+  "bazelbsp.build.xcbeautifyEnabled": true,
 
   // Enable index reuse in debug builds (faster BSP indexing)
-  "swiftbazel.build.enableIndexingInDebug": true,
+  "bazelbsp.build.enableIndexingInDebug": true,
 
   // Additional Bazel arguments
-  "swiftbazel.build.args": ["--config=my_config"],
+  "bazelbsp.build.args": ["--config=my_config"],
 
   // Build environment variables
-  "swiftbazel.build.env": {
+  "bazelbsp.build.env": {
     "MY_VAR": "value"
   },
 
   // App launch arguments
-  "swiftbazel.build.launchArgs": ["--enable-feature"],
+  "bazelbsp.build.launchArgs": ["--enable-feature"],
 
   // App launch environment variables
-  "swiftbazel.build.launchEnv": {
+  "bazelbsp.build.launchEnv": {
     "API_URL": "https://staging.api.com"
   }
 }
@@ -35,7 +35,7 @@ All settings are under `swiftbazel.*` in VSCode settings.
 ```json
 {
   // Auto-prompt to update BSP when target changes
-  "swiftbazel.bsp.autoUpdateOnTargetChange": true
+  "bazelbsp.bsp.autoUpdateOnTargetChange": true
 }
 ```
 
@@ -44,10 +44,10 @@ All settings are under `swiftbazel.*` in VSCode settings.
 ```json
 {
   // Default build mode: "debug", "release", "release-with-symbols", or "ask"
-  "swiftbazel.bazel.buildMode": "ask",
+  "bazelbsp.bazel.buildMode": "ask",
 
   // Exclude specific paths from bazel query (useful for large monorepos)
-  "swiftbazel.bazel.queryExcludePaths": ["//Apps/App/...", "//Apps/App2/..."]
+  "bazelbsp.bazel.queryExcludePaths": ["//Apps/App/...", "//Apps/App2/..."]
 }
 ```
 
@@ -67,16 +67,16 @@ The extension transforms this into: `bazel query '//... except (//Apps/App/... +
 ```json
 {
   // Task executor version ("v1" or "v2")
-  "swiftbazel.system.taskExecutor": "v2",
+  "bazelbsp.system.taskExecutor": "v2",
 
   // Log level: "debug", "info", "warn", "error"
-  "swiftbazel.system.logLevel": "info",
+  "bazelbsp.system.logLevel": "info",
 
   // Auto-reveal terminal on command execution
-  "swiftbazel.system.autoRevealTerminal": true,
+  "bazelbsp.system.autoRevealTerminal": true,
 
   // Show progress in status bar
-  "swiftbazel.system.showProgressStatusBar": true
+  "bazelbsp.system.showProgressStatusBar": true
 }
 ```
 
@@ -86,38 +86,38 @@ All commands are available via Command Palette (`Cmd+Shift+P`):
 
 ### Bazel Commands
 
-- `SwiftBazel: Select Bazel Target` - Choose active target
-- `SwiftBazel: Bazel Build` - Build selected target
-- `SwiftBazel: Bazel Test` - Test selected target
-- `SwiftBazel: Bazel Run` - Run selected target
-- `SwiftBazel: Bazel Debug` - Debug selected target
-- `SwiftBazel: Bazel Clean` - Clean build cache
-- `SwiftBazel: Bazel Clean (Expunge)` - Complete cache cleanup
-- `SwiftBazel: Select Build Mode` - Choose Debug/Release mode
-- `SwiftBazel: Stop/Cancel` - Stop current operation
+- `Bazel BSP: Select Bazel Target` - Choose active target
+- `Bazel BSP: Bazel Build` - Build selected target
+- `Bazel BSP: Bazel Test` - Test selected target
+- `Bazel BSP: Bazel Run` - Run selected target
+- `Bazel BSP: Bazel Debug` - Debug selected target
+- `Bazel BSP: Bazel Clean` - Clean build cache
+- `Bazel BSP: Bazel Clean (Expunge)` - Complete cache cleanup
+- `Bazel BSP: Select Build Mode` - Choose Debug/Release mode
+- `Bazel BSP: Stop/Cancel` - Stop current operation
 
 ### Destination Commands
 
-- `SwiftBazel: Select destination` - Choose device/simulator
-- `SwiftBazel: Refresh simulators list` - Update simulator list
-- `SwiftBazel: Refresh devices list` - Update device list
-- `SwiftBazel: Start simulator` - Boot a simulator
-- `SwiftBazel: Stop simulator` - Shutdown a simulator
-- `SwiftBazel: Open simulator` - Launch Simulator.app
-- `SwiftBazel: Remove simulator cache` - Clear app data
-- `SwiftBazel: Take Simulator Screenshot` - Save screenshot
+- `Bazel BSP: Select destination` - Choose device/simulator
+- `Bazel BSP: Refresh simulators list` - Update simulator list
+- `Bazel BSP: Refresh devices list` - Update device list
+- `Bazel BSP: Start simulator` - Boot a simulator
+- `Bazel BSP: Stop simulator` - Shutdown a simulator
+- `Bazel BSP: Open simulator` - Launch Simulator.app
+- `Bazel BSP: Remove simulator cache` - Clear app data
+- `Bazel BSP: Take Simulator Screenshot` - Save screenshot
 
 ### BSP Commands
 
-- `SwiftBazel: Setup BSP Config for Selected Target` - Generate BSP config
-- `SwiftBazel: Setup Swift Extension for BSP` - Configure Swift extension
-- `SwiftBazel: Show Swift Configuration Status` - Check BSP status
-- `SwiftBazel: Monitor BSP Logs` - Stream BSP logs
+- `Bazel BSP: Setup BSP Config for Selected Target` - Generate BSP config
+- `Bazel BSP: Setup Swift Extension for BSP` - Configure Swift extension
+- `Bazel BSP: Show Swift Configuration Status` - Check BSP status
+- `Bazel BSP: Monitor BSP Logs` - Stream BSP logs
 
 ### System Commands
 
-- `SwiftBazel: Diagnose build setup` - Run health check
-- `SwiftBazel: Reset Extension Cache` - Clear extension cache
-- `SwiftBazel: Open Terminal Panel` - Show terminal
-- `SwiftBazel: Refresh Bazel Targets` - Re-query targets
-- `SwiftBazel: Clear Recent Targets` - Clear recent list
+- `Bazel BSP: Diagnose build setup` - Run health check
+- `Bazel BSP: Reset Extension Cache` - Clear extension cache
+- `Bazel BSP: Open Terminal Panel` - Show terminal
+- `Bazel BSP: Refresh Bazel Targets` - Re-query targets
+- `Bazel BSP: Clear Recent Targets` - Clear recent list

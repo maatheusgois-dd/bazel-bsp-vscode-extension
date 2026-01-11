@@ -24,8 +24,10 @@
 - [ ] Document correct build patterns
 
 ### Project Naming/Scope
-- [ ] Consider renaming (extension handles more than just Swift)
-- [ ] Update branding/description to reflect broader scope
+- [x] Renamed to bazel-bsp-vscode-extension
+- [x] Updated branding/description to reflect broader scope
+- [x] Changed all commands/configs from swiftbazel to bazelbsp
+- [x] Updated display name to "Bazel BSP"
 
 ## Current Issues
 

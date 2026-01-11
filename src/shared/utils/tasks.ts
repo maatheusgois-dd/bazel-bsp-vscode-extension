@@ -481,7 +481,7 @@ export class TaskTerminalV1 implements TaskTerminal {
       { type: "shell" },
       vscode.TaskScope.Workspace,
       this.options.name,
-      this.options.source ?? "swiftbazel",
+      this.options.source ?? "bazelbsp",
       new vscode.ShellExecution(command),
       this.options.problemMatchers,
     );
@@ -585,7 +585,7 @@ async function runTaskV2(
     },
     vscode.TaskScope.Workspace,
     options.name,
-    options.source ?? "swiftbazel",
+    options.source ?? "bazelbsp",
     new vscode.CustomExecution(async () => {
       return new TaskTerminalV2(context, {
         callback: (terminal) => {

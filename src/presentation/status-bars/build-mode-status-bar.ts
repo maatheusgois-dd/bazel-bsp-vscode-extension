@@ -9,11 +9,11 @@ export class BuildModeStatusBar {
   constructor(options: { context: ExtensionContext }) {
     this.context = options.context;
 
-    const itemId = "swiftbazel.bazel.buildMode.statusBar";
+    const itemId = "bazelbsp.bazel.buildMode.statusBar";
     this.item = vscode.window.createStatusBarItem(itemId, vscode.StatusBarAlignment.Left, -2);
-    this.item.name = "SwiftBazel: Build Mode";
+    this.item.name = "Bazel BSP: Build Mode";
     this.item.tooltip = "Click to change build mode";
-    this.item.command = "swiftbazel.bazel.selectBuildMode";
+    this.item.command = "bazelbsp.bazel.selectBuildMode";
 
     this.update();
     this.item.show();

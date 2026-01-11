@@ -1,9 +1,9 @@
-# SwiftBazel
+# Bazel BSP
 
 VSCode extension for Bazel-based iOS/macOS development with integrated debugging and BSP support.
 
 <p align="center">
-  <img src="images/logo.png" width="128" alt="SwiftBazel Logo">
+  <img src="images/logo.png" width="128" alt="Bazel BSP Logo">
 </p>
 
 ## What It Does
@@ -24,18 +24,18 @@ VSCode extension for Bazel-based iOS/macOS development with integrated debugging
 ### Quick Install
 
 ```bash
-curl -s https://api.github.com/repos/maatheusgois-dd/swiftbazel/releases/latest | grep "browser_download_url.*vsix" | cut -d '"' -f 4 | xargs -I {} sh -c 'curl -L -o /tmp/swiftbazel.vsix {} && code --install-extension /tmp/swiftbazel.vsix && rm /tmp/swiftbazel.vsix'
+curl -s https://api.github.com/repos/maatheusgois-dd/bazelbsp/releases/latest | grep "browser_download_url.*vsix" | cut -d '"' -f 4 | xargs -I {} sh -c 'curl -L -o /tmp/bazelbsp.vsix {} && code --install-extension /tmp/bazelbsp.vsix && rm /tmp/bazelbsp.vsix'
 ```
 
 Or:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/maatheusgois-dd/swiftbazel/main/scripts/install-latest.sh | bash
+curl -fsSL https://raw.githubusercontent.com/maatheusgois-dd/bazelbsp/main/scripts/install-latest.sh | bash
 ```
 
 ### Manual Install
 
-1. Download `.vsix` from [Releases](https://github.com/maatheusgois-dd/swiftbazel/releases/latest)
+1. Download `.vsix` from [Releases](https://github.com/maatheusgois-dd/bazelbsp/releases/latest)
 2. Open Extensions (`Cmd+Shift+X`)
 3. Click `...` → "Install from VSIX..."
 
@@ -44,7 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/maatheusgois-dd/swiftbazel/main/scr
 ## Quick Start
 
 1. Open a Bazel workspace in VSCode
-2. Click the SwiftBazel icon (🔧) in the Activity Bar
+2. Click the Bazel BSP icon (🔧) in the Activity Bar
 3. Select a target from the Bazel Targets view
 4. Select a destination (simulator/device)
 5. Press `Cmd+R` to run or `Cmd+Shift+D` to debug
@@ -98,11 +98,11 @@ Key settings:
 
 ```json
 {
-  "swiftbazel.bazel.buildMode": "debug",
-  "swiftbazel.bazel.queryExcludePaths": ["//path/to/exclude/..."],
-  "swiftbazel.bsp.autoUpdateOnTargetChange": true,
-  "swiftbazel.build.xcbeautifyEnabled": true,
-  "swiftbazel.build.enableIndexingInDebug": true
+  "bazelbsp.bazel.buildMode": "debug",
+  "bazelbsp.bazel.queryExcludePaths": ["//path/to/exclude/..."],
+  "bazelbsp.bsp.autoUpdateOnTargetChange": true,
+  "bazelbsp.build.xcbeautifyEnabled": true,
+  "bazelbsp.build.enableIndexingInDebug": true
 }
 ```
 
@@ -163,5 +163,5 @@ MIT - see [LICENSE.md](LICENSE.md)
 ## Support
 
 - 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/maatheusgois-dd/swiftbazel/issues)
+- 🐛 [Issue Tracker](https://github.com/maatheusgois-dd/bazelbsp/issues)
 - 💬 DoorDash Slack: `#ios-tooling`

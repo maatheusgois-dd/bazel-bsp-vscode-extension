@@ -26,7 +26,7 @@ export async function startSimulatorCommand(context: ExtensionContext, item?: iO
   context.updateProgressStatus("Starting simulator");
   await runTask(context, {
     name: "Start Simulator",
-    lock: "swiftbazel.simulators",
+    lock: "bazelbsp.simulators",
     terminateLocked: true,
     callback: async (terminal) => {
       await terminal.execute({
@@ -36,7 +36,7 @@ export async function startSimulatorCommand(context: ExtensionContext, item?: iO
 
       await context.destinationsManager.refreshSimulators();
       // Refresh the tree view
-      await vscode.commands.executeCommand("swiftbazel.destinations.refresh");
+      await vscode.commands.executeCommand("bazelbsp.destinations.refresh");
     },
   });
 }
@@ -61,7 +61,7 @@ export async function stopSimulatorCommand(context: ExtensionContext, item?: iOS
   context.updateProgressStatus("Stopping simulator");
   await runTask(context, {
     name: "Stop Simulator",
-    lock: "swiftbazel.simulators",
+    lock: "bazelbsp.simulators",
     terminateLocked: true,
     callback: async (terminal) => {
       await terminal.execute({
@@ -71,7 +71,7 @@ export async function stopSimulatorCommand(context: ExtensionContext, item?: iOS
 
       await context.destinationsManager.refreshSimulators();
       // Refresh the tree view
-      await vscode.commands.executeCommand("swiftbazel.destinations.refresh");
+      await vscode.commands.executeCommand("bazelbsp.destinations.refresh");
     },
   });
 }
@@ -84,7 +84,7 @@ export async function openSimulatorCommand(context: ExtensionContext) {
   await runTask(context, {
     name: "Open Simulator",
     error: "Could not open simulator app",
-    lock: "swiftbazel.simulators",
+    lock: "bazelbsp.simulators",
     terminateLocked: true,
     callback: async (terminal) => {
       await terminal.execute({
@@ -92,7 +92,7 @@ export async function openSimulatorCommand(context: ExtensionContext) {
         args: ["-a", "Simulator"],
       });
 
-      await vscode.commands.executeCommand("swiftbazel.simulators.refresh");
+      await vscode.commands.executeCommand("bazelbsp.simulators.refresh");
     },
   });
 }
@@ -107,14 +107,14 @@ export async function removeSimulatorCacheCommand(context: ExtensionContext) {
   await runTask(context, {
     name: "Remove Simulator Cache",
     error: "Error removing simulator cache",
-    lock: "swiftbazel.build",
+    lock: "bazelbsp.build",
     terminateLocked: true,
     callback: async (terminal) => {
       await terminal.execute({
         command: "rm",
         args: ["-rf", "~/Library/Developer/CoreSimulator/Caches"],
       });
-      await vscode.commands.executeCommand("swiftbazel.simulators.refresh");
+      await vscode.commands.executeCommand("bazelbsp.simulators.refresh");
     },
   });
 }
@@ -156,7 +156,7 @@ export async function takeSimulatorScreenshotCommand(
   try {
     await runTask(context, {
       name: "Take Simulator Screenshot",
-      lock: "swiftbazel.simulators",
+      lock: "bazelbsp.simulators",
       terminateLocked: true,
       callback: async (terminal) => {
         // Log paths for debugging

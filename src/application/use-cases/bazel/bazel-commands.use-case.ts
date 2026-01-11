@@ -162,7 +162,7 @@ export async function bazelBuildCommand(context: ExtensionContext, bazelItem?: B
 
   await runTask(context, {
     name: `Bazel Build: ${targetItem?.target.name}`,
-    lock: "swiftbazel.bazel.build",
+    lock: "bazelbsp.bazel.build",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
@@ -236,7 +236,7 @@ export async function bazelCleanCommand(context: ExtensionContext, expunge?: boo
 
   await runTask(context, {
     name: `Bazel Clean${shouldExpunge ? " (Expunge)" : ""}`,
-    lock: "swiftbazel.bazel.clean",
+    lock: "bazelbsp.bazel.clean",
     terminateLocked: true,
     callback: async (terminal) => {
       terminal.write(`🧹 Cleaning Bazel cache${shouldExpunge ? " with expunge" : ""}...\n\n`);
@@ -311,9 +311,7 @@ export async function bazelStopCommand(_context: ExtensionContext): Promise<void
 
   // Check if there's a running task
   const runningTasks = vscode.tasks.taskExecutions;
-  const bazelTasks = runningTasks.filter(
-    (task) => task.task.source === "swiftbazel" || task.task.name.includes("Bazel"),
-  );
+  const bazelTasks = runningTasks.filter((task) => task.task.source === "bazelbsp" || task.task.name.includes("Bazel"));
 
   if (bazelTasks.length > 0) {
     // Cancel all bazel tasks
@@ -345,7 +343,7 @@ export async function selectBazelBuildModeCommand(context: ExtensionContext): Pr
   };
 
   // Emit event to update status bar
-  vscode.commands.executeCommand("swiftbazel.internal.updateBuildModeStatusBar");
+  vscode.commands.executeCommand("bazelbsp.internal.updateBuildModeStatusBar");
 
   vscode.window.showInformationMessage(`✅ Build mode set to: ${modeLabels[buildMode]}`);
 }
@@ -375,7 +373,7 @@ export async function bazelTestCommand(context: ExtensionContext, bazelItem?: Ba
 
   await runTask(context, {
     name: `Bazel Test: ${targetItem?.target.name}`,
-    lock: "swiftbazel.bazel.test",
+    lock: "bazelbsp.bazel.test",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
@@ -426,7 +424,7 @@ export async function bazelRunCommand(context: ExtensionContext, bazelItem?: Baz
 
   await runTask(context, {
     name: `Bazel Run: ${targetItem?.target.name}`,
-    lock: "swiftbazel.bazel.run",
+    lock: "bazelbsp.bazel.run",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
@@ -473,7 +471,7 @@ export async function bazelDebugCommand(context: ExtensionContext, bazelItem?: B
 
   await runTask(context, {
     name: `Bazel Debug: ${targetItem?.target.name}`,
-    lock: "swiftbazel.bazel.debug",
+    lock: "bazelbsp.bazel.debug",
     terminateLocked: true,
     problemMatchers: DEFAULT_BUILD_PROBLEM_MATCHERS,
     callback: async (terminal) => {
@@ -534,13 +532,13 @@ export async function selectBazelTargetCommand(
     );
 
     if (action === "Update BSP") {
-      await vscode.commands.executeCommand("swiftbazel.system.setupBSPConfig");
+      await vscode.commands.executeCommand("bazelbsp.system.setupBSPConfig");
     } else if (action === "Don't Ask Again") {
       await vscode.workspace
-        .getConfiguration("swiftbazel")
+        .getConfiguration("bazelbsp")
         .update("bsp.autoUpdateOnTargetChange", false, vscode.ConfigurationTarget.Workspace);
       vscode.window.showInformationMessage(
-        "BSP auto-update disabled. Enable in settings: swiftbazel.bsp.autoUpdateOnTargetChange",
+        "BSP auto-update disabled. Enable in settings: bazelbsp.bsp.autoUpdateOnTargetChange",
       );
     }
   } else {
@@ -596,14 +594,14 @@ export async function diagnoseBuildSetupCommand(context: ExtensionContext): Prom
   context.updateProgressStatus("Diagnosing build setup");
 
   await runTask(context, {
-    name: "swiftbazel.build.diagnose",
-    lock: "swiftbazel.build",
+    name: "bazelbsp.build.diagnose",
+    lock: "bazelbsp.build",
     terminateLocked: true,
     callback: async (terminal) => {
       const _write = (text: string) => terminal.write(text);
       const _writeQuote = (text: string) => terminal.write(`> ${text}\n`);
 
-      _write("SwiftBazel: Diagnose Build Setup\n");
+      _write("Bazel BSP: Diagnose Build Setup\n");
       _write("=================================\n\n");
 
       // Check for Bazel

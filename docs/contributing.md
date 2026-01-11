@@ -9,7 +9,7 @@ Open an issue on GitHub with:
 - Xcode version: `xcodebuild -version`
 - Bazel version: `bazel version`
 - Steps to reproduce
-- Extension logs (`Output > SwiftBazel`)
+- Extension logs (`Output > Bazel BSP`)
 
 ## Pull Requests
 
@@ -45,8 +45,8 @@ Open an issue on GitHub with:
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/maatheusgois-dd/swiftbazel.git
-cd swiftbazel
+git clone https://github.com/maatheusgois-dd/bazelbsp.git
+cd bazelbsp
 ```
 
 2. **Install dependencies**
@@ -69,10 +69,10 @@ code .
 
 5. **Test the extension in the Development Host**
    - Open a Bazel workspace in the Extension Development Host (e.g., the `Example/` folder)
-   - The SwiftBazel icon appears in the Activity Bar
+   - The Bazel BSP icon appears in the Activity Bar
    - Set breakpoints in your TypeScript code (original VSCode window)
    - Interact with the extension (Development Host window) - breakpoints will hit
-   - View logs: `Output > SwiftBazel` in the Development Host
+   - View logs: `Output > Bazel BSP` in the Development Host
    - Reload after changes: Press `Cmd+R` in the Development Host or restart debugging
 
 ### Development Commands

@@ -2,12 +2,12 @@ import * as vscode from "vscode";
 import type { ExtensionContext } from "../../../infrastructure/vscode/extension-context.js";
 import { ExtensionError } from "../../../shared/errors/errors.js";
 
-const DEBUG_DOCUMENTATION_URL = "https://github.com/KayodeOgundimu-DoorDashSWE/swiftbazel/blob/main/docs/wiki/debug.md";
+const DEBUG_DOCUMENTATION_URL = "https://github.com/KayodeOgundimu-DoorDashSWE/bazelbsp/blob/main/docs/wiki/debug.md";
 
 /**
  * This function is deprecated. Previously we use "lldb" as the debugger type and
- * "{command:swiftbazel.debugger.getAppPath}" as a way to provide the app path to the debugger.
- * Now we use "swiftbazel-lldb" as the debugger type, which wraps around "lldb" and provides the app path
+ * "{command:bazelbsp.debugger.getAppPath}" as a way to provide the app path to the debugger.
+ * Now we use "bazelbsp-lldb" as the debugger type, which wraps around "lldb" and provides the app path
  * directly to the debugger during resolving the debug configuration.
  */
 export async function getAppPathCommand(context: ExtensionContext): Promise<string> {

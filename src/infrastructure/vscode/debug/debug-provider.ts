@@ -12,10 +12,10 @@ import { checkUnreachable } from "../../../shared/types/common.types.js";
 import { extractDeviceAppPath, waitForProcessToLaunch } from "./debug-utils";
 
 const ATTACH_CONFIG: vscode.DebugConfiguration = {
-  type: "swiftbazel-lldb",
+  type: "bazelbsp-lldb",
   request: "attach",
-  name: "SwiftBazel: Build and Run (Wait for debugger)",
-  preLaunchTask: "swiftbazel: debuging-launch",
+  name: "Bazel BSP: Build and Run (Wait for debugger)",
+  preLaunchTask: "bazelbsp: debuging-launch",
 };
 
 class InitialDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
@@ -142,7 +142,7 @@ class DynamicDebugConfigurationProvider implements vscode.DebugConfigurationProv
     ];
 
     // LLDB commands executed after the debuggee process has been created/attached.
-    config.postRunCommands = [...(config.postRunCommands || []), `script print("swiftbazel: Happy debugging!")`];
+    config.postRunCommands = [...(config.postRunCommands || []), `script print("bazelbsp: Happy debugging!")`];
 
     config.type = "lldb";
     config.request = "attach";
@@ -228,7 +228,7 @@ class DynamicDebugConfigurationProvider implements vscode.DebugConfigurationProv
     // LLDB commands executed after the debuggee process has been created/attached.
     config.postRunCommands = [
       ...(config.postRunCommands || []),
-      `script print("swiftbazel: Happy debugging Bazel target '${targetName}'!")`,
+      `script print("bazelbsp: Happy debugging Bazel target '${targetName}'!")`,
     ];
 
     config.type = "lldb";
@@ -259,7 +259,7 @@ class DynamicDebugConfigurationProvider implements vscode.DebugConfigurationProv
         "No app has been launched yet.\n\n" +
           "Before debugging, you must first launch the app using one of:\n" +
           "1. Click the ▶ (Run) button on a Bazel target\n" +
-          "2. Run command: swiftbazel: Build & Run\n" +
+          "2. Run command: bazelbsp: Build & Run\n" +
           "3. Use Cmd+R on a selected target\n\n" +
           "Then attach the debugger by pressing F5",
       );
@@ -355,7 +355,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     const resolvedConfig = {
       type: "lldb-dap",
       request: "attach",
-      name: config.name || "SwiftBazel: Bazel Debug (Simulator)",
+      name: config.name || "Bazel BSP: Bazel Debug (Simulator)",
       debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
       attachCommands: [`process connect connect://localhost:${debugPort}`],
       internalConsoleOptions: "openOnSessionStart",
@@ -404,7 +404,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
     const resolvedConfig = {
       type: "lldb-dap",
       request: "attach",
-      name: config.name || "SwiftBazel: Bazel Debug (Device)",
+      name: config.name || "Bazel BSP: Bazel Debug (Device)",
       debuggerRoot: folder?.uri.fsPath || "${workspaceFolder}",
       program: appPath,
       preRunCommands: ["platform select remote-ios"],
@@ -413,7 +413,7 @@ class BazelDebugConfigurationProvider implements vscode.DebugConfigurationProvid
         `script lldb.debugger.HandleCommand("device process attach --continue --pid ${pid}")`,
       ],
       postRunCommands: [
-        `script print("swiftbazel: Debugger attached to device process ${pid} (${launchContext.targetName})")`,
+        `script print("bazelbsp: Debugger attached to device process ${pid} (${launchContext.targetName})")`,
       ],
       internalConsoleOptions: "openOnSessionStart",
       timeout: 100000,
@@ -434,19 +434,19 @@ export function registerDebugConfigurationProvider(context: ExtensionContext) {
 
   // Register standard Xcode debug provider
   const disposable1 = vscode.debug.registerDebugConfigurationProvider(
-    "swiftbazel-lldb",
+    "bazelbsp-lldb",
     initialProvider,
     vscode.DebugConfigurationProviderTriggerKind.Initial,
   );
   const disposable2 = vscode.debug.registerDebugConfigurationProvider(
-    "swiftbazel-lldb",
+    "bazelbsp-lldb",
     dynamicProvider,
     vscode.DebugConfigurationProviderTriggerKind.Dynamic,
   );
 
   // Register Bazel-specific debug provider
   const disposable3 = vscode.debug.registerDebugConfigurationProvider(
-    "swiftbazel-bazel-lldb",
+    "bazelbsp-bazel-lldb",
     bazelProvider,
     vscode.DebugConfigurationProviderTriggerKind.Dynamic,
   );

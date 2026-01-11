@@ -24,7 +24,7 @@ interface Message {
 
 /**
  * Logger is a wrapper around vscode.OutputChannel that provides a simple way to
- * log messages to the swiftbazel output channel
+ * log messages to the bazelbsp output channel
  */
 export class Logger {
   private outputChannel: vscode.OutputChannel;
@@ -35,7 +35,7 @@ export class Logger {
   static level: LogLevel = LogLevel.info;
 
   constructor(options: { name: string }) {
-    this.outputChannel = vscode.window.createOutputChannel(`swiftbazel: ${options.name}`);
+    this.outputChannel = vscode.window.createOutputChannel(`bazelbsp: ${options.name}`);
     this.messages = [];
     this.maxMessages = 1000;
   }
@@ -145,7 +145,7 @@ export class Logger {
   }
 
   static setup() {
-    Logger.setLevel(vscode.workspace.getConfiguration("swiftbazel").get<string>("system.logLevel") ?? "info");
+    Logger.setLevel(vscode.workspace.getConfiguration("bazelbsp").get<string>("system.logLevel") ?? "info");
   }
 
   debug(message: string, context: Context = {}) {

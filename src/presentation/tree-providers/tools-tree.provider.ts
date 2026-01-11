@@ -72,9 +72,9 @@ export class ToolTreeItem extends vscode.TreeItem {
     this.tool = options.tool;
 
     if (options.isInstalled) {
-      this.iconPath = new vscode.ThemeIcon("swiftbazel-check");
+      this.iconPath = new vscode.ThemeIcon("bazelbsp-check");
     } else {
-      this.iconPath = new vscode.ThemeIcon("swiftbazel-x");
+      this.iconPath = new vscode.ThemeIcon("bazelbsp-x");
     }
   }
 }

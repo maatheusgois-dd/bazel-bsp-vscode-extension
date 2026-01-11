@@ -80,4 +80,4 @@ export const TOOLS: Tool[] = [
   },
 ];
 
-export const EXTENSION_DISPLAY_NAME = "SwiftBazel";
+export const EXTENSION_DISPLAY_NAME = "Bazel BSP";
