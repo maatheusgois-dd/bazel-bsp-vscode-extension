@@ -161,13 +161,22 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
     const selectedTargetData = context.buildManager.getSelectedBazelTargetData();
 
     // Priority 1: Check for custom setup command
-    if (customSetupCommand && selectedTargetData) {
+    if (customSetupCommand) {
       commonLogger.log("Using custom BSP setup command", { customSetupCommand });
 
-      // Replace placeholders in command
+      // Check if command uses ${target} placeholder but no target is selected
+      const usesTargetPlaceholder = /\$\{target\}/i.test(customSetupCommand);
+      if (usesTargetPlaceholder && !selectedTargetData) {
+        throw new Error(
+          "Custom BSP setup command uses ${target} placeholder but no Bazel target is selected. " +
+            "Please select a target first or remove the ${target} placeholder from the command.",
+        );
+      }
+
+      // Replace placeholders in command (only if selectedTargetData exists when needed)
       const command = customSetupCommand
-        .replace(/\$\{target\}/g, selectedTargetData.buildLabel)
-        .replace(/\$\{workspace\}/g, workspacePath);
+        .replace(/\$\{target\}/gi, selectedTargetData?.buildLabel || "")
+        .replace(/\$\{workspace\}/gi, workspacePath);
 
       context.updateProgressStatus(`Running custom BSP setup: ${command}`);
 
@@ -318,18 +327,35 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
           throw new Error(`${setupRuleName} ran but didn't generate .bsp/${configFileName}`);
         }
 
-        // Check if binary exists
-        const binaryPath = path.join(bspDir, "sourcekit-bazel-bsp");
-        const hasBinary = await isFileExists(binaryPath);
+        // Extract expected binary name from custom template if provided
+        let expectedBinaryPath: string | null = null;
+        let expectedBinaryName = "sourcekit-bazel-bsp"; // default
+
+        if (customTemplate?.argv?.[0]) {
+          // Extract binary path from template (e.g., ".bsp/my-custom-bsp" -> "my-custom-bsp")
+          const binaryFromTemplate = customTemplate.argv[0];
+          expectedBinaryName = path.basename(binaryFromTemplate);
+          expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+        } else {
+          expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+        }
+
+        const hasBinary = await isFileExists(expectedBinaryPath);
 
         let message = `✅ BSP configuration generated!\n\nUsed: bazelisk run ${setupTarget}\nConfig: .bsp/${configFileName}`;
 
         if (!hasBinary) {
-          message +=
-            "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
-            "Download from:\n" +
-            "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
-            "Place at: .bsp/sourcekit-bazel-bsp";
+          if (customTemplate) {
+            // Custom BSP - generic warning
+            message += `\n\n⚠️ ${expectedBinaryName} binary not found!\n\n` + `Expected at: .bsp/${expectedBinaryName}`;
+          } else {
+            // Default sourcekit-bazel-bsp - specific instructions
+            message +=
+              "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
+              "Download from:\n" +
+              "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
+              "Place at: .bsp/sourcekit-bazel-bsp";
+          }
         } else {
           message += "\n✅ Binary detected";
         }
@@ -377,11 +403,13 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
     // Use custom template if provided, otherwise use default
     let bspConfig: any;
     if (customTemplate) {
-      // Replace placeholders in custom template
+      // Replace placeholders in custom template with properly escaped JSON values
+      // JSON.stringify().slice(1, -1) escapes special chars (backslashes, quotes, etc.)
+      const escapeJsonValue = (val: string) => JSON.stringify(val).slice(1, -1);
       const templateStr = JSON.stringify(customTemplate)
-        .replace(/\$\{target\}/g, selectedTargetData.buildLabel)
-        .replace(/\$\{targetName\}/g, targetName)
-        .replace(/\$\{workspace\}/g, workspacePath);
+        .replace(/\$\{target\}/gi, escapeJsonValue(selectedTargetData.buildLabel))
+        .replace(/\$\{targetName\}/gi, escapeJsonValue(targetName))
+        .replace(/\$\{workspace\}/gi, escapeJsonValue(workspacePath));
       bspConfig = JSON.parse(templateStr);
       commonLogger.log("Using custom BSP template", { template: customTemplate });
     } else {
@@ -433,19 +461,36 @@ fi
     await fs.writeFile(wrapperPath, wrapperScript, "utf8");
     await fs.chmod(wrapperPath, 0o755); // Make executable
 
-    // Check if sourcekit-bazel-bsp binary exists
-    const binaryPath = path.join(bspDir, "sourcekit-bazel-bsp");
-    const hasBinary = await isFileExists(binaryPath);
+    // Extract expected binary name from custom template if provided
+    let expectedBinaryPath: string;
+    let expectedBinaryName = "sourcekit-bazel-bsp"; // default
+
+    if (customTemplate?.argv?.[0]) {
+      // Extract binary path from template (e.g., ".bsp/my-custom-bsp" -> "my-custom-bsp")
+      const binaryFromTemplate = customTemplate.argv[0];
+      expectedBinaryName = path.basename(binaryFromTemplate);
+      expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+    } else {
+      expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+    }
+
+    const hasBinary = await isFileExists(expectedBinaryPath);
 
     let message = `✅ BSP configuration created!\n\nTarget: ${selectedTargetData.targetName}\nConfig: .bsp/${configFileName}\nWrapper: .bsp/bazel-wrapper.sh`;
 
     if (!hasBinary) {
-      message +=
-        "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
-        "Download from:\n" +
-        "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
-        "Place the binary at:\n" +
-        ".bsp/sourcekit-bazel-bsp";
+      if (customTemplate) {
+        // Custom BSP - generic warning
+        message += `\n\n⚠️ ${expectedBinaryName} binary not found!\n\n` + `Expected at: .bsp/${expectedBinaryName}`;
+      } else {
+        // Default sourcekit-bazel-bsp - specific instructions
+        message +=
+          "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
+          "Download from:\n" +
+          "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
+          "Place the binary at:\n" +
+          ".bsp/sourcekit-bazel-bsp";
+      }
     } else {
       message += "\n\n✅ Binary detected";
     }
@@ -453,7 +498,11 @@ fi
     message += "\n\n💡 Reload window to activate BSP";
 
     vscode.window
-      .showInformationMessage(message, "Reload Window", hasBinary ? "Open Config" : "Download Binary")
+      .showInformationMessage(
+        message,
+        "Reload Window",
+        hasBinary ? "Open Config" : customTemplate ? "Open Config" : "Download Binary",
+      )
       .then((selection) => {
         if (selection === "Reload Window") {
           vscode.commands.executeCommand("workbench.action.reloadWindow");
