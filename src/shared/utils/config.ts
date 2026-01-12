@@ -19,6 +19,10 @@ type Config = {
   "bazel.buildMode": "debug" | "release" | "release-with-symbols" | "ask";
   "bazel.queryExcludePaths": string[];
   "bsp.autoUpdateOnTargetChange": boolean;
+  "bsp.setupCommand": string | null;
+  "bsp.setupRuleName": string;
+  "bsp.configFileName": string;
+  "bsp.configTemplate": Record<string, any> | null;
   "system.taskExecutor": "v1" | "v2";
   "system.logLevel": "debug" | "info" | "warn" | "error";
   "system.autoRevealTerminal": boolean;

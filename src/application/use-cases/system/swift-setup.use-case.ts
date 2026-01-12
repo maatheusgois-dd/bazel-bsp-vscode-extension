@@ -150,13 +150,78 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
     const workspacePath = workspaceFolder.uri.fsPath;
     const bspDir = path.join(workspacePath, ".bsp");
 
-    // Determine which setup_sourcekit_bsp target to use
+    // Get BSP configuration from settings
+    const { getWorkspaceConfig } = await import("../../../shared/utils/config.js");
+    const customSetupCommand = getWorkspaceConfig("bsp.setupCommand");
+    const setupRuleName = getWorkspaceConfig("bsp.setupRuleName") || "setup_sourcekit_bsp";
+    const configFileName = getWorkspaceConfig("bsp.configFileName") || "skbsp.json";
+    const customTemplate = getWorkspaceConfig("bsp.configTemplate");
+
+    // Get selected target data for placeholders
+    const selectedTargetData = context.buildManager.getSelectedBazelTargetData();
+
+    // Priority 1: Check for custom setup command
+    if (customSetupCommand) {
+      commonLogger.log("Using custom BSP setup command", { customSetupCommand });
+
+      // Check if command uses ${target} placeholder but no target is selected
+      const usesTargetPlaceholder = /\$\{target\}/i.test(customSetupCommand);
+      if (usesTargetPlaceholder && !selectedTargetData) {
+        throw new Error(
+          "Custom BSP setup command uses ${target} placeholder but no Bazel target is selected. " +
+            "Please select a target first or remove the ${target} placeholder from the command.",
+        );
+      }
+
+      // Replace placeholders in command (only if selectedTargetData exists when needed)
+      const command = customSetupCommand
+        .replace(/\$\{target\}/gi, selectedTargetData?.buildLabel || "")
+        .replace(/\$\{workspace\}/gi, workspacePath);
+
+      context.updateProgressStatus(`Running custom BSP setup: ${command}`);
+
+      try {
+        const { exec: execNode } = await import("node:child_process");
+        const { promisify } = await import("node:util");
+        const execAsync = promisify(execNode);
+        const { stdout, stderr } = await execAsync(command, { cwd: workspacePath });
+        commonLogger.log("Custom BSP setup output", { stdout, stderr });
+
+        // Check if config was generated
+        const configPath = path.join(bspDir, configFileName);
+        const hasBSPConfig = await isFileExists(configPath);
+
+        if (!hasBSPConfig) {
+          throw new Error(`Custom setup command ran but didn't generate .bsp/${configFileName}`);
+        }
+
+        vscode.window
+          .showInformationMessage(
+            `✅ BSP configuration generated!\n\nCommand: ${command}\nConfig: .bsp/${configFileName}\n\n💡 Reload window to activate BSP`,
+            "Reload Window",
+            "Open Config",
+          )
+          .then((selection) => {
+            if (selection === "Reload Window") {
+              vscode.commands.executeCommand("workbench.action.reloadWindow");
+            } else if (selection === "Open Config") {
+              vscode.commands.executeCommand("vscode.open", vscode.Uri.file(configPath));
+            }
+          });
+
+        return;
+      } catch (error: any) {
+        commonLogger.error("Custom BSP setup command failed", { error });
+        throw new Error(`Custom BSP setup failed: ${error.message}`);
+      }
+    }
+
+    // Determine which Bazel setup rule to use
     // Priority: 1. Target-specific rule, 2. Package generic rule, 3. Root rule
     let setupTarget: string | null = null;
     let usesBazelRule = false;
 
-    // First, check if selected target has target-specific or package-specific setup_sourcekit_bsp
-    const selectedTargetData = context.buildManager.getSelectedBazelTargetData();
+    // Check if selected target has target-specific or package-specific setup rule
     if (selectedTargetData) {
       // Extract package path from build label (e.g., "//Apps/MyApp:MyApp" -> "//Apps/MyApp")
       const packagePath = selectedTargetData.buildLabel.substring(0, selectedTargetData.buildLabel.lastIndexOf(":"));
@@ -164,7 +229,7 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
 
       // Generate possible setup rule names by convention
       const targetSpecificSetup = `${packagePath}:setup_${targetName.toLowerCase()}_bsp`;
-      const packageGenericSetup = `${packagePath}:setup_sourcekit_bsp`;
+      const packageGenericSetup = `${packagePath}:${setupRuleName}`;
 
       // Check if this package has setup rules
       const packageBuildPath = path.join(selectedTargetData.packagePath, "BUILD.bazel");
@@ -174,10 +239,7 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
         targetName,
         packagePath: selectedTargetData.packagePath,
         checkingPaths: [packageBuildPath, packageBuildAltPath],
-        lookingFor: [
-          `setup_${targetName.toLowerCase()}_bsp (target-specific)`,
-          `setup_sourcekit_bsp (package generic)`,
-        ],
+        lookingFor: [`setup_${targetName.toLowerCase()}_bsp (target-specific)`, `${setupRuleName} (package generic)`],
       });
 
       const packageBuildFile = (await isFileExists(packageBuildPath))
@@ -190,7 +252,7 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
         try {
           const packageBuildContent = await fs.readFile(packageBuildFile, "utf8");
 
-          // Priority 1: Target-specific setup rule (e.g., setup_maatheusgois-dd_bsp)
+          // Priority 1: Target-specific setup rule (e.g., setup_targetname_bsp)
           const targetSpecificRuleName = `setup_${targetName.toLowerCase()}_bsp`;
           if (packageBuildContent.includes(`name = "${targetSpecificRuleName}"`)) {
             setupTarget = targetSpecificSetup;
@@ -198,8 +260,8 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
             commonLogger.log(`✅ Found target-specific setup: ${setupTarget}`);
             commonLogger.log("💡 This will index only the selected target (faster!)");
           }
-          // Priority 2: Package generic setup rule (e.g., setup_sourcekit_bsp)
-          else if (packageBuildContent.includes("setup_sourcekit_bsp")) {
+          // Priority 2: Package generic setup rule (configurable name)
+          else if (packageBuildContent.includes(setupRuleName)) {
             setupTarget = packageGenericSetup;
             usesBazelRule = true;
             commonLogger.log(`✅ Found package-generic setup: ${setupTarget}`);
@@ -221,17 +283,17 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
           ? rootBuildPath
           : null;
 
-      commonLogger.log("Checking for root setup_sourcekit_bsp", {
+      commonLogger.log(`Checking for root ${setupRuleName}`, {
         checkingPaths: [rootBuildBazelPath, rootBuildPath],
       });
 
       if (buildFilePath) {
         try {
           const buildContent = await fs.readFile(buildFilePath, "utf8");
-          if (buildContent.includes("setup_sourcekit_bsp")) {
-            setupTarget = "//:setup_sourcekit_bsp";
+          if (buildContent.includes(setupRuleName)) {
+            setupTarget = `//:${setupRuleName}`;
             usesBazelRule = true;
-            commonLogger.log("✅ Found root setup target: //:setup_sourcekit_bsp");
+            commonLogger.log(`✅ Found root setup target: //:${setupRuleName}`);
           }
         } catch (error) {
           commonLogger.warn("Failed to read root BUILD file", { error });
@@ -255,28 +317,45 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
           maxBuffer: 10 * 1024 * 1024, // 10MB buffer
         });
 
-        commonLogger.log("setup_sourcekit_bsp output", { stdout, stderr });
+        commonLogger.log(`${setupRuleName} output`, { stdout, stderr });
 
         // Check if config was generated
-        const configPath = path.join(bspDir, "skbsp.json");
+        const configPath = path.join(bspDir, configFileName);
         const hasBSPConfig = await isFileExists(configPath);
 
         if (!hasBSPConfig) {
-          throw new Error("setup_sourcekit_bsp ran but didn't generate .bsp/skbsp.json");
+          throw new Error(`${setupRuleName} ran but didn't generate .bsp/${configFileName}`);
         }
 
-        // Check if binary exists
-        const binaryPath = path.join(bspDir, "sourcekit-bazel-bsp");
-        const hasBinary = await isFileExists(binaryPath);
+        // Extract expected binary name from custom template if provided
+        let expectedBinaryPath: string | null = null;
+        let expectedBinaryName = "sourcekit-bazel-bsp"; // default
 
-        let message = `✅ BSP configuration generated!\n\nUsed: bazelisk run ${setupTarget}\nConfig: .bsp/skbsp.json`;
+        if (customTemplate?.argv?.[0]) {
+          // Extract binary path from template (e.g., ".bsp/my-custom-bsp" -> "my-custom-bsp")
+          const binaryFromTemplate = customTemplate.argv[0];
+          expectedBinaryName = path.basename(binaryFromTemplate);
+          expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+        } else {
+          expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+        }
+
+        const hasBinary = await isFileExists(expectedBinaryPath);
+
+        let message = `✅ BSP configuration generated!\n\nUsed: bazelisk run ${setupTarget}\nConfig: .bsp/${configFileName}`;
 
         if (!hasBinary) {
-          message +=
-            "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
-            "Download from:\n" +
-            "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
-            "Place at: .bsp/sourcekit-bazel-bsp";
+          if (customTemplate) {
+            // Custom BSP - generic warning
+            message += `\n\n⚠️ ${expectedBinaryName} binary not found!\n\n` + `Expected at: .bsp/${expectedBinaryName}`;
+          } else {
+            // Default sourcekit-bazel-bsp - specific instructions
+            message +=
+              "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
+              "Download from:\n" +
+              "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
+              "Place at: .bsp/sourcekit-bazel-bsp";
+          }
         } else {
           message += "\n✅ Binary detected";
         }
@@ -298,14 +377,14 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
           `Failed to run bazelisk run ${setupTarget}\n\n` +
             `Error: ${execError.message}\n\n` +
             `Make sure:\n` +
-            `- setup_sourcekit_bsp rule is defined in BUILD\n` +
-            `- *_ios_skbsp targets exist for your libraries`,
+            `- ${setupRuleName} rule is defined in BUILD\n` +
+            `- Required BSP targets exist for your libraries`,
         );
       }
     }
 
     // Fallback: Manual config generation
-    commonLogger.log("setup_sourcekit_bsp rule not found, using manual config generation");
+    commonLogger.log(`${setupRuleName} rule not found, using manual config generation`);
 
     // Get selected target (already declared above, just verify it exists)
     if (!selectedTargetData) {
@@ -315,35 +394,51 @@ export async function setupBSPConfigCommand(context: ExtensionContext): Promise<
     // Create .bsp directory
     await createDirectory(bspDir);
 
-    const configPath = path.join(bspDir, "skbsp.json");
+    const configPath = path.join(bspDir, configFileName);
     const wrapperPath = path.join(bspDir, "bazel-wrapper.sh");
 
     // Generate BSP config
     const targetName = selectedTargetData.targetName;
-    const bspConfig = {
-      name: "sourcekit-bazel-bsp",
-      version: "0.2.0",
-      bspVersion: "2.2.0",
-      languages: ["c", "cpp", "objective-c", "objective-cpp", "swift"],
-      argv: [
-        ".bsp/sourcekit-bazel-bsp",
-        "serve",
-        "--target",
-        selectedTargetData.buildLabel,
-        "--bazel-wrapper",
-        "bazelisk",
-        "--build-test-suffix",
-        "_(PLAT)_skbsp",
-        "--build-test-platform-placeholder",
-        "(PLAT)",
-        "--index-build-batch-size",
-        "10",
-        "--index-flag",
-        "config=skbsp",
-        "--files-to-watch",
-        `${targetName}/**/*.swift,${targetName}/**/*.h,${targetName}/**/*.m`,
-      ],
-    };
+
+    // Use custom template if provided, otherwise use default
+    let bspConfig: any;
+    if (customTemplate) {
+      // Replace placeholders in custom template with properly escaped JSON values
+      // JSON.stringify().slice(1, -1) escapes special chars (backslashes, quotes, etc.)
+      const escapeJsonValue = (val: string) => JSON.stringify(val).slice(1, -1);
+      const templateStr = JSON.stringify(customTemplate)
+        .replace(/\$\{target\}/gi, escapeJsonValue(selectedTargetData.buildLabel))
+        .replace(/\$\{targetName\}/gi, escapeJsonValue(targetName))
+        .replace(/\$\{workspace\}/gi, escapeJsonValue(workspacePath));
+      bspConfig = JSON.parse(templateStr);
+      commonLogger.log("Using custom BSP template", { template: customTemplate });
+    } else {
+      // Default sourcekit-bazel-bsp config
+      bspConfig = {
+        name: "sourcekit-bazel-bsp",
+        version: "0.2.0",
+        bspVersion: "2.2.0",
+        languages: ["c", "cpp", "objective-c", "objective-cpp", "swift"],
+        argv: [
+          ".bsp/sourcekit-bazel-bsp",
+          "serve",
+          "--target",
+          selectedTargetData.buildLabel,
+          "--bazel-wrapper",
+          "bazelisk",
+          "--build-test-suffix",
+          "_(PLAT)_skbsp",
+          "--build-test-platform-placeholder",
+          "(PLAT)",
+          "--index-build-batch-size",
+          "10",
+          "--index-flag",
+          "config=skbsp",
+          "--files-to-watch",
+          `${targetName}/**/*.swift,${targetName}/**/*.h,${targetName}/**/*.m`,
+        ],
+      };
+    }
 
     // Write config
     await fs.writeFile(configPath, JSON.stringify(bspConfig, null, 2), "utf8");
@@ -366,19 +461,36 @@ fi
     await fs.writeFile(wrapperPath, wrapperScript, "utf8");
     await fs.chmod(wrapperPath, 0o755); // Make executable
 
-    // Check if sourcekit-bazel-bsp binary exists
-    const binaryPath = path.join(bspDir, "sourcekit-bazel-bsp");
-    const hasBinary = await isFileExists(binaryPath);
+    // Extract expected binary name from custom template if provided
+    let expectedBinaryPath: string;
+    let expectedBinaryName = "sourcekit-bazel-bsp"; // default
 
-    let message = `✅ BSP configuration created!\n\nTarget: ${selectedTargetData.targetName}\nConfig: .bsp/skbsp.json\nWrapper: .bsp/bazel-wrapper.sh`;
+    if (customTemplate?.argv?.[0]) {
+      // Extract binary path from template (e.g., ".bsp/my-custom-bsp" -> "my-custom-bsp")
+      const binaryFromTemplate = customTemplate.argv[0];
+      expectedBinaryName = path.basename(binaryFromTemplate);
+      expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+    } else {
+      expectedBinaryPath = path.join(bspDir, expectedBinaryName);
+    }
+
+    const hasBinary = await isFileExists(expectedBinaryPath);
+
+    let message = `✅ BSP configuration created!\n\nTarget: ${selectedTargetData.targetName}\nConfig: .bsp/${configFileName}\nWrapper: .bsp/bazel-wrapper.sh`;
 
     if (!hasBinary) {
-      message +=
-        "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
-        "Download from:\n" +
-        "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
-        "Place the binary at:\n" +
-        ".bsp/sourcekit-bazel-bsp";
+      if (customTemplate) {
+        // Custom BSP - generic warning
+        message += `\n\n⚠️ ${expectedBinaryName} binary not found!\n\n` + `Expected at: .bsp/${expectedBinaryName}`;
+      } else {
+        // Default sourcekit-bazel-bsp - specific instructions
+        message +=
+          "\n\n⚠️ sourcekit-bazel-bsp binary not found!\n\n" +
+          "Download from:\n" +
+          "github.com/spotify/sourcekit-bazel-bsp/releases\n\n" +
+          "Place the binary at:\n" +
+          ".bsp/sourcekit-bazel-bsp";
+      }
     } else {
       message += "\n\n✅ Binary detected";
     }
@@ -386,7 +498,11 @@ fi
     message += "\n\n💡 Reload window to activate BSP";
 
     vscode.window
-      .showInformationMessage(message, "Reload Window", hasBinary ? "Open Config" : "Download Binary")
+      .showInformationMessage(
+        message,
+        "Reload Window",
+        hasBinary ? "Open Config" : customTemplate ? "Open Config" : "Download Binary",
+      )
       .then((selection) => {
         if (selection === "Reload Window") {
           vscode.commands.executeCommand("workbench.action.reloadWindow");
